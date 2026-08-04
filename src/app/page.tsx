@@ -143,11 +143,12 @@ export default function Page() {
           </div>
         </BlurFade>
       </section>
-      <section id="projects">
-        <BlurFade delay={BLUR_FADE_DELAY * 11}>
-          <ProjectsSection />
-        </BlurFade>
-      </section>
+      {/* Projects section is deliberately not rendered. After clean-pipe and
+          flow-llm were removed it held a single card, and that card linked to a
+          repository that does not exist yet - a 404 for every visitor, which is
+          the exact failure this site was just cleaned of on the GitHub profile.
+          The harness above is the working proof in the meantime. Restore this
+          the moment there is a published repo to point at. */}
       <section id="contact">
         <BlurFade delay={BLUR_FADE_DELAY * 16}>
           <ContactSection />
