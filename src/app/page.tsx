@@ -8,6 +8,7 @@ import Markdown from "react-markdown";
 import ContactSection from "@/components/section/contact-section";
 import ProjectsSection from "@/components/section/projects-section";
 import WorkSection from "@/components/section/work-section";
+import Harness from "@/components/demo/harness";
 import { ArrowUpRight } from "lucide-react";
 
 const BLUR_FADE_DELAY = 0.04;
@@ -128,6 +129,13 @@ export default function Page() {
             ))}
           </div>
         </div>
+      </section>
+      <section id="harness">
+        <BlurFade delay={BLUR_FADE_DELAY * 10.5}>
+          <div className="rounded-xl border border-border p-6 md:p-8">
+            <Harness />
+          </div>
+        </BlurFade>
       </section>
       <section id="projects">
         <BlurFade delay={BLUR_FADE_DELAY * 11}>

@@ -13,6 +13,7 @@
     "lint:fix": "eslint --fix"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "3.0.22",
     "@content-collections/mdx": "0.2.2",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-avatar": "1.1.11",
@@ -21,6 +22,7 @@
     "@radix-ui/react-slot": "1.2.4",
     "@radix-ui/react-tooltip": "1.2.8",
     "@tailwindcss/postcss": "4.1.18",
+    "ai": "7.0.51",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "content-collections": "0.2.1",
@@ -52,6 +54,6 @@
     "postcss": "8.5.6",
     "typescript": "5.9.3",
     "wrangler": "4.118.0",
-    "zod": "4.3.5"
+    "zod": "4.4.3"
   }
 }

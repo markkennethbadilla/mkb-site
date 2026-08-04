@@ -123,39 +123,31 @@ export const DATA = {
       image: "",
       video: "",
     },
+    // clean-pipe and flow-llm are PRIVATE repositories. Their href and Source
+    // links are deliberately omitted: a Source button that 404s for every
+    // visitor is worse than no button. Restore both the moment the repos go
+    // public - the URLs are github.com/markkennethbadilla/{clean-pipe,flow-llm}.
     {
       title: "clean-pipe",
-      href: "https://github.com/markkennethbadilla/clean-pipe",
+      href: "",
       dates: "2026",
       active: true,
       description:
         "Local-first data normalization. Streams messy CSV rows through a small local model with grammar-constrained sampling so every row returns valid JSON. Standardizes names, companies and emails with a before/after split view. No external API calls, so the data never leaves the machine.",
       technologies: ["TypeScript", "Local LLM", "CSV pipeline"],
-      links: [
-        {
-          type: "Source",
-          href: "https://github.com/markkennethbadilla/clean-pipe",
-          icon: <Icons.github className="size-3" />,
-        },
-      ],
+      links: [],
       image: "",
       video: "",
     },
     {
       title: "flow-llm",
-      href: "https://github.com/markkennethbadilla/flow-llm",
+      href: "",
       dates: "2026",
       active: true,
       description:
         "Semantic cache proxy for LLM APIs. Embeds each request and serves a cached response when cosine similarity against a previous query clears the threshold, so paraphrases of the same question stop costing twice. Ships a live savings calculator.",
       technologies: ["TypeScript", "Embeddings", "Vector search"],
-      links: [
-        {
-          type: "Source",
-          href: "https://github.com/markkennethbadilla/flow-llm",
-          icon: <Icons.github className="size-3" />,
-        },
-      ],
+      links: [],
       image: "",
       video: "",
     },

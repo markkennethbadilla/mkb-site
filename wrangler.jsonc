@@ -2,16 +2,31 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "mkb-site",
   "compatibility_date": "2026-07-01",
-  // Static-only: Next.js builds a full static export to ./out, so Cloudflare
-  // serves plain files and there is no Worker script at all. Nothing to pay for,
-  // nothing to cold-start.
+  "compatibility_flags": ["nodejs_compat"],
+  // The Worker only handles /api/*; everything else falls through to the static
+  // export via the ASSETS binding, so the site itself stays plain files.
+  "main": "worker/index.ts",
   "assets": {
     "directory": "./out",
+    "binding": "ASSETS",
     "not_found_handling": "404-page"
   },
-  "observability": { "enabled": true }
-  // Custom domain routes are added only AFTER this is verified on workers.dev,
-  // so markkennethbadilla.com never points at an unverified build. The apex and
-  // www routes currently belong to the old "folio" worker and must be released
-  // from it first - two workers cannot own the same custom domain.
+  "kv_namespaces": [
+    { "binding": "DEMO_KV", "id": "3624d59a2e724d34b883ea23181c7ec2" }
+  ],
+  // Platform-native rate limiting, enforced at the edge before the Worker runs.
+  // Period must be 10 or 60 seconds; this is burst protection, and the daily
+  // spend ceiling is handled separately in KV because it is a different concern.
+  "ratelimits": [
+    {
+      "name": "BURST_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 6, "period": 60 }
+    }
+  ],
+  "observability": { "enabled": true },
+  "routes": [
+    { "pattern": "markkennethbadilla.com", "custom_domain": true },
+    { "pattern": "www.markkennethbadilla.com", "custom_domain": true }
+  ]
 }
