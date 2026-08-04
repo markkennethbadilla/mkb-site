@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mkb-site",
+  "compatibility_date": "2026-07-01",
+  // Static-only: Next.js builds a full static export to ./out, so Cloudflare
+  // serves plain files and there is no Worker script at all. Nothing to pay for,
+  // nothing to cold-start.
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "404-page"
+  },
+  "observability": { "enabled": true }
+  // Custom domain routes are added only AFTER this is verified on workers.dev,
+  // so markkennethbadilla.com never points at an unverified build. The apex and
+  // www routes currently belong to the old "folio" worker and must be released
+  // from it first - two workers cannot own the same custom domain.
+}
