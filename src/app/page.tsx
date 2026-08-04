@@ -16,12 +16,14 @@ const BLUR_FADE_DELAY = 0.04;
 export default function Page() {
   return (
     <main className="min-h-dvh flex flex-col gap-14 relative">
-      {/* Prose sections keep their own comfortable measure inside the wider
-          container, rather than stretching text to 80rem where it becomes
-          unreadable. The container edge stays constant; only the text column
-          is narrow. */}
+      {/* Every section spans the SAME container width. An earlier version gave
+          the hero and prose a narrower inner column, which left the top of the
+          page hugging the left edge while the demo below spanned the full
+          width - it read as misaligned rather than as a deliberate measure.
+          The container is 4xl so full-width prose still lands at a readable
+          line length. */}
       <section id="hero">
-        <div className="w-full max-w-3xl space-y-8">
+        <div className="w-full space-y-8">
           <div className="gap-2 gap-y-6 flex flex-col md:flex-row justify-between">
             <div className="gap-2 flex flex-col order-2 md:order-1">
               <BlurFadeText
@@ -51,7 +53,7 @@ export default function Page() {
             <h2 className="text-xl font-bold">About</h2>
           </BlurFade>
           <BlurFade delay={BLUR_FADE_DELAY * 4}>
-            <div className="prose max-w-3xl text-pretty font-sans leading-relaxed text-muted-foreground dark:prose-invert">
+            <div className="prose max-w-none text-pretty font-sans leading-relaxed text-muted-foreground dark:prose-invert">
               <Markdown>
                 {DATA.summary}
               </Markdown>

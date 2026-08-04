@@ -88,7 +88,7 @@ export default function RootLayout({
                 randomly spanned the viewport while everything else sat in a
                 thin ribbon - which read as a bug, not a layout. Everything now
                 shares this edge; prose constrains its own line length inside. */}
-            <div className="relative z-10 mx-auto w-full max-w-5xl px-6 py-12 pb-24 sm:py-24">
+            <div className="relative z-10 mx-auto w-full max-w-4xl px-6 py-12 pb-24 sm:py-24">
               {children}
             </div>
             <Navbar />
