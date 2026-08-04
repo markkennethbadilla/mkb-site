@@ -10,6 +10,12 @@ deterministic gates so it physically cannot ship a dangerous change.
 
 - **Resume surface** - hero, about, work history, education, skills, projects,
   contact. All content lives in one file, `src/data/resume.tsx`.
+- **The site guide** (`/#guide`) - a small card under the hero. Ask it something
+  in free text and it decides which section of the page answers you, then leaves
+  its slot: the page eases to that section, everything else dims, and a small
+  animated entity perches beside the lit section with a written line about what
+  you are looking at. "Ask something else" flies it home and it parks again. Off
+  the topic of Mark or this page, it declines and stays put.
 - **The agent harness** (`/#harness`) - a visitor asks an agent for something
   dangerous. A live model writes the change; deterministic gates run on its
   output in the browser; a blocked gate feeds its reason back and the model
@@ -25,6 +31,7 @@ deterministic gates so it physically cannot ship a dangerous change.
 | `/` | static | The whole site. Single page. |
 | `/api/agent` | Worker | POST. Runs one agent attempt. |
 | `/api/models` | Worker | GET. Reports the discovered free-model chain and limiter status. |
+| `/api/guide` | Worker | POST. One guide question: runs the tool-calling loop, returns a section or a decline. |
 
 ## Locked decisions
 
@@ -50,11 +57,37 @@ deterministic gates so it physically cannot ship a dangerous change.
    browser on purpose - a visitor can read exactly what blocked them.
 8. **Degradation is announced, never faked.** With no key, past the rate limit, or
    with every model down, the panel says so and shows a labelled fixed example.
+9. **The guide routes; it never speaks.** It has exactly two tools -
+   `navigate_to_section` and `decline` - and no way to write prose. An earlier
+   design gave it an `answer` tool, and `scripts/probe-guide.mjs` caught every
+   free model inventing biography: a university Mark never attended, an employer
+   he never worked for. The models were told no facts about him, so they supplied
+   their own, fluently. A stricter prompt does not fix that, because a prompt is a
+   request; deleting the tool does. Arrival copy is written prose in
+   `src/lib/site-sections.ts` that points at the page rather than restating it, so
+   it cannot drift out of sync with what the visitor is looking at.
+10. **Section ids are an allowlist, checked at build.** The model picks from a Zod
+    enum built from `SECTION_IDS`, and `scripts/check-guide.mjs` fails the build if
+    any of those ids does not render in `page.tsx`. A destination that does not
+    exist is otherwise invisible until a visitor asks that exact question.
+11. **The entity is hand-authored SVG, not a marketplace asset.** It has to morph
+    into an ordinary card when it parks, re-tint with `--tint-hue`, and carry no
+    attribution credit on a site whose purpose is winning work. A Rive character
+    fails all three and costs a wasm runtime. Motion is `motion`'s shared-layout
+    transition; travel is Lenis with `smoothWheel` off, so normal page scrolling
+    is untouched.
+12. **`prefers-reduced-motion` skips the journey, never the destination.** Gate the
+    animation, never the element tree - branching the tree on `useReducedMotion`
+    makes server and client markup disagree and React discards the subtree.
 
 ## Non-goals
 
-- **No chatbot.** The model is an actor inside a pipeline, not a conversation
-  partner. A chat box would be generic and would demonstrate nothing.
+- **No Q&A chatbot.** Narrowed 2026-08-05, with Mark. Free-text input is fine;
+  what was rejected is a bot that *answers*. The model here is an actor inside a
+  pipeline - it decides where the visitor should be looking and the page does the
+  rest. It holds no facts about Mark and has no tool that can state one, so it
+  cannot become a conversation partner by drift. A chat box that replies in prose
+  would be generic and would demonstrate nothing.
 - **No self-scored capability charts.** Arbitrary self-assessment destroys
   credibility with the exact audience this site targets.
 - **No "available for hire" banner.** The site reads as a senior engineer's work,

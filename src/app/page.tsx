@@ -9,6 +9,7 @@ import ContactSection from "@/components/section/contact-section";
 import ProjectsSection from "@/components/section/projects-section";
 import WorkSection from "@/components/section/work-section";
 import Harness from "@/components/demo/harness";
+import AgentConsole from "@/components/demo/agent-console";
 import { ArrowUpRight } from "lucide-react";
 
 const BLUR_FADE_DELAY = 0.04;
@@ -46,6 +47,15 @@ export default function Page() {
             </BlurFade>
           </div>
         </div>
+      </section>
+      {/* Sits directly under the hero on purpose. The guide only works if a
+          visitor has already met it and stopped paying attention to it before
+          they ask it anything - meeting it for the first time at the bottom of
+          the page gives away that it is going to do something. */}
+      <section id="guide">
+        <BlurFade delay={BLUR_FADE_DELAY * 2}>
+          <AgentConsole />
+        </BlurFade>
       </section>
       <section id="about">
         <div className="flex min-h-0 flex-col gap-y-4">

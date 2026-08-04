@@ -28,6 +28,8 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText } from "ai";
 import { z } from "zod";
+import { handleGuide } from "./guide";
+import type { Env as GuideEnv } from "./models";
 
 export interface Env {
   ASSETS: Fetcher;
@@ -321,11 +323,14 @@ async function handleModels(env: Env): Promise<Response> {
   });
 }
 
-export default {
+const worker = {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
     if (url.pathname === "/api/agent") return handleAgent(req, env);
     if (url.pathname === "/api/models") return handleModels(env);
+    if (url.pathname === "/api/guide") return handleGuide(req, env as GuideEnv);
     return env.ASSETS.fetch(req);
   },
 };
+
+export default worker;

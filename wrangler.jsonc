@@ -14,6 +14,18 @@
   "kv_namespaces": [
     { "binding": "DEMO_KV", "id": "3624d59a2e724d34b883ea23181c7ec2" }
   ],
+  // Seeded, read-only demo data for the agent's tools. Nothing real lives here:
+  // it describes a company that does not exist. src/lib/sql-guard.ts refuses any
+  // statement that is not a single SELECT/WITH, so the agent cannot write to it
+  // regardless of what a visitor talks it into.
+  "d1_databases": [
+    {
+      "binding": "DEMO_DB",
+      "database_name": "mkb-site-demo",
+      "database_id": "57477ddc-8c63-4628-af5c-aea92014f195",
+      "migrations_dir": "migrations"
+    }
+  ],
   // Platform-native rate limiting, enforced at the edge before the Worker runs.
   // Period must be 10 or 60 seconds; this is burst protection, and the daily
   // spend ceiling is handled separately in KV because it is a different concern.

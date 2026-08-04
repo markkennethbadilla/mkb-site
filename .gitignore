@@ -38,3 +38,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .content-collections
+
+# cloudflare
+# Local miniflare state and bundles from `wrangler dev`. Regenerated on every run.
+.wrangler/
+# Worker secrets for local dev. Secrets live in the vault and are read by slug at
+# the point of use - see scripts/cf.mjs - so this file should never exist here.
+.dev.vars
