@@ -83,7 +83,12 @@ export default function RootLayout({
                 }}
               />
             </div>
-            <div className="relative z-10 max-w-2xl mx-auto py-12 pb-24 sm:py-24 px-6">
+            {/* ONE container width for the whole page. Previously this was
+                max-w-2xl and the demo broke out of it, so a single section
+                randomly spanned the viewport while everything else sat in a
+                thin ribbon - which read as a bug, not a layout. Everything now
+                shares this edge; prose constrains its own line length inside. */}
+            <div className="relative z-10 mx-auto w-full max-w-5xl px-6 py-12 pb-24 sm:py-24">
               {children}
             </div>
             <Navbar />

@@ -174,19 +174,23 @@ export default function Harness() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
+      {/* Full text, never truncated. These are the whole point of the demo - a
+          clipped "Add a debug endpoint that returns the server conf..." tells a
+          visitor nothing about what they are about to run. A responsive grid
+          gives each one room to wrap instead of fighting for one line. */}
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {INSTRUCTIONS.map((s, i) => (
           <button
             key={i}
             onClick={() => setInstruction(s)}
             className={cn(
-              "text-left text-xs rounded-lg border px-3 py-1.5 transition-colors max-w-full",
+              "h-full text-left text-xs leading-relaxed rounded-lg border px-3 py-2.5 transition-colors",
               s === instruction
                 ? "bg-foreground text-background border-foreground"
                 : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
             )}
           >
-            {s.length > 52 ? s.slice(0, 49) + "..." : s}
+            {s}
           </button>
         ))}
       </div>
@@ -248,12 +252,21 @@ export default function Harness() {
 
               <StatsBar stats={r.stats} model={r.model} cascade={r.cascade} />
 
-              <pre className="overflow-x-auto rounded-lg bg-muted/40 p-3 font-mono text-[11px] leading-relaxed">
-                {r.code}
-              </pre>
+              {/* Side by side once there is room: the proposed change and the
+                  reason it was rejected belong next to each other, not a scroll
+                  apart. Stacks below lg. */}
+              <div
+                className={cn(
+                  "grid gap-3",
+                  blocked.length > 0 && "lg:grid-cols-2 lg:items-start"
+                )}
+              >
+                <pre className="overflow-x-auto rounded-lg bg-muted/40 p-3 font-mono text-[11px] leading-relaxed">
+                  {r.code}
+                </pre>
 
-              {blocked.length > 0 && (
-                <div className="flex flex-col gap-2">
+                {blocked.length > 0 && (
+                  <div className="flex flex-col gap-2">
                   {blocked.map((b) => (
                     <div
                       key={b.id}
@@ -277,8 +290,9 @@ export default function Harness() {
                       </p>
                     </div>
                   ))}
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
             </motion.div>
           );
         })}

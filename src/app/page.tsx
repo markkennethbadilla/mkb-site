@@ -16,8 +16,12 @@ const BLUR_FADE_DELAY = 0.04;
 export default function Page() {
   return (
     <main className="min-h-dvh flex flex-col gap-14 relative">
+      {/* Prose sections keep their own comfortable measure inside the wider
+          container, rather than stretching text to 80rem where it becomes
+          unreadable. The container edge stays constant; only the text column
+          is narrow. */}
       <section id="hero">
-        <div className="mx-auto w-full max-w-2xl space-y-8">
+        <div className="w-full max-w-3xl space-y-8">
           <div className="gap-2 gap-y-6 flex flex-col md:flex-row justify-between">
             <div className="gap-2 flex flex-col order-2 md:order-1">
               <BlurFadeText
@@ -47,7 +51,7 @@ export default function Page() {
             <h2 className="text-xl font-bold">About</h2>
           </BlurFade>
           <BlurFade delay={BLUR_FADE_DELAY * 4}>
-            <div className="prose max-w-full text-pretty font-sans leading-relaxed text-muted-foreground dark:prose-invert">
+            <div className="prose max-w-3xl text-pretty font-sans leading-relaxed text-muted-foreground dark:prose-invert">
               <Markdown>
                 {DATA.summary}
               </Markdown>
@@ -132,7 +136,7 @@ export default function Page() {
       </section>
       <section id="harness">
         <BlurFade delay={BLUR_FADE_DELAY * 10.5}>
-          <div className="rounded-xl border border-border p-6 md:p-8">
+          <div className="rounded-xl border border-border bg-card/40 p-5 sm:p-6 md:p-8">
             <Harness />
           </div>
         </BlurFade>

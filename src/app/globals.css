@@ -42,26 +42,34 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/*
+ * The palette is neutral with a deliberate green cast. Every surface carries a
+ * small chroma at ONE hue, so the whole theme re-tints by changing --tint-hue
+ * and nothing else. Chroma stays low (0.008-0.02) on surfaces: enough that the
+ * greys read green rather than dead, not so much that text contrast suffers.
+ * Only the accent and ring carry real saturation.
+ */
 :root {
+  --tint-hue: 158;
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: oklch(0.993 0.008 var(--tint-hue));
+  --foreground: oklch(0.16 0.018 var(--tint-hue));
+  --card: oklch(1 0.005 var(--tint-hue));
+  --card-foreground: oklch(0.16 0.018 var(--tint-hue));
+  --popover: oklch(1 0.005 var(--tint-hue));
+  --popover-foreground: oklch(0.16 0.018 var(--tint-hue));
+  --primary: oklch(0.34 0.075 var(--tint-hue));
+  --primary-foreground: oklch(0.985 0.01 var(--tint-hue));
+  --secondary: oklch(0.962 0.014 var(--tint-hue));
+  --secondary-foreground: oklch(0.24 0.04 var(--tint-hue));
+  --muted: oklch(0.962 0.014 var(--tint-hue));
+  --muted-foreground: oklch(0.53 0.03 var(--tint-hue));
+  --accent: oklch(0.95 0.028 var(--tint-hue));
+  --accent-foreground: oklch(0.24 0.05 var(--tint-hue));
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: oklch(0.9 0.018 var(--tint-hue));
+  --input: oklch(0.9 0.018 var(--tint-hue));
+  --ring: oklch(0.62 0.11 var(--tint-hue));
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -78,24 +86,26 @@
 }
 
 .dark {
-  --background: oklch(0.18 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* Same hue, carried through the dark surfaces. A dark theme shows a cast more
+     readily than a light one, so chroma here stays a touch lower. */
+  --background: oklch(0.175 0.014 var(--tint-hue));
+  --foreground: oklch(0.975 0.008 var(--tint-hue));
+  --card: oklch(0.208 0.016 var(--tint-hue));
+  --card-foreground: oklch(0.975 0.008 var(--tint-hue));
+  --popover: oklch(0.208 0.016 var(--tint-hue));
+  --popover-foreground: oklch(0.975 0.008 var(--tint-hue));
+  --primary: oklch(0.9 0.035 var(--tint-hue));
+  --primary-foreground: oklch(0.2 0.03 var(--tint-hue));
+  --secondary: oklch(0.272 0.018 var(--tint-hue));
+  --secondary-foreground: oklch(0.975 0.008 var(--tint-hue));
+  --muted: oklch(0.272 0.018 var(--tint-hue));
+  --muted-foreground: oklch(0.715 0.025 var(--tint-hue));
+  --accent: oklch(0.29 0.03 var(--tint-hue));
+  --accent-foreground: oklch(0.975 0.008 var(--tint-hue));
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --border: oklch(0.8 0.06 var(--tint-hue) / 14%);
+  --input: oklch(0.8 0.06 var(--tint-hue) / 18%);
+  --ring: oklch(0.64 0.1 var(--tint-hue));
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -114,6 +124,22 @@
 @layer base {
   * {
     @apply border-border;
+  }
+
+  /* Tailwind Typography derives link colour from the prose body colour, which
+     here is muted-foreground - so links inside prose came out lighter than the
+     text around them and effectively disappeared against the tinted background.
+     Anchor them to the real foreground and give the underline enough weight to
+     read as a link without relying on colour alone. */
+  .prose :where(a):not(:where([class~="not-prose"] *)) {
+    color: var(--foreground);
+    text-decoration-color: color-mix(in oklch, var(--foreground) 45%, transparent);
+    text-underline-offset: 3px;
+    font-weight: 500;
+  }
+
+  .prose :where(a):hover:not(:where([class~="not-prose"] *)) {
+    text-decoration-color: var(--foreground);
   }
 
   body {
