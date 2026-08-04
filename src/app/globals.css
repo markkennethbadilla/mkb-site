@@ -50,6 +50,10 @@
  * Only the accent and ring carry real saturation.
  */
 :root {
+  /* Tells the browser this document supplies both themes itself, so native UI
+     (form controls, scrollbars) matches and extensions have no reason to
+     re-tint. Paired with the darkreader-lock meta in layout.tsx. */
+  color-scheme: light dark;
   --tint-hue: 158;
   --radius: 0.625rem;
   --background: oklch(0.993 0.008 var(--tint-hue));
