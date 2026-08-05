@@ -129,6 +129,21 @@ export default function AgentConsole() {
         </div>
 
         <div className="flex flex-col gap-1 min-w-0">
+          {/* FRAMED, because an unlabelled chat box is read as a widget.
+              This is the strongest single piece of evidence on the page - a real
+              tool-calling loop with a model cascade, a similarity cache, schema-
+              validated output and a grounding check - and a visitor who does not
+              know that scrolls past it looking for the portfolio. One short label
+              is the difference between "another AI chatbot" and "the thing he is
+              claiming he can build, running".
+
+              It stays one line. The mechanics are already proven underneath by the
+              run line, which prints the model or cache hit, the latency and the
+              grounding verdict on every answer; repeating them up here would be
+              claiming in prose what is demonstrated in fact four inches below. */}
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+            Live agent, built for this site
+          </span>
           <h3 className="text-lg font-bold tracking-tight">Ask about Mark</h3>
           {/* Both lines used to assert something the guide does not always do.
               "Working out where that lives" claims it is looking for a place on
@@ -194,6 +209,19 @@ export default function AgentConsole() {
           {busy ? "..." : "Ask"}
         </button>
       </form>
+
+      {/* The source link belongs here rather than in the heading. Anyone who wants
+          it wants it AFTER pressing the thing, not before - and putting it up top
+          would compete with the invitation, which is the one job the heading has.
+          It sits under the input, quiet, where the run line will appear beside it. */}
+      <a
+        href="https://github.com/markkennethbadilla/mkb-site/blob/main/worker/guide.ts"
+        target="_blank"
+        rel="noreferrer noopener"
+        className="self-start font-mono text-[10px] text-muted-foreground/70 underline decoration-border underline-offset-4 transition-colors hover:text-foreground"
+      >
+        read the loop that answers you
+      </a>
 
       <AnimatePresence>
         {inPlace && (
