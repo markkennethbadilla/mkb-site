@@ -79,7 +79,7 @@ export const SECTIONS: SiteSection[] = [
     label: "Skills",
     summary: "The languages, frameworks and infrastructure he works in.",
     bubble:
-      "This is the honest list: what he actually works in, not everything he has ever touched.",
+      "This is the honest list. What he actually works in, not everything he has ever touched.",
   },
   {
     id: "projects",

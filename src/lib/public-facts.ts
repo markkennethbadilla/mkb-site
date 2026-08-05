@@ -82,7 +82,7 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "what-he-does",
-    text: "His speciality is agentic engineering: building the harness around LLM agents - gated codebases, deterministic guardrails and verification - so an agent can ship production code without breaking things. He describes the interesting problem as not getting an LLM to write code, but building the system where the code it writes can be trusted.",
+    text: "His speciality is agentic engineering. He builds the harness around LLM agents, meaning gated codebases, deterministic guardrails and verification, so an agent can ship production code without breaking things. He describes the interesting problem as not getting an LLM to write code, but building the system where the code it writes can be trusted.",
     terms: ["LLM", "AI"],
   },
   {
@@ -152,7 +152,7 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "ops-platform",
-    text: "The biggest thing he has built is an internal operations platform in Next.js and PostgreSQL, put together in ten weeks: a permission grid, multi-step approval flows, additive-only migrations, and its own gate suite chained into the build.",
+    text: "The biggest thing he has built is an internal operations platform in Next.js and PostgreSQL, put together in ten weeks, with a permission grid, multi-step approval flows, additive-only migrations, and its own gate suite chained into the build.",
     terms: ["Next.js", "Next", "PostgreSQL", "Postgres"],
     figures: [{ value: "10", near: ["weeks", "week"] }],
   },
@@ -178,7 +178,7 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "agent-fleet",
-    text: "He built a self-installing desktop AI-agent kit for non-technical staff on Windows and macOS, with a real control plane behind it: pairing-code enrollment, per-device revocable tokens, a kill switch, and a fleet-wide forced update that lands within 15 minutes.",
+    text: "He built a self-installing desktop AI-agent kit for non-technical staff on Windows and macOS, with a real control plane behind it. That covers pairing-code enrollment, per-device revocable tokens, a kill switch, and a fleet-wide forced update that lands within 15 minutes.",
     terms: ["AI", "Windows", "macOS"],
     figures: [{ value: "15", near: ["minutes", "minute"] }],
   },
@@ -194,7 +194,7 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "range",
-    text: "In one role he has covered the ground of a small team at once: business analyst, data engineer, AI engineer, full-stack developer and infrastructure engineer. His reasoning is that diagnosing an inefficiency is only half the job if you cannot ship the fix yourself.",
+    text: "In one role he has covered the ground of a small team at once, working as business analyst, data engineer, AI engineer, full-stack developer and infrastructure engineer. His reasoning is that diagnosing an inefficiency is only half the job if you cannot ship the fix yourself.",
     terms: ["AI"],
   },
   {
@@ -228,7 +228,11 @@ export const PUBLIC_FACTS: PublicFact[] = [
   // on the other end, and none of them is anything he would mind a stranger knowing.
   {
     id: "pets",
-    text: "He has pets: two cats and two chickens.",
+    // "pets" has to stay in the sentence. The suggestion chip is "Does he have any
+    // pets?" and check-guide.mjs asserts every chip shares a word with the corpus,
+    // so dropping it while removing a colon quietly broke the chip - which the gate
+    // caught immediately.
+    text: "His pets are two cats and two chickens.",
     terms: [],
   },
   {

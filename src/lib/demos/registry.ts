@@ -99,7 +99,7 @@ export const ROOMS: DemoRoom[] = [
       real:
         "Twelve separate HTTP requests, each running a real transaction against a real SQLite database. What races is the read-then-write gap in the application - D1 serialises writes per database, so the bug is at the layer where this bug actually happens in production, not in the engine.",
       staged:
-        "The company, the accounts and the amounts are invented. The unsafe path injects the gap deliberately: it reads a balance, awaits, then writes the sum it computed, which is the shape the bug takes in real code.",
+        "The company, the accounts and the amounts are invented. The unsafe path injects the gap deliberately. It reads a balance, awaits, then writes the sum it computed, which is the shape the bug takes in real code.",
       notProved:
         "Not that the safe path would hold at a real company's size. This is a dozen requests against a free database, not a payments system under load.",
     },
@@ -129,11 +129,11 @@ export const ROOMS: DemoRoom[] = [
       real:
         "A real model call to a real inference endpoint, and real SQL against the same database the questions are about. The verdict is computed at the verifier layer by comparing the model's stated answer to the query result - the model never grades itself, and never sees the verifying SQL.",
       staged:
-        "The warehouse is invented seed data. Nothing here is rigged to fail: the only difference between the two runs is that one of them withholds the query tool, and the model is not told what confidence to give either way.",
+        "The warehouse is invented seed data. Nothing here is rigged to fail. The only difference between the two runs is that one of them withholds the query tool, and the model is not told what confidence to give either way.",
       notProved:
         "Not that the model is dishonest. It shows the distance between a stated confidence and a checkable result, which is a different and smaller claim. Six questions is an illustration, not a rate.",
     },
-    injectionPoint: "the only difference between the two runs is that one of them withholds the query tool",
+    injectionPoint: "only difference between the two runs is that one of them withholds the query tool",
     hue: 235,
     motion: "measured",
     requestsPerRun: 1,

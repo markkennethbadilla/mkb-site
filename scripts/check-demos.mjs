@@ -253,5 +253,26 @@ check(
   "The gallery must render from OPEN_ROOMS, or a new room can exist with no way in and no way to notice."
 );
 
+// --- The export shape ------------------------------------------------------
+//
+// A route that is both a page and a parent of other pages used to be written as
+// BOTH `out/<name>.html` and a directory `out/<name>/`. Cloudflare Assets resolves
+// the directory, finds no index inside it, and returns 404 - for a page that built
+// correctly, uploaded correctly, and is sitting right there. It cost two rounds of
+// debugging: /demos first, then /resume, and both times every other signal was
+// green. `trailingSlash: true` removes the ambiguity by writing
+// `out/<name>/index.html` and nothing else.
+//
+// This asserts the config rather than the output, because the gate has to run
+// before a build as well as after one, and the config is what decides it.
+{
+  const nextConfig = read("next.config.mjs");
+  check(
+    "the export cannot emit a page and a directory under one name",
+    /trailingSlash:\s*true/.test(nextConfig),
+    "next.config.mjs does not set trailingSlash: true. Without it a route that has children is written as both <name>.html and <name>/, and Assets serves the directory - so the page 404s in production while building and deploying without a single warning."
+  );
+}
+
 console.log(failures.length ? `\n${failures.length} failed\n` : `\nall checks passed\n`);
 process.exit(failures.length ? 1 : 0);
