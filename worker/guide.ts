@@ -77,7 +77,7 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
 
   const [overBudget, cached] = await Promise.all([
     reserve(env, "guide", ip, 1),
-    parsed.success ? lookup(env.DEMO_KV, parsed.data.question) : Promise.resolve(null),
+    parsed.success ? lookup(env.DEMO_DB, parsed.data.question) : Promise.resolve(null),
   ]);
 
   if (overBudget) return json(degraded(`rate-limited:${overBudget.reason}`, overBudget.detail));
@@ -174,7 +174,7 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
       // outage in place for a week, and an ungrounded one would make a single bad
       // answer permanent - so neither is stored.
       if (decision.answer || decision.declined) {
-        await remember(env.DEMO_KV, parsed.data.question, {
+        await remember(env.DEMO_DB, parsed.data.question, {
           section: decision.declined ? null : decision.section,
           answer,
           declined: decision.declined,

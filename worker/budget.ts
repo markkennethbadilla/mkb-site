@@ -2,47 +2,62 @@
  * The bound that stops one page taking the whole site down for a day.
  *
  * Cloudflare Workers Free is 100,000 requests per day for the ENTIRE Worker,
- * resetting at midnight UTC. Every /api/* route on this site draws from that one
- * number. So a demo that fires 25 requests per visitor click is not just spending
- * its own budget - it is spending the site guide's, and when it runs out the
- * guide stops answering until tomorrow.
+ * resetting at midnight UTC. Every /api/* route draws from that one number, so a
+ * demo firing a fan-out per click spends the site guide's budget as well as its
+ * own, and when it runs out the guide stops answering until tomorrow. That is
+ * structural rather than any one demo's fault, so it is solved once here.
  *
- * That is a structural problem, not a problem with any particular demo, so it is
- * solved once here rather than per feature. The shape:
+ *   1. SEPARATE POOLS. Guide and demos count against different rows. Demos cannot
+ *      consume the guide's allocation because they never touch its row. Exhausting
+ *      the demo pool degrades demos and leaves the centrepiece working, which is
+ *      the correct thing to sacrifice first.
+ *   2. A PER-IP DAILY CAP, so one visitor cannot spend the shared pool.
+ *   3. AN EDGE LIMITER, the only control enforced BEFORE a request is billed,
+ *      which makes it the one that actually stops a loop rather than counting it.
  *
- *   1. SEPARATE POOLS. The guide and the demos count against different daily
- *      counters. Demos cannot consume the guide's allocation because they never
- *      touch its counter. Exhausting the demo pool degrades demos and leaves the
- *      centrepiece working - which is the correct thing to sacrifice first.
- *   2. A PER-IP DAILY CAP. One visitor cannot spend the shared pool, whatever
- *      they do with a console.
- *   3. AN EDGE LIMITER SIZED FOR REAL FAN-OUT. A demo that legitimately fires ~16
- *      requests in one burst cannot use the guide's 6/60s limiter, so it gets its
- *      own with a ceiling above real use and far below abuse. This is the only
- *      control enforced BEFORE the request is billed, which makes it the one that
- *      actually stops a loop.
+ * COUNTERS LIVE IN D1, NOT KV, AND THAT IS A CORRECTION.
  *
- * Reserve-then-spend, not increment-per-request: a burst that is going to blow the
- * ceiling is refused before it starts, rather than halfway through a run the
- * visitor is already watching.
+ * The first version used KV and was wrong twice over. Workers KV Free allows
+ * 1,000 WRITES per day; this function did two writes per request while declaring
+ * pools of 12,000 and 20,000 - 64,000 writes against a 1,000 allowance. Past that
+ * point put() stops succeeding, every counter freezes at its last value, and the
+ * budget silently stops budgeting. Guide and demos shared one namespace, so the
+ * mechanism built to protect the centrepiece would have been what took it down.
  *
- * Honest limitation, stated because the alternative is pretending otherwise: KV is
- * eventually consistent, so a determined attacker racing many requests inside the
- * propagation window can overshoot a KV counter. The edge limiter is the control
- * that holds under that, and it is the one enforced before billing. The KV pools
- * are a spend ceiling for ordinary traffic, not an adversarial guarantee.
+ * KV was also the wrong shape for a counter. Reading a value, adding one, and
+ * writing it back means several concurrent invocations all read the same number
+ * and all write the same increment, so a burst of ten can count as one. That is a
+ * lost update - precisely the bug the ledger demo exists to demonstrate, sitting
+ * in the code that guards it.
+ *
+ * D1 answers both: 100,000 writes a day, and `INSERT ... ON CONFLICT DO UPDATE SET
+ * n = n + 1 RETURNING n` is one atomic statement that hands back the value it just
+ * produced. Nothing is read and written separately, so nothing can be lost.
+ *
+ * Counting happens BEFORE the check, so a refused request still increments. That
+ * over-counts a visitor who is already being refused, which is the safe direction:
+ * the alternative is a check-then-increment gap, and that gap is the whole bug.
  */
 
 export type Pool = "guide" | "demo";
 
 /**
- * Daily request allocations. They deliberately sum to well under the 100,000
- * platform cap: page loads, assets and anything not routed through here also draw
- * on it, and a budget that assumes it owns the whole quota is not a budget.
+ * Daily request allocations, sized against the real ceiling rather than a round
+ * number that felt generous.
+ *
+ * The binding constraint is D1 writes, not Workers requests. Each reserve costs
+ * two rows written (the visitor's counter and the pool's), so these totals imply
+ * (5,000 + 10,000) x 2 = 30,000 writes a day. D1 Free allows 100,000, and the
+ * ledger demo writes its own arena rows on top, so this leaves roughly two thirds
+ * of the allowance for the demos' actual work.
+ *
+ * The previous numbers - 12,000 and 20,000 - were written against KV without
+ * checking KV's write ceiling, which is 1,000 a day. They implied 64 times the
+ * available budget.
  */
 const DAILY_LIMIT: Record<Pool, number> = {
-  guide: 12_000,
-  demo: 20_000,
+  guide: 5_000,
+  demo: 10_000,
 };
 
 /** One visitor's share, per pool, per day. */
@@ -61,10 +76,10 @@ export type BudgetRefusal = {
 };
 
 export interface BudgetEnv {
-  DEMO_KV: KVNamespace;
-  /** 6 req/60s. Correct for the guide; far too tight for a demo's fan-out. */
+  DEMO_DB?: D1Database;
+  /** 6 req/60s per IP. Right for the guide and for starting a demo run. */
   BURST_LIMITER?: { limit: (o: { key: string }) => Promise<{ success: boolean }> };
-  /** Higher ceiling, for endpoints a single visitor legitimately calls in a burst. */
+  /** 60/60s, for the shards of one already-authorised run. */
   DEMO_LIMITER?: { limit: (o: { key: string }) => Promise<{ success: boolean }> };
 }
 
@@ -97,30 +112,49 @@ export async function reserve(
     }
   }
 
+  // No database in local dev means no accounting. Refusing every request when the
+  // binding is absent would make `wrangler dev` useless; the edge limiter above is
+  // still in force, and production always has D1.
+  if (!env.DEMO_DB) return null;
+
   const day = today();
-  const ipKey = `budget:ip:${pool}:${day}:${ip}`;
-  const poolKey = `budget:pool:${pool}:${day}`;
 
-  // Both counters are read TOGETHER. The first version awaited them one after the
-  // other, and measured against the live site that serialisation cost about a
-  // second and a half per request - on a cached answer, which does no thinking at
-  // all, the whole response was ~2.1s while a static asset from the same machine
-  // round-trips in 190ms. Nearly all of that was this function queueing KV reads.
-  const [ipRaw, poolRaw] = await Promise.all([
-    env.DEMO_KV.get(ipKey),
-    env.DEMO_KV.get(poolKey),
-  ]);
+  // One statement per counter, each atomic, both in a single round trip. The
+  // RETURNING clause hands back the post-increment value, so there is no separate
+  // read to go stale between checking and writing.
+  const bump = (key: string) =>
+    env.DEMO_DB!.prepare(
+      `INSERT INTO budget_counters (day, scope, key, n) VALUES (?1, ?2, ?3, ?4)
+       ON CONFLICT (day, scope, key) DO UPDATE SET n = n + ?4
+       RETURNING n`
+    ).bind(day, pool, key, cost);
 
-  const ipSpent = Number(ipRaw ?? 0);
-  if (ipSpent + cost > DAILY_PER_IP[pool]) {
+  let ipSpent = 0;
+  let poolSpent = 0;
+  try {
+    const [ipRow, poolRow] = await env.DEMO_DB.batch<{ n: number }>([
+      bump(`ip:${ip}`),
+      bump("pool"),
+    ]);
+    ipSpent = ipRow.results?.[0]?.n ?? 0;
+    poolSpent = poolRow.results?.[0]?.n ?? 0;
+  } catch (e) {
+    // Naming the cause matters more here than anywhere: a budget that fails open
+    // silently is indistinguishable from one that is working.
+    return {
+      reason: "pool-exhausted",
+      detail: `The request budget could not be read (${String(e).slice(0, 80)}), so this is being refused rather than run unaccounted.`,
+    };
+  }
+
+  if (ipSpent > DAILY_PER_IP[pool]) {
     return {
       reason: "ip-daily-cap",
       detail: `You have used your share of today's ${pool} budget on this site. It resets at midnight UTC.`,
     };
   }
 
-  const poolSpent = Number(poolRaw ?? 0);
-  if (poolSpent + cost > DAILY_LIMIT[pool]) {
+  if (poolSpent > DAILY_LIMIT[pool]) {
     return {
       reason: "pool-exhausted",
       detail:
@@ -130,28 +164,32 @@ export async function reserve(
     };
   }
 
-  // Written after both checks so a refusal costs nothing, and written in parallel
-  // for the same reason as the reads. expirationTtl is 26 hours: comfortably past
-  // the UTC reset, so yesterday's counters clean themselves up rather than
-  // accumulating a key per day forever.
-  await Promise.all([
-    env.DEMO_KV.put(ipKey, String(ipSpent + cost), { expirationTtl: 93_600 }),
-    env.DEMO_KV.put(poolKey, String(poolSpent + cost), { expirationTtl: 93_600 }),
-  ]);
   return null;
 }
 
 /** Current spend, for a status endpoint. Read-only, never reserves. */
 export async function budgetStatus(env: BudgetEnv): Promise<Record<string, number>> {
-  const day = today();
-  const [guide, demo] = await Promise.all([
-    env.DEMO_KV.get(`budget:pool:guide:${day}`),
-    env.DEMO_KV.get(`budget:pool:demo:${day}`),
-  ]);
-  return {
-    guideSpent: Number(guide ?? 0),
+  const base = {
+    guideSpent: 0,
     guideLimit: DAILY_LIMIT.guide,
-    demoSpent: Number(demo ?? 0),
+    demoSpent: 0,
     demoLimit: DAILY_LIMIT.demo,
   };
+  if (!env.DEMO_DB) return base;
+
+  try {
+    const { results } = await env.DEMO_DB.prepare(
+      `SELECT scope, n FROM budget_counters WHERE day = ?1 AND key = 'pool'`
+    )
+      .bind(today())
+      .all<{ scope: string; n: number }>();
+    for (const r of results ?? []) {
+      if (r.scope === "guide") base.guideSpent = r.n;
+      if (r.scope === "demo") base.demoSpent = r.n;
+    }
+  } catch {
+    // A status read that fails is not worth failing a request over; the numbers
+    // simply read zero and the endpoint stays up.
+  }
+  return base;
 }

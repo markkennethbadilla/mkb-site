@@ -23,10 +23,13 @@
  * ungrounded one would make a single bad answer permanent.
  */
 
-const CACHE_PREFIX = "guide:qa:v1";
-const CACHE_TTL = 60 * 60 * 24 * 7;
-/** How many past questions to compare against. Small: this is a portfolio. */
+/**
+ * How many past questions to score against. Small on purpose: this is a portfolio
+ * with a narrow question space, and the whole set is compared in memory.
+ */
 const INDEX_SIZE = 60;
+/** Entries older than this are ignored and swept. */
+const CACHE_TTL_DAYS = 7;
 /**
  * Jaccard overlap needed to call two questions the same. Tuned on the real pairs
  * below: 0.5 merges "where did he study" with "where did he go to school", and
@@ -125,54 +128,86 @@ export type CachedAnswer = {
   grounded: boolean;
 };
 
-type IndexEntry = { key: string; tokens: string[] };
+type CacheRow = { token_key: string; tokens: string; payload: string };
 
 /**
  * Looks for a question close enough to one already answered. Returns the cached
  * answer plus how it was matched, so the response can say so honestly rather than
- * pretending a model just ran.
+ * passing it off as a fresh run.
  */
 export async function lookup(
-  kv: KVNamespace,
+  db: D1Database | undefined,
   question: string
 ): Promise<{ hit: CachedAnswer; matched: string; score: number } | null> {
   const tokens = tokenise(question);
-  if (!tokens.length) return null;
+  if (!tokens.length || !db) return null;
 
-  const index = ((await kv.get(`${CACHE_PREFIX}:index`, "json")) ?? []) as IndexEntry[];
+  let rows: CacheRow[] = [];
+  try {
+    const res = await db
+      .prepare(
+        `SELECT token_key, tokens, payload FROM guide_cache
+         WHERE created_at > datetime('now', ?1)
+         ORDER BY created_at DESC LIMIT ?2`
+      )
+      .bind(`-${CACHE_TTL_DAYS} days`, INDEX_SIZE)
+      .all<CacheRow>();
+    rows = res.results ?? [];
+  } catch {
+    // A cache that cannot be read is a slow guide, not a broken one.
+    return null;
+  }
 
-  let best: { entry: IndexEntry; score: number } | null = null;
-  for (const entry of index) {
-    const score = similarity(tokens, entry.tokens);
-    if (score >= HIT_THRESHOLD && (!best || score > best.score)) best = { entry, score };
+  let best: { row: CacheRow; score: number } | null = null;
+  for (const row of rows) {
+    const score = similarity(tokens, row.tokens.split(" "));
+    if (score >= HIT_THRESHOLD && (!best || score > best.score)) best = { row, score };
   }
   if (!best) return null;
 
-  const stored = (await kv.get(`${CACHE_PREFIX}:a:${best.entry.key}`, "json")) as CachedAnswer | null;
-  if (!stored) return null;
-
-  return { hit: stored, matched: best.entry.key, score: Number(best.score.toFixed(3)) };
+  try {
+    return {
+      hit: JSON.parse(best.row.payload) as CachedAnswer,
+      matched: best.row.token_key,
+      score: Number(best.score.toFixed(3)),
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Stores a successful run. Keyed by the normalised token string, so the same
- * question in different words collapses onto one entry rather than growing the
- * index forever.
+ * Stores a successful run, keyed by the normalised token string so the same
+ * question in different words collapses onto one row rather than growing the
+ * table forever.
+ *
+ * One upsert, not the two KV writes this used to cost. KV Free allows 1,000
+ * writes a day across the whole namespace, which the budget counters were already
+ * consuming; two more per uncached answer put the guide within a few hundred
+ * questions of silently losing both its cache and its spend ceiling on the same
+ * day.
  */
 export async function remember(
-  kv: KVNamespace,
+  db: D1Database | undefined,
   question: string,
   value: CachedAnswer
 ): Promise<void> {
   const tokens = tokenise(question);
-  if (!tokens.length) return;
+  if (!tokens.length || !db) return;
   const key = tokens.join("-").slice(0, 200);
 
-  await kv.put(`${CACHE_PREFIX}:a:${key}`, JSON.stringify(value), { expirationTtl: CACHE_TTL });
-
-  const index = ((await kv.get(`${CACHE_PREFIX}:index`, "json")) ?? []) as IndexEntry[];
-  const next = [{ key, tokens }, ...index.filter((e) => e.key !== key)].slice(0, INDEX_SIZE);
-  await kv.put(`${CACHE_PREFIX}:index`, JSON.stringify(next), { expirationTtl: CACHE_TTL });
+  try {
+    await db
+      .prepare(
+        `INSERT INTO guide_cache (token_key, tokens, payload, created_at)
+         VALUES (?1, ?2, ?3, datetime('now'))
+         ON CONFLICT (token_key) DO UPDATE SET payload = ?3, created_at = datetime('now')`
+      )
+      .bind(key, tokens.join(" "), JSON.stringify(value))
+      .run();
+  } catch {
+    // Failing to cache is not worth failing the answer the visitor already has.
+  }
 }
 
 /**
