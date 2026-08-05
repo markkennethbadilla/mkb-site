@@ -29,6 +29,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText } from "ai";
 import { z } from "zod";
 import { handleGuide } from "./guide";
+import { budgetStatus, type BudgetEnv } from "./budget";
 import type { Env as GuideEnv } from "./models";
 
 export interface Env {
@@ -314,12 +315,18 @@ async function handleAgent(req: Request, env: Env): Promise<Response> {
 
 async function handleModels(env: Env): Promise<Response> {
   const free = await discoverFreeModels(env);
+  // Budget is reported here rather than hidden: the site's argument is that limits
+  // should be visible, and a reader can see exactly how much of today's free tier
+  // is gone and which pool spent it.
+  const budget = await budgetStatus(env as unknown as BudgetEnv);
   return json({
     discoveredFree: free.slice(0, FREE_ATTEMPTS),
     totalFreeSeen: free.length,
     finalFallback: FINAL_FALLBACK,
     hasKey: Boolean(env.OPENROUTER_API_KEY),
     burstLimiter: Boolean(env.BURST_LIMITER),
+    demoLimiter: Boolean(env.DEMO_LIMITER),
+    budget,
   });
 }
 

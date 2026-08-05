@@ -40,6 +40,20 @@
       "name": "BURST_LIMITER",
       "namespace_id": "1001",
       "simple": { "limit": 6, "period": 60 }
+    },
+    // A second limiter, because the first one is the wrong shape for a demo.
+    //
+    // The guide is one request per question, so 6/60s per IP is right. A demo
+    // fires its whole fan-out from one click, so the same limiter would refuse
+    // legitimate use on the first try. This one is keyed by RUN id rather than by
+    // IP: a run has a known finite number of shards, so a ceiling above real use
+    // still refuses a loop, and it is enforced at the edge - before the request is
+    // billed against the daily 100k, which is the only place a flood can actually
+    // be stopped rather than merely counted.
+    {
+      "name": "DEMO_LIMITER",
+      "namespace_id": "1002",
+      "simple": { "limit": 60, "period": 60 }
     }
   ],
   "observability": { "enabled": true },

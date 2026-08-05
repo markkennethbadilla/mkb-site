@@ -22,6 +22,7 @@ import { FACTS_BRIEF } from "../src/lib/public-facts";
 const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 import { buildToolbox, type GuideDecision } from "./guide-tools";
 import { lookup, remember } from "./cache";
+import { reserve } from "./budget";
 import {
   discoverFreeModels,
   json,
@@ -47,11 +48,21 @@ const GuideRequest = z.object({
 export async function handleGuide(req: Request, env: Env): Promise<Response> {
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
 
+  const startedAll = Date.now();
+  const ip = req.headers.get("cf-connecting-ip") ?? "unknown";
+
+  // The REQUEST budget is reserved before anything else, including the key check.
+  // A request costs a Worker request whether or not it can do any work, and
+  // bounding Worker requests is the whole point - charging only the requests that
+  // succeed would leave a loop against a misconfigured endpoint free.
+  const overBudget = await reserve(env, "guide", ip, 1);
+  if (overBudget) return json(degraded(`rate-limited:${overBudget.reason}`, overBudget.detail));
+
   const key = env.OPENROUTER_API_KEY;
   if (!key) return json(degraded("no-key"));
 
-  const startedAll = Date.now();
-  const ip = req.headers.get("cf-connecting-ip") ?? "unknown";
+  // Inference spend is a separate ceiling, reserved only once there is a key and
+  // model calls are actually going to happen.
   const refused = await refuseForQuota(env, ip, MAX_STEPS);
   if (refused) return json(degraded(`rate-limited:${refused}`));
 
@@ -170,10 +181,10 @@ const OFF_TOPIC =
  * visitor - and Mark reading his own logs - can tell "no key configured" from
  * "every model is down" from "you are going too fast".
  */
-function degraded(reason: string) {
+function degraded(reason: string, detail?: string) {
   return {
     section: null,
-    answer: DEGRADED_COPY[reason] ?? `The guide is unavailable right now (${reason}).`,
+    answer: detail ?? DEGRADED_COPY[reason] ?? `The guide is unavailable right now (${reason}).`,
     declined: false,
     degraded: reason,
     steps: [],

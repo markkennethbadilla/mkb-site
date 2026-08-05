@@ -17,9 +17,13 @@ export interface Env {
   DEMO_KV: KVNamespace;
   DEMO_DB?: D1Database;
   OPENROUTER_API_KEY?: string;
-  /** Cloudflare native rate limiter. Absent in local dev; treated as open. */
+  /** Cloudflare native rate limiter, 6/60s. Absent in local dev; treated as open. */
   BURST_LIMITER?: { limit: (o: { key: string }) => Promise<{ success: boolean }> };
+  /** 60/60s, for endpoints a single click legitimately calls in a burst. */
+  DEMO_LIMITER?: { limit: (o: { key: string }) => Promise<{ success: boolean }> };
 }
+
+import { reserve } from "./budget";
 
 export const FINAL_FALLBACK = "deepseek/deepseek-v4-flash";
 export const MAX_ATTEMPTS = 3;
@@ -105,20 +109,28 @@ export async function discoverFreeModels(
 }
 
 /**
- * Two independent controls. Burst is the PLATFORM's limiter, enforced at the edge
- * before the Worker does any work. The daily cap is a spend ceiling, which is a
- * business rule rather than a rate limit, so it lives in KV.
+ * The guide's quota, which is now TWO different ceilings measuring two different
+ * scarce things:
  *
- * `calls` is how many model calls this request is allowed to make, reserved up
- * front. Reserving beats incrementing per call: a request that is going to blow
- * the ceiling should be refused before it starts, not halfway through a run the
- * visitor is already watching.
+ *   - MODEL CALLS, counted here. This is inference spend. One question can cost
+ *     several calls, so counting requests would let a handful of clicks drain the
+ *     day's free-tier inference.
+ *   - WORKER REQUESTS, counted in budget.ts against a pool reserved for the guide.
+ *     This is the platform's 100k/day, shared with every other route on the site.
+ *
+ * They are separate because they run out for different reasons. Before the pools
+ * existed, a demo firing its fan-out could exhaust the shared request quota and
+ * silently take the guide down with it; now the guide's allocation is its own and
+ * nothing else can spend it.
+ *
+ * Both reserve up front rather than incrementing per call: a request that is going
+ * to blow a ceiling should be refused before it starts, not halfway through a run
+ * the visitor is already watching.
  */
 export async function refuseForQuota(env: Env, ip: string, calls = 1): Promise<string | null> {
-  if (env.BURST_LIMITER) {
-    const { success } = await env.BURST_LIMITER.limit({ key: ip });
-    if (!success) return "burst";
-  }
+  const refused = await reserve(env, "guide", ip, 1);
+  if (refused) return refused.reason === "burst" ? "burst" : "daily-cap";
+
   const dayKey = `rl:calls:${new Date().toISOString().slice(0, 10)}`;
   const spent = Number((await env.DEMO_KV.get(dayKey)) ?? 0);
   if (spent + calls > DAILY_MODEL_CALLS) return "daily-cap";
