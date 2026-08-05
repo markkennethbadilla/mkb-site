@@ -82,7 +82,7 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "what-he-does",
-    text: "His speciality is agentic engineering. He builds the harness around LLM agents, meaning gated codebases, deterministic guardrails and verification, so an agent can ship production code without breaking things. He describes the interesting problem as not getting an LLM to write code, but building the system where the code it writes can be trusted.",
+    text: "He builds AI systems end to end, from the conversational interface down to the database, plus the integrations either side. What makes that his speciality rather than ordinary full-stack work is the harness he puts around it, meaning gated codebases, deterministic guardrails and verification, so an agent can ship production code without breaking things. He describes the interesting problem as not getting an LLM to write code, but building the system where the code it writes can be trusted.",
     terms: ["LLM", "AI"],
   },
   {

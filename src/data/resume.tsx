@@ -14,10 +14,24 @@ export const DATA = {
   url: "https://markkennethbadilla.com",
   location: "Cebu City, Philippines",
   locationLink: "https://www.google.com/maps/place/cebu+city",
+  // WIDENED 2026-08-05, and the reason is worth keeping.
+  //
+  // This used to read "I build the harness that lets LLM agents ship production
+  // code safely, and the systems that come out of it" - which puts the harness
+  // first and makes the systems sound like a byproduct. That is backwards. The
+  // systems ARE the work: conversational interfaces, admin dashboards, the APIs
+  // under them, the integrations either side. The harness is the distinctive way
+  // he makes them trustworthy, not the whole job.
+  //
+  // Getting that order wrong is expensive in one specific direction. It is a
+  // narrow, memorable line, and narrow-and-memorable filters out every role that
+  // is hiring for the thing he actually does all day. Leading with the systems and
+  // keeping the guardrails as the differentiator widens the funnel without giving
+  // up the sentence nobody else can write.
   description:
-    "AI Engineer. I build the harness that lets LLM agents ship production code safely, and the systems that come out of it.",
+    "AI Engineer. I build AI systems end to end, from the conversational interface down to the database, and the guardrails that make them trustworthy.",
   summary:
-    "I get the full potential out of LLMs not by prompting harder, but by building the harness around them. That means gated codebases, physical guardrails, and agentic workflows that let AI agents ship production systems fast without breaking them. In practice nothing ships unless it passes checks I wrote, more than 300 of them, wired into the build itself, so a bad change cannot be committed at all. One deploy pipeline runs every app I own and takes none of them offline to do it, backing up production and restoring it into a scratch database to diff the row counts before any migration runs. The infrastructure is self-hosted across three servers on three separate providers with no open ports on any of them, and I rehearse the recovery rather than diagramming it. Six live outage drills, including killing the main server outright, back to writing in 66 seconds. I cover the ground of a small team because diagnosing an inefficiency is only half the job if you cannot ship the fix yourself. Previously I built core systems for a multi-tenant ERP platform at Hatchit Solutions. [BS Information Technology, Magna Cum Laude](/#education).",
+    "I build AI systems end to end and the guardrails that keep them trustworthy. The product half is conversational interfaces, admin dashboards, the APIs underneath them, and the integrations that connect them to everything else. The other half is the harness, which is how I get the full potential out of LLMs without prompting harder. Gated codebases, physical guardrails, and agentic workflows that let AI agents ship production systems fast without breaking them. In practice nothing ships unless it passes checks I wrote, more than 300 of them, wired into the build itself, so a bad change cannot be committed at all. One deploy pipeline runs every app I own and takes none of them offline to do it, backing up production and restoring it into a scratch database to diff the row counts before any migration runs. The infrastructure is self-hosted across three servers on three separate providers with no open ports on any of them, and I rehearse the recovery rather than diagramming it. Six live outage drills, including killing the main server outright, back to writing in 66 seconds. I cover the ground of a small team because diagnosing an inefficiency is only half the job if you cannot ship the fix yourself. Previously I built core systems for a multi-tenant ERP platform at Hatchit Solutions. [BS Information Technology, Magna Cum Laude](/#education).",
   avatarUrl: "/me.png",
   skills: [
     { name: "Typescript", icon: Typescript },
