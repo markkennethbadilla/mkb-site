@@ -45,7 +45,7 @@ export default function SourceFooter({ room }: { room: DemoRoom }) {
         </Link>
       ) : (
         <Link
-          href="/demos"
+          href="/#projects"
           className="group block rounded-xl border border-border bg-card/50 p-5 transition-colors hover:border-foreground/25 hover:bg-card"
         >
           <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">

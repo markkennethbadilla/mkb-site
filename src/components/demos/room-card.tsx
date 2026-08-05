@@ -1,8 +1,8 @@
-"use client";
-
+// No "use client": with the session-flag write gone this renders the same on the
+// server as it does in the browser, and shipping it as a client component would
+// pull the whole gallery into the client bundle for nothing.
 import Link from "next/link";
 import type { DemoRoom } from "@/lib/demos/registry";
-import { CAME_FROM_GALLERY } from "@/components/demos/shell/rail";
 import { cn } from "@/lib/utils";
 
 /**
@@ -27,24 +27,11 @@ import { cn } from "@/lib/utils";
  * labelled "live" that then refuses is worse than no label. The room explains the
  * refusal on arrival, using the budget's own words, which is the honest place for it.
  *
- * Clicking sets a session flag rather than relying on the referrer: this is a
- * client-side route change, so `document.referrer` never updates and the room could
- * not otherwise tell a visitor who walked in from one who arrived cold.
  */
 export default function RoomCard({ room, featured }: { room: DemoRoom; featured?: boolean }) {
-  const remember = () => {
-    try {
-      sessionStorage.setItem(CAME_FROM_GALLERY, "1");
-    } catch {
-      // Private mode throws. The room then shows its cold-arrival label, which is
-      // never wrong, only less specific.
-    }
-  };
-
   return (
     <Link
       href={`/demos/${room.slug}`}
-      onClick={remember}
       style={{ "--tint-hue": room.hue } as React.CSSProperties}
       className={cn(
         "group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-5 transition-all",

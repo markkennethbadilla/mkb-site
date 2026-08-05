@@ -8,10 +8,10 @@
  *
  * Every line is public-facing by design. What is deliberately absent, and why:
  *
- * - **Age and date of birth.** He is targeting senior and lead roles at 1.5 years
- *   of experience. An age on the page hands a screener a reason to filter before
- *   reading the work, and in most of his target markets an employer cannot ask for
- *   it - volunteering it gives that protection away for nothing.
+ * - **Age and date of birth.** An age on a portfolio invites a judgement about the
+ *   work that has nothing to do with the work, and in most markets an employer
+ *   cannot ask for it at all - volunteering it gives that protection away for
+ *   nothing and buys the reader no information they can use.
  * - **Phone number and home address.** A public page is a spam surface; LinkedIn
  *   and email are the channels he actually wants used.
  * - **Health, family and finances.** Never, in any channel.

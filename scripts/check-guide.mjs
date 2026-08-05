@@ -123,7 +123,7 @@ check(
 check(
   "no fact leaks an age or date of birth",
   !PUBLIC_FACTS.some((f) => /\bage\b|born|birth|\b\d{1,2} years old\b/i.test(f.text)),
-  "Age was deliberately excluded: he targets senior roles at 1.5 years' experience, and an age invites pre-screening."
+  "Age was deliberately excluded: it invites a judgement about the work that has nothing to do with the work, and in most markets an employer cannot ask for it at all."
 );
 
 // Every multi-digit number a fact WRITES has to be a number that fact LICENSES.

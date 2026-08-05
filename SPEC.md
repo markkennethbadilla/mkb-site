@@ -16,9 +16,10 @@ deterministic gates so it physically cannot ship a dangerous change.
   animated entity perches beside the lit section with a written line about what
   you are looking at. "Ask something else" flies it home and it parks again. Off
   the topic of Mark or this page, it declines and stays put.
-- **Projects** (`/#projects`, and the same gallery standalone at `/demos`) - the
-  three exhibition rooms plus the published repositories, each linking to its
-  source. This replaced the gate-harness demo on 2026-08-05. The harness code
+- **Projects** (`/#projects`) - the three exhibition rooms plus the published
+  repositories, each linking to its source. There is deliberately no standalone
+  `/demos` index: it rendered the same gallery as this section, so a visitor who
+  followed it landed on a page identical to the one they left. This replaced the gate-harness demo on 2026-08-05. The harness code
   (`src/lib/gates.ts`, `src/components/demo/harness.tsx`, `/api/agent`) is still
   in the repo and still works; it is simply not on the page.
 - **The exhibition rooms** (`/demos/<slug>`) - three demos that run for real
@@ -39,7 +40,6 @@ deterministic gates so it physically cannot ship a dangerous change.
 | Route | Type | Purpose |
 |---|---|---|
 | `/` | static | The resume surface and the guide. Single page. |
-| `/demos` | static | Standalone gallery index. Same component as `/#projects`. |
 | `/demos/ledger-under-fire` | static | Room 1. |
 | `/demos/score-audit` | static | Room 2. |
 | `/demos/split-brain` | static | Room 3. |
@@ -54,7 +54,7 @@ deterministic gates so it physically cannot ship a dangerous change.
    portfolio looks hand-rolled; the previous iteration of this site proved it.
 2. **Rejected `once-ui-system/magic-portfolio` despite it looking better.** It is
    CC BY-NC 4.0 - non-commercial with mandatory attribution, which is the wrong
-   licence for a site whose purpose is winning paid work.
+   licence for a professional site, and the attribution clause forces a credit link.
 3. **Static export, not the OpenNext Workers adapter.** OpenNext cannot build from
    a non-`C:` drive on Windows (Node's ESM loader rejects an `a:` URL scheme), and
    every route here prerenders anyway. A Worker handles only `/api/*`.
@@ -95,10 +95,9 @@ deterministic gates so it physically cannot ship a dangerous change.
    section line is used instead. The prompt asks for accuracy; `checkGrounding` is
    what makes accuracy the only thing that gets through. With facts in place the
    check stopped firing entirely - it is the backstop, not the fix.
-9b. **The fact corpus excludes age and date of birth.** Not a safety judgement: he
-   targets senior and lead roles at 1.5 years of experience, an age on the page
-   hands a screener a reason to filter before reading the work, and in most target
-   markets an employer cannot ask for it. Also excluded: phone, address, health,
+9b. **The fact corpus excludes age and date of birth.** Not a safety judgement: an
+   age invites a judgement about the work that has nothing to do with the work,
+   and in most markets an employer cannot ask for it at all. Also excluded: phone, address, health,
    family, finances, employer system names, and the Hatchit ERP metrics, which
    have no artifact behind them unlike everything else he claims. See decision 27
    for what was settled about describing the work itself.
