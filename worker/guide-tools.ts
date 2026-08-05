@@ -77,7 +77,7 @@ export function buildToolbox(decision: GuideDecision) {
 
     answer: tool({
       description:
-        "Say the answer in one or two short sentences, using only what you were told about Mark. Call this after navigate_to_section.",
+        "Say the answer in one or two short sentences, using only what you were told about Mark. Call this AFTER navigate_to_section when a section of the page shows the answer, or ON ITS OWN when it does not - questions about his pets, what he watches, or his favourite colour have no section, so answer them here without navigating. This tool is the only way to say anything to the visitor; plain text replies are discarded.",
       inputSchema: z.object({
         text: z.string().min(1).max(320).describe("The answer. Plain language, no markdown."),
       }),

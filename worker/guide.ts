@@ -122,21 +122,37 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
         experimental_telemetry: { isEnabled: true, functionId: "site-guide" },
       });
 
-      // No tool call means no destination. The model's free text is NOT a
-      // fallback: it has been told no facts about Mark, so anything it wrote is a
-      // guess. Treated as a decline - the guide stays put and says it cannot help,
-      // which is both honest and what a jailbreak attempt should get. The probe
-      // showed two of four models answering prompt-injection this way.
-      if (!decision.section && !decision.declined) {
-        decision.declined = true;
-        decision.steps.push({ tool: "decline", args: { reason: "no tool call" } });
+      // Three legitimate shapes, not two:
+      //
+      //   navigate + answer -> the page shows it, so take them there
+      //   answer alone      -> the corpus covers it but no section does (pets,
+      //                        what he watches, favourite colour). Answer where
+      //                        they are. Navigating to an unrelated section to
+      //                        satisfy a rule is worse than standing still.
+      //   decline           -> outside what it knows
+      //
+      // What is NOT a shape is prose with no tool call at all. The model's free
+      // text never reaches the visitor: it bypasses the grounding check, so it is
+      // exactly the ungrounded assertion this whole design exists to stop. That
+      // becomes a decline, which is also what a jailbreak attempt should get.
+      // A run that called nothing is a FAILED run, not a decline. Weaker models
+      // answer a conversational question in prose instead of reaching for a tool,
+      // and that prose never reaches the visitor because it bypasses the grounding
+      // check. Turning it into "I only know about Mark and this page" told the
+      // visitor the guide could not help when the next model in the chain answers
+      // it fine - measurably: nemotron answers "does he have any pets" in place,
+      // the two behind it produce prose. So advance the cascade instead.
+      if (!decision.section && !decision.answer && !decision.declined) {
+        throw new Error("no tool call - the model wrote prose, which is discarded");
       }
 
       // The model's own words only survive if they passed the grounding check.
       // Otherwise the written section line stands in - always true, never blank.
       const answer = decision.declined
         ? OFF_TOPIC
-        : (decision.answer ?? sectionById(decision.section!).bubble);
+        : decision.answer
+          ? decision.answer
+          : sectionById(decision.section!).bubble;
 
       // Only remember runs worth repeating. A degraded response would pin an
       // outage in place for a week, and an ungrounded one would make a single bad
@@ -170,7 +186,14 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
     }
   }
 
-  return json(degraded("all-models-failed"));
+  // Every model produced nothing usable. For a visitor that is indistinguishable
+  // from a question this guide cannot answer, and the decline copy is the more
+  // useful of the two messages, so it is what they get. `degraded` still records
+  // the real cause for anyone reading the response or the logs.
+  return json({
+    ...degraded("all-models-failed", OFF_TOPIC),
+    declined: true,
+  });
 }
 
 const OFF_TOPIC =
