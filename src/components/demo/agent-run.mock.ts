@@ -42,7 +42,7 @@ export type AgentRun = {
 const RUNS: { match: RegExp; section: SectionId }[] = [
   { match: /school|stud(y|ied)|univers|college|degree|educat/i, section: "education" },
   { match: /now|current|working on|these days|latest role|job/i, section: "work" },
-  { match: /llm|model|agent|production|harness|gate/i, section: "harness" },
+  { match: /project|repo|github|source|built|shipped/i, section: "projects" },
   { match: /build|know how|stack|tech|skill|language/i, section: "skills" },
   { match: /contact|reach|email|hire|touch|talk to/i, section: "contact" },
 ];

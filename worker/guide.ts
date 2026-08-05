@@ -16,8 +16,12 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText, stepCountIs } from "ai";
 import { z } from "zod";
-import { GUIDE_SYSTEM_PROMPT, sectionById } from "../src/lib/site-sections";
+import { buildGuidePrompt, sectionById } from "../src/lib/site-sections";
+import { FACTS_BRIEF } from "../src/lib/public-facts";
+
+const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 import { buildToolbox, type GuideDecision } from "./guide-tools";
+import { lookup, remember } from "./cache";
 import {
   discoverFreeModels,
   json,
@@ -46,6 +50,7 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
   const key = env.OPENROUTER_API_KEY;
   if (!key) return json(degraded("no-key"));
 
+  const startedAll = Date.now();
   const ip = req.headers.get("cf-connecting-ip") ?? "unknown";
   const refused = await refuseForQuota(env, ip, MAX_STEPS);
   if (refused) return json(degraded(`rate-limited:${refused}`));
@@ -53,6 +58,21 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
   const parsed = GuideRequest.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return json({ error: parsed.error.issues[0]?.message ?? "invalid request" }, 400);
+  }
+
+  // Before any inference: has this question, or one close enough to it, already
+  // been answered? A portfolio gets the same dozen questions in different words,
+  // and paying six seconds and a model call for each rephrasing is waste in both
+  // directions. Cache hits are labelled as such rather than passed off as a run.
+  const cached = await lookup(env.DEMO_KV, parsed.data.question);
+  if (cached) {
+    return json({
+      ...cached.hit,
+      steps: [{ tool: "cache", args: { matched: cached.matched, similarity: cached.score } }],
+      cached: true,
+      model: null,
+      ms: Date.now() - startedAll,
+    });
   }
 
   const openrouter = createOpenAICompatible({
@@ -70,10 +90,14 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
   if (!discovered.length && !FINAL_FALLBACK) return json(degraded("no-tool-capable-model"));
   const chain = [...discovered.slice(0, MAX_ATTEMPTS), FINAL_FALLBACK];
 
-  const startedAll = Date.now();
-
   for (const model of chain) {
-    const decision: GuideDecision = { section: null, declined: false, steps: [] };
+    const decision: GuideDecision = {
+      section: null,
+      answer: null,
+      declined: false,
+      steps: [],
+      rejected: [],
+    };
     const startedAt = Date.now();
     try {
       const result = await generateText({
@@ -97,11 +121,31 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
         decision.steps.push({ tool: "decline", args: { reason: "no tool call" } });
       }
 
+      // The model's own words only survive if they passed the grounding check.
+      // Otherwise the written section line stands in - always true, never blank.
+      const answer = decision.declined
+        ? OFF_TOPIC
+        : (decision.answer ?? sectionById(decision.section!).bubble);
+
+      // Only remember runs worth repeating. A degraded response would pin an
+      // outage in place for a week, and an ungrounded one would make a single bad
+      // answer permanent - so neither is stored.
+      if (decision.answer || decision.declined) {
+        await remember(env.DEMO_KV, parsed.data.question, {
+          section: decision.declined ? null : decision.section,
+          answer,
+          declined: decision.declined,
+          grounded: Boolean(decision.answer),
+        });
+      }
+
       return json({
         section: decision.declined ? null : decision.section,
-        answer: decision.declined ? OFF_TOPIC : sectionById(decision.section!).bubble,
+        answer,
         declined: decision.declined,
         steps: decision.steps,
+        grounded: Boolean(decision.answer),
+        rejectedCount: decision.rejected.length,
         model,
         ms: Date.now() - startedAt,
         totalMs: Date.now() - startedAll,

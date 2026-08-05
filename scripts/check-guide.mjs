@@ -9,7 +9,13 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { SECTIONS, SECTION_IDS, GUIDE_SYSTEM_PROMPT } from "../src/lib/site-sections.ts";
+import { SECTIONS, SECTION_IDS, buildGuidePrompt } from "../src/lib/site-sections.ts";
+import { checkGrounding, GROUNDING_CASES } from "../src/lib/grounding.ts";
+import { PUBLIC_FACTS, FACTS_BRIEF, LICENSED_TERMS } from "../src/lib/public-facts.ts";
+import { tokenise, similarity, SIMILARITY_CASES } from "../worker/cache.ts";
+
+// Composed the same way the Worker composes it, so the gate tests what ships.
+const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => readFileSync(join(ROOT, p), "utf8");
@@ -44,16 +50,50 @@ check(
 //    the file cannot.
 const toolsSrc = read("worker/guide-tools.ts");
 check(
-  "no tool lets the model author claims",
-  !/^\s*answer:\s*tool\(/m.test(toolsSrc),
-  "worker/guide-tools.ts defines an `answer` tool again. The model is told no facts about Mark, so given a way to write prose it invents them - it produced a university he never attended and an employer he never worked for."
+  "the answer tool runs the grounding check",
+  /answer:\s*tool\(/.test(toolsSrc) ? /checkGrounding\(/.test(toolsSrc) : true,
+  "worker/guide-tools.ts has an `answer` tool that does not call checkGrounding. Unchecked, a model with gaps in its facts fills them - the first version produced a university Mark never attended and an employer he never worked for."
 );
-const allowed = toolsSrc.match(/ALLOWED_TOOLS = \[([^\]]*)\]/)?.[1] ?? "";
 check(
-  "the allowlist matches the toolbox",
-  !allowed.includes("answer") && allowed.includes("navigate_to_section") && allowed.includes("decline"),
-  `ALLOWED_TOOLS reads [${allowed.trim()}].`
+  "rejected answers never reach the visitor",
+  !/answer:\s*tool\(/.test(toolsSrc) || /decision\.rejected\.push/.test(toolsSrc),
+  "An ungrounded answer must be recorded and discarded, not silently used."
 );
+
+// The grounding check itself, run on the fabrications that actually happened.
+for (const c of GROUNDING_CASES) {
+  const verdict = checkGrounding(c.answer, LICENSED_TERMS);
+  check(
+    `grounding ${c.grounded ? "accepts" : "rejects"}: "${c.answer.slice(0, 52)}..."`,
+    verdict.grounded === c.grounded,
+    `${c.why} Got grounded=${verdict.grounded}` +
+      (verdict.grounded ? "" : ` (unlicensed: ${verdict.unlicensed.join(", ")})`)
+  );
+}
+
+// Facts are a closed set; an empty one silently turns the guide back into the
+// version that had nothing to say and invented instead.
+check(
+  "the fact corpus is populated",
+  PUBLIC_FACTS.length >= 10,
+  `Only ${PUBLIC_FACTS.length} facts. The guide answers from this and nothing else.`
+);
+check(
+  "no fact leaks an age or date of birth",
+  !PUBLIC_FACTS.some((f) => /\bage\b|born|birth|\b\d{1,2} years old\b/i.test(f.text)),
+  "Age was deliberately excluded: he targets senior roles at 1.5 years' experience, and an age invites pre-screening."
+);
+
+// The cache threshold, on the pairs it has to get right.
+for (const c of SIMILARITY_CASES) {
+  const score = similarity(tokenise(c.a), tokenise(c.b));
+  const same = score >= 0.5;
+  check(
+    `cache ${c.same ? "merges" : "separates"}: "${c.a}" / "${c.b}"`,
+    same === c.same,
+    `similarity ${score.toFixed(2)} against a 0.5 threshold.`
+  );
+}
 
 // 3. Arrival copy has to exist and has to be written, not generated.
 for (const s of SECTIONS) {

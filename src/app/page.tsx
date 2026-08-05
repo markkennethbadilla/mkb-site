@@ -146,19 +146,10 @@ export default function Page() {
           </div>
         </div>
       </section>
-      <section id="harness">
-        <BlurFade delay={BLUR_FADE_DELAY * 10.5}>
-          <div className="rounded-xl border border-border bg-card/40 p-5 sm:p-6 md:p-8">
-            <Harness />
-          </div>
-        </BlurFade>
-      </section>
-      {/* Projects section is deliberately not rendered. After clean-pipe and
-          flow-llm were removed it held a single card, and that card linked to a
-          repository that does not exist yet - a 404 for every visitor, which is
-          the exact failure this site was just cleaned of on the GitHub profile.
-          The harness above is the working proof in the meantime. Restore this
-          the moment there is a published repo to point at. */}
+      {/* ProjectsSection renders its own <section id="projects">, so it is NOT
+          wrapped in another one here - two elements sharing an id is invalid, and
+          the guide's getElementById would silently target whichever came first. */}
+      <ProjectsSection />
       <section id="contact">
         <BlurFade delay={BLUR_FADE_DELAY * 16}>
           <ContactSection />

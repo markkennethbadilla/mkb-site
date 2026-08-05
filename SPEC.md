@@ -16,10 +16,11 @@ deterministic gates so it physically cannot ship a dangerous change.
   animated entity perches beside the lit section with a written line about what
   you are looking at. "Ask something else" flies it home and it parks again. Off
   the topic of Mark or this page, it declines and stays put.
-- **The agent harness** (`/#harness`) - a visitor asks an agent for something
-  dangerous. A live model writes the change; deterministic gates run on its
-  output in the browser; a blocked gate feeds its reason back and the model
-  rewrites, up to three rounds.
+- **Projects** (`/#projects`) - published work, each linking to its source. This
+  replaced the gate-harness demo on 2026-08-05. The harness code
+  (`src/lib/gates.ts`, `src/components/demo/harness.tsx`, `/api/agent`) is still
+  in the repo and still works; it is simply not on the page, and it returns as a
+  guide tool rather than as its own section.
 - **Live telemetry** - per attempt: latency, input/output/total tokens, cost,
   position in the fallback chain, finish reason, and whether the output schema
   was enforced. The provider chain in use is shown before anything is run.
@@ -57,15 +58,30 @@ deterministic gates so it physically cannot ship a dangerous change.
    browser on purpose - a visitor can read exactly what blocked them.
 8. **Degradation is announced, never faked.** With no key, past the rate limit, or
    with every model down, the panel says so and shows a labelled fixed example.
-9. **The guide routes; it never speaks.** It has exactly two tools -
-   `navigate_to_section` and `decline` - and no way to write prose. An earlier
-   design gave it an `answer` tool, and `scripts/probe-guide.mjs` caught every
-   free model inventing biography: a university Mark never attended, an employer
-   he never worked for. The models were told no facts about him, so they supplied
-   their own, fluently. A stricter prompt does not fix that, because a prompt is a
-   request; deleting the tool does. Arrival copy is written prose in
-   `src/lib/site-sections.ts` that points at the page rather than restating it, so
-   it cannot drift out of sync with what the visitor is looking at.
+9. **The guide answers from a closed corpus, and the answer is checked.** The
+   first version gave it an `answer` tool with no facts behind it, and
+   `scripts/probe-guide.mjs` caught every free model inventing biography: a
+   university Mark never attended, an employer he never worked for. The lesson was
+   not "never let it speak" - it was that **a model with no material will always
+   produce material**. So it now has real material
+   (`src/lib/public-facts.ts`, a closed public-facing set) and its output is
+   checked before anyone sees it: every proper noun, year and figure in an answer
+   must be licensed by that corpus, or the answer is discarded and the written
+   section line is used instead. The prompt asks for accuracy; `checkGrounding` is
+   what makes accuracy the only thing that gets through. With facts in place the
+   check stopped firing entirely - it is the backstop, not the fix.
+9b. **The fact corpus excludes age and date of birth.** Not a safety judgement: he
+   targets senior and lead roles at 1.5 years of experience, an age on the page
+   hands a screener a reason to filter before reading the work, and in most target
+   markets an employer cannot ask for it. Also excluded: phone, address, health,
+   family, finances, employer system names, and the Hatchit ERP metrics, which
+   have no artifact behind them unlike everything else he claims.
+9c. **The cache is lexical, and says so.** Repeated questions are served from KV on
+   token-overlap similarity with a domain synonym map, not embeddings - no free
+   embedding model is available on this account. Calling it semantic would be the
+   overclaim this site exists to argue against. Only grounded or declined runs are
+   cached, so an outage cannot be pinned in place for a week and a single bad
+   answer cannot become permanent.
 10. **Section ids are an allowlist, checked at build.** The model picks from a Zod
     enum built from `SECTION_IDS`, and `scripts/check-guide.mjs` fails the build if
     any of those ids does not render in `page.tsx`. A destination that does not
