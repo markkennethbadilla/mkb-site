@@ -14,6 +14,13 @@
  *
  * Everything here is a pure function over a string, so it is testable without a
  * database and it ships to the browser for anyone who wants to read it.
+ *
+ * STATUS, stated plainly because the alternative is a comment that lies: nothing
+ * imports this yet. The site guide's toolbox is navigate/answer/decline and has no
+ * SQL tool, so there is currently no path from a visitor to a query. This is built
+ * ahead of the demo that will be its first real consumer, and wrangler.jsonc used
+ * to claim it was already enforcing something. It was not. It is now honest about
+ * being unwired.
  */
 
 export type SqlVerdict =
