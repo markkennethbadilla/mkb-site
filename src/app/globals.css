@@ -48,8 +48,33 @@
  * and nothing else. Chroma stays low (0.008-0.02) on surfaces: enough that the
  * greys read green rather than dead, not so much that text contrast suffers.
  * Only the accent and ring carry real saturation.
+ *
+ * THE EXHIBITION ROOMS USE THAT, AND TWO THINGS HAD TO CHANGE FOR IT TO WORK.
+ *
+ * First, the palette block is repeated for [data-tint]. Custom properties are
+ * substituted where the USING declaration lives, so `--background: oklch(... var(
+ * --tint-hue))` written on :root is computed against :root's hue and descendants
+ * inherit the already-computed colour. Overriding --tint-hue further down the tree
+ * changes nothing. The only fix is to re-declare the tokens inside the scope that
+ * changes the hue, which is what the duplicated selector below does.
+ *
+ * Second, --tint-hue is registered with @property as a <number>. An unregistered
+ * custom property is a string to the animation system and cannot be interpolated,
+ * so the hue would jump. Registered, it sweeps - and because every token is derived
+ * from it, one transition re-lights the entire interface. Walking from the gallery
+ * into a room takes the whole page from green to brass in one property.
+ *
+ * The scope is <body> rather than a wrapper div, deliberately: Radix portals
+ * tooltips and popovers to document.body, so a wrapper would leave every portalled
+ * surface rendering in the site's green inside a brass room.
  */
-:root {
+@property --tint-hue {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 158;
+}
+
+:root, [data-tint] {
   /* Tells the browser this document supplies both themes itself, so native UI
      (form controls, scrollbars) matches and extensions have no reason to
      re-tint. Paired with the darkreader-lock meta in layout.tsx. */
@@ -89,7 +114,7 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-.dark {
+.dark, .dark [data-tint] {
   /* Same hue, carried through the dark surfaces. A dark theme shows a cast more
      readily than a light one, so chroma here stays a touch lower. */
   --background: oklch(0.175 0.014 var(--tint-hue));
@@ -123,6 +148,18 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* The sweep itself. Only the scope that owns a hue transitions it; the site's own
+   :root never does, so an ordinary page load has no animation to skip. */
+[data-tint] {
+  transition: --tint-hue 480ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-tint] {
+    transition: none;
+  }
 }
 
 @layer base {

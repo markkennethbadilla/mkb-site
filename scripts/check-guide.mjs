@@ -11,7 +11,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SECTIONS, SECTION_IDS, SUGGESTIONS, buildGuidePrompt } from "../src/lib/site-sections.ts";
 import { checkGrounding, GROUNDING_CASES } from "../src/lib/grounding.ts";
-import { PUBLIC_FACTS, FACTS_BRIEF, LICENSED_TERMS } from "../src/lib/public-facts.ts";
+import { PUBLIC_FACTS, FACTS_BRIEF, LICENCE } from "../src/lib/public-facts.ts";
 import { tokenise, similarity, SIMILARITY_CASES } from "../worker/cache.ts";
 import { guardSql, HOSTILE_SQL, ALLOWED_SQL } from "../src/lib/sql-guard.ts";
 
@@ -72,7 +72,7 @@ check(
 
 // The grounding check itself, run on the fabrications that actually happened.
 for (const c of GROUNDING_CASES) {
-  const verdict = checkGrounding(c.answer, LICENSED_TERMS);
+  const verdict = checkGrounding(c.answer, LICENCE);
   check(
     `grounding ${c.grounded ? "accepts" : "rejects"}: "${c.answer.slice(0, 52)}..."`,
     verdict.grounded === c.grounded,
@@ -98,10 +98,17 @@ const CHIP_STOP = new Set([
 ]);
 for (const chip of SUGGESTIONS) {
   const words = chip.toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/).filter((w) => w.length > 2 && !CHIP_STOP.has(w));
-  const covered = words.some((w) => CORPUS.includes(w));
+  // One word is enough, and raising it to two was tried and reverted: it failed
+  // "Where did he go to school?", which is the most precisely aimed chip on the
+  // page. A good chip is SHORT, so counting matches measures brevity rather than
+  // answerability. What this catches is the failure it was written for - a chip
+  // aimed at material that is no longer in the corpus, which is how one of them
+  // ended up pointing at the gate-harness section for a while after that section
+  // came off the page.
+  const covered = words.filter((w) => CORPUS.includes(w));
   check(
     `suggestion is answerable: "${chip}"`,
-    covered,
+    covered.length >= 1,
     `No word in this chip appears anywhere in the fact corpus or the section summaries, so the guide has nothing to answer it with. Words checked: ${words.join(", ") || "(none)"}.`
   );
 }
@@ -117,6 +124,71 @@ check(
   "no fact leaks an age or date of birth",
   !PUBLIC_FACTS.some((f) => /\bage\b|born|birth|\b\d{1,2} years old\b/i.test(f.text)),
   "Age was deliberately excluded: he targets senior roles at 1.5 years' experience, and an age invites pre-screening."
+);
+
+// Every multi-digit number a fact WRITES has to be a number that fact LICENSES.
+// Without this the corpus can drift ahead of the licence: a fact gains a figure,
+// the model repeats the fact verbatim, and the grounding check throws out a
+// sentence the corpus itself supplied. The guide then silently gets quieter with
+// no failure anywhere.
+for (const fact of PUBLIC_FACTS) {
+  const written = [...fact.text.replace(/(\d),(?=\d{3}\b)/g, "$1").matchAll(/\b(\d{2,})\b/g)].map((m) => m[1]);
+  const licensed = new Set((fact.figures ?? []).map((f) => f.value));
+  const missing = written.filter((n) => !licensed.has(n));
+  check(
+    `fact "${fact.id}" licenses every figure it states`,
+    missing.length === 0,
+    `Writes ${missing.join(", ")} but does not license it. Add a figures entry binding it to what it measures.`
+  );
+}
+
+// A binding with no companion words licenses the figure everywhere, which is the
+// flat pool this design replaced. An empty `near` is worse than no entry at all,
+// because it looks bound.
+for (const fact of PUBLIC_FACTS) {
+  for (const figure of fact.figures ?? []) {
+    check(
+      `figure ${figure.value} in "${fact.id}" is bound to something`,
+      figure.near.length > 0 && figure.near.every((w) => /^[a-z.]+$/.test(w)),
+      "A figure with no companion words is licensed in any sentence, which is exactly the failure the binding exists to stop. Companions must be lowercase single words."
+    );
+  }
+}
+
+// Contract clause 4.1 covers proprietary and operational information. The guide is
+// a broadcast surface, so this is the last place a system name, a client, a
+// provider or a live hostname can be caught before it is published under Mark's
+// own domain. A rule without a gate is a comment.
+const FORBIDDEN = [
+  "nexus", "autobots", "recon", "workstackos", "weassist.uk", "hetzner",
+  "netcup", "vultr", "recall.ai", "gohighlevel", "teramind", "clickup",
+  "breezy", "pinecone", "apollo", "churn", "cve-",
+];
+// Whole words only. A bare substring test failed "reconstruct an application's
+// route map" on the internal name "recon", which is the shape of false positive
+// that gets a gate weakened rather than fixed.
+const FORBIDDEN_RE = FORBIDDEN.map(
+  (term) => new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i")
+);
+for (const fact of PUBLIC_FACTS) {
+  const hit = FORBIDDEN.filter((_, i) => FORBIDDEN_RE[i].test(fact.text));
+  check(
+    `fact "${fact.id}" names no employer internal`,
+    hit.length === 0,
+    `Contains ${hit.join(", ")}. Internal system names, client names, hosting providers, live hostnames and incident specifics stay off this site - see the header of src/lib/public-facts.ts.`
+  );
+}
+
+// The same list, over the page copy. The guide's corpus is the careful surface;
+// the resume text is the one a visitor reads without asking anything, and it is
+// where a paragraph gets pasted in from a CV draft that was written for a named
+// recruiter rather than for the open internet.
+const resumeSrc = read("src/data/resume.tsx");
+const resumeHits = FORBIDDEN.filter((_, i) => FORBIDDEN_RE[i].test(resumeSrc));
+check(
+  "page copy names no employer internal",
+  resumeHits.length === 0,
+  `src/data/resume.tsx contains ${resumeHits.join(", ")}.`
 );
 
 // The cache threshold, on the pairs it has to get right.
@@ -142,7 +214,10 @@ for (const s of SECTIONS) {
 // 4. Every destination the model can choose must actually be on the page. A
 //    section id that does not render is a scroll to nowhere, and the failure is
 //    invisible until a visitor asks that exact question.
-const page = read("src/app/page.tsx");
+// The home page moved into a (site) route group when the exhibition rooms landed:
+// the rooms need a wider stage and no dock, and a route group decides that at build
+// time instead of undoing it after hydration.
+const page = read("src/app/(site)/page.tsx");
 for (const id of SECTION_IDS) {
   check(
     `section "${id}" exists in page.tsx`,

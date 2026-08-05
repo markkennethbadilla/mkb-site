@@ -86,10 +86,20 @@ export interface BudgetEnv {
 /**
  * Reserves `cost` requests from a pool, or explains why it will not.
  *
- * `burstKey` is what the edge limiter counts. For the guide that is the IP. For a
- * demo fan-out it should be the RUN id, not the IP: a run has a known finite
- * number of shards, so keying on it refuses a flood while never refusing the
- * legitimate burst that a single click produces.
+ * ONE RESERVE PER RUN, NOT PER REQUEST. A demo run is a fan-out - a dozen or more
+ * concurrent requests from one click - and charging each of them separately would
+ * mean a dozen limiter hits and two dozen counter writes for a single visitor
+ * action. Worse, the shards race each other through the counter. So the run's
+ * whole cost is reserved once, up front, at the endpoint that creates the run; the
+ * shards that follow reserve nothing and are bounded by limitRun() instead.
+ *
+ * THE LIMITER IS ALWAYS IP-KEYED HERE, and that is a correction. An earlier
+ * version keyed the demo pool's limiter on the run id, on the reasoning that a run
+ * has a known finite number of shards. That reasoning is sound for shards and
+ * useless for creation: a run id is minted fresh per run, so anyone starting runs
+ * in a loop mints a new key every time and is never limited. The only thing that
+ * identifies a repeat caller at creation time is the IP, so that is what the edge
+ * limiter counts.
  */
 export async function reserve(
   env: BudgetEnv,
@@ -98,15 +108,14 @@ export async function reserve(
   cost = 1,
   burstKey?: string
 ): Promise<BudgetRefusal | null> {
-  const limiter = pool === "demo" ? env.DEMO_LIMITER : env.BURST_LIMITER;
-  if (limiter) {
-    const { success } = await limiter.limit({ key: burstKey ?? ip });
+  if (env.BURST_LIMITER) {
+    const { success } = await env.BURST_LIMITER.limit({ key: burstKey ?? ip });
     if (!success) {
       return {
         reason: "burst",
         detail:
           pool === "demo"
-            ? "Too many requests from this run in the last minute. Give it a few seconds."
+            ? "You have started several demo runs in the last minute. Give it a few seconds."
             : "That was a lot of questions at once. Give it a few seconds and ask again.",
       };
     }
@@ -165,6 +174,29 @@ export async function reserve(
   }
 
   return null;
+}
+
+/**
+ * Bounds the shards of a run that has ALREADY been paid for.
+ *
+ * Keyed on the run id rather than the IP, which is correct here and wrong at
+ * creation. A run's fan-out is a legitimate burst of known size from one click, so
+ * an IP-keyed limiter would refuse the very thing the room exists to do. The run id
+ * cannot be used to escape the limit, because getting one costs a reserve() that
+ * IS IP-keyed and has already charged the run's full cost.
+ *
+ * No counter write. The run was charged once; counting its shards again would
+ * double-bill the pool and, at a dozen shards a click, is also how a free tier's
+ * write allowance disappears.
+ */
+export async function limitRun(env: BudgetEnv, runId: string): Promise<BudgetRefusal | null> {
+  if (!env.DEMO_LIMITER) return null;
+  const { success } = await env.DEMO_LIMITER.limit({ key: runId });
+  if (success) return null;
+  return {
+    reason: "burst",
+    detail: "This run has sent more requests in a minute than a run is allowed. It has been stopped rather than left to spend the shared budget.",
+  };
 }
 
 /** Current spend, for a status endpoint. Read-only, never reserves. */

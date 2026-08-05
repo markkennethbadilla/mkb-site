@@ -11,7 +11,7 @@
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "check": "tsc --noEmit && eslint && node scripts/check-guide.mjs",
+    "check": "tsc --noEmit && eslint && node scripts/check-guide.mjs && node scripts/check-demos.mjs",
     "probe:guide": "node scripts/probe-guide.mjs",
     "seed": "node scripts/gen-seed.mjs",
     "cf": "node scripts/cf.mjs",

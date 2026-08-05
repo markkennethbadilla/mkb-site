@@ -1,8 +1,4 @@
-import BlurFade from "@/components/magicui/blur-fade";
-import { ProjectCard } from "@/components/project-card";
-import { DATA } from "@/data/resume";
-
-const BLUR_FADE_DELAY = 0.04;
+import Gallery from "@/components/demos/gallery";
 
 export default function ProjectsSection() {
     return (
@@ -25,32 +21,13 @@ export default function ProjectsSection() {
                     <div className="flex flex-col gap-y-3 items-center justify-center">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Things I built to be inspected</h2>
                         <p className="text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed text-balance text-center">
-                            Each of these exists because a claim is worth less than
-                            something you can read the source of.
+                            Three of these run for real when you press the button, against a
+                            real database. Each one states what it does not prove before you
+                            start it, and links the file that implements it.
                         </p>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 max-w-[800px] mx-auto auto-rows-fr">
-                    {DATA.projects.map((project, id) => (
-                        <BlurFade
-                            key={project.title}
-                            delay={BLUR_FADE_DELAY * 12 + id * 0.05}
-                            className="h-full"
-                        >
-                            <ProjectCard
-                                href={project.href}
-                                key={project.title}
-                                title={project.title}
-                                description={project.description}
-                                dates={project.dates}
-                                tags={project.technologies}
-                                image={project.image}
-                                video={project.video}
-                                links={project.links}
-                            />
-                        </BlurFade>
-                    ))}
-                </div>
+                <Gallery />
             </div>
         </section>
     );

@@ -33,7 +33,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { SECTION_IDS, type SectionId } from "../src/lib/site-sections";
 import { checkGrounding } from "../src/lib/grounding";
-import { LICENSED_TERMS } from "../src/lib/public-facts";
+import { LICENCE } from "../src/lib/public-facts";
 
 export type GuideDecision = {
   section: SectionId | null;
@@ -82,7 +82,7 @@ export function buildToolbox(decision: GuideDecision) {
         // The prompt asked for factual; this is what enforces it. Rejected text is
         // never shown - the caller falls back to the written section line, which is
         // always true.
-        const verdict = checkGrounding(text, LICENSED_TERMS);
+        const verdict = checkGrounding(text, LICENCE);
         if (!verdict.grounded) {
           decision.rejected.push({ text, unlicensed: verdict.unlicensed });
           record("respond:rejected", { unlicensed: verdict.unlicensed });

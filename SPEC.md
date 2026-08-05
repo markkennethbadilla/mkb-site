@@ -16,23 +16,37 @@ deterministic gates so it physically cannot ship a dangerous change.
   animated entity perches beside the lit section with a written line about what
   you are looking at. "Ask something else" flies it home and it parks again. Off
   the topic of Mark or this page, it declines and stays put.
-- **Projects** (`/#projects`) - published work, each linking to its source. This
-  replaced the gate-harness demo on 2026-08-05. The harness code
+- **Projects** (`/#projects`, and the same gallery standalone at `/demos`) - the
+  three exhibition rooms plus the published repositories, each linking to its
+  source. This replaced the gate-harness demo on 2026-08-05. The harness code
   (`src/lib/gates.ts`, `src/components/demo/harness.tsx`, `/api/agent`) is still
-  in the repo and still works; it is simply not on the page, and it returns as a
-  guide tool rather than as its own section.
+  in the repo and still works; it is simply not on the page.
+- **The exhibition rooms** (`/demos/<slug>`) - three demos that run for real
+  against D1 when a visitor presses the button, one per strand of the work:
+  *Ledger Under Fire* (concurrency and money), *ScoreAudit* (a model's stated
+  confidence against a deterministic verifier), *Split-Brain Sandbox* (leader
+  election, lease expiry and fencing tokens). Each room re-lights the entire
+  interface with its own hue, carries the same wall label in the same position,
+  and refuses to run on arrival.
 - **Live telemetry** - per attempt: latency, input/output/total tokens, cost,
   position in the fallback chain, finish reason, and whether the output schema
-  was enforced. The provider chain in use is shown before anything is run.
+  was enforced. The provider chain in use is shown before anything is run. Every
+  room carries the same idea as one monospace strip: requests spent, wall clock,
+  and whether the numbers came from D1, a model, a cache or a fixed example.
 
 ## Routes
 
 | Route | Type | Purpose |
 |---|---|---|
-| `/` | static | The whole site. Single page. |
-| `/api/agent` | Worker | POST. Runs one agent attempt. |
-| `/api/models` | Worker | GET. Reports the discovered free-model chain and limiter status. |
+| `/` | static | The resume surface and the guide. Single page. |
+| `/demos` | static | Standalone gallery index. Same component as `/#projects`. |
+| `/demos/ledger-under-fire` | static | Room 1. |
+| `/demos/score-audit` | static | Room 2. |
+| `/demos/split-brain` | static | Room 3. |
+| `/api/agent` | Worker | POST. Runs one agent attempt. Not reachable from the page. |
+| `/api/models` | Worker | GET. Reports the discovered free-model chain, limiter status and budget spend. |
 | `/api/guide` | Worker | POST. One guide question: runs the tool-calling loop, returns a section or a decline. |
+| `/api/demos/<slug>/<action>` | Worker | POST/GET. Every room endpoint, behind one router that owns the budget. |
 
 ## Locked decisions
 
@@ -86,7 +100,8 @@ deterministic gates so it physically cannot ship a dangerous change.
    hands a screener a reason to filter before reading the work, and in most target
    markets an employer cannot ask for it. Also excluded: phone, address, health,
    family, finances, employer system names, and the Hatchit ERP metrics, which
-   have no artifact behind them unlike everything else he claims.
+   have no artifact behind them unlike everything else he claims. See decision 27
+   for what was settled about describing the work itself.
 9c. **The cache is lexical, and says so.** Repeated questions are served from KV on
    token-overlap similarity with a domain synonym map, not embeddings - no free
    embedding model is available on this account. Calling it semantic would be the
@@ -122,14 +137,95 @@ deterministic gates so it physically cannot ship a dangerous change.
     its position arithmetically and sat 138px off; it now reads the element's rect
     on the same rAF tick as the section rect.
 
+16. **Demo slugs are permanent.** These URLs go into job applications and will
+    outlive several redesigns of this site. A retired room keeps its route and
+    renders a closure page linking its source; it is never renamed, shortened or
+    404'd.
+17. **A room re-lights the whole interface through `--tint-hue`, applied to
+    `<body>`.** Two non-obvious things made this work. Custom properties are
+    substituted where the *using* declaration lives, so `--background: oklch(...
+    var(--tint-hue))` written on `:root` is computed against `:root`'s hue and
+    overriding the hue on a descendant changes nothing - the palette block has to
+    be repeated for `[data-tint]`. And an unregistered custom property is a string
+    to the animation system, so `--tint-hue` is declared with `@property` as a
+    `<number>` to make it interpolable. The scope is `<body>` rather than a
+    wrapper because Radix portals to `document.body`, and a wrapper would leave
+    every tooltip and popover rendering in the site's green inside a brass room.
+18. **Three explicit route folders, not a `[slug]` dynamic route.** Not for bundle
+    reasons - per-slug dynamic import solves that. The rooms are meant to diverge
+    completely, and a single page component switching on three slugs fights that
+    every time one of them changes.
+19. **The site's chrome lives in a `(site)` route group, not in the root layout.**
+    Rooms need a wider stage and no dock. Hiding the dock with `usePathname`
+    instead would ship it in the prerendered HTML and remove it on hydration -
+    a visible jump on the page a recruiter opens from an email, and the same class
+    of hydration branching as decision 12.
+20. **One reserve per RUN, at creation, IP-keyed - never per request.** A run is a
+    fan-out of a dozen or more concurrent requests from one click. Charging each
+    would mean a dozen limiter hits and two dozen counter writes per visitor
+    action, with the shards racing each other through the counter. So
+    `worker/demos/router.ts` reserves the room's whole declared `requestsPerRun`
+    once, and the shards that follow reserve nothing and are bounded by
+    `limitRun()` keyed on the run id. **The creation limiter is IP-keyed**: an
+    earlier version keyed it on the run id, which is minted fresh per run, so a
+    caller looping over run creation was never limited at all.
+21. **Every room states what it does NOT prove, in fixed position, never
+    collapsed.** The registry type requires all three wall-label strings and
+    `scripts/check-demos.mjs` fails the build on an empty one, on a `real` string
+    that does not name the layer the behaviour happens at, and on a room with an
+    `injectionPoint` whose `staged` string does not disclose it. Two of these
+    rooms are rigged; a gate that only checks for non-empty strings guards against
+    forgetting, not against overclaiming.
+22. **A promise may count its inputs and never its outcomes.** "Fire twelve
+    payments" is an input. "See the two that got refused" is a result printed
+    before the run that produces it, which is either false or an admission that
+    the run is scripted. Enforced on the registry by the gate.
+23. **The demo gallery has no live/resting badge.** Knowing whether the budget is
+    spent would cost a Worker request from every visitor who scrolls past the
+    projects section, against the same daily allowance the badge reports on, and
+    it still could not see the per-visitor cap that actually refuses people. A
+    card labelled "live" that then refuses is worse than no label. The room
+    explains the refusal on arrival in the budget's own words.
+24. **`sql-guard.ts` is not wired into the rooms, and that is correct.** It exists
+    for untrusted model-authored SQL. Both SQL rooms write their own parameterised
+    statements, which it would refuse on two independent rules, so running it
+    there would be ceremony dressed as enforcement. The reason the agent cannot
+    write to this database is that it has no SQL tool.
+25. **The site guide does not route into rooms.** Its allowlist stays sections of
+    `/`, which keeps its contract clean ("it takes you to part of *this page*")
+    and keeps `check-guide.mjs`'s id assertion meaningful.
+26. **Figures in the fact corpus are bound to the fact that licensed them.** The
+    grounding check tested every token against one flat union of terms, which is
+    sound while the corpus holds almost no numbers and unsound the moment it
+    describes work, because work is measured. Pooling `66`, `55`, `300` and `18`
+    licenses them everywhere, and "he ran 66 live failover drills" then passes
+    with the run line printing "checked against the fact list" underneath it -
+    turning a broken guard into a published assurance. Each figure now carries the
+    companion words that must sit within ten words of it, chosen from what the
+    figure MEASURES rather than from other words in the sentence.
+27. **His real work may be described, anonymised. The nouns and the counts that
+    identify an employer's systems may not.** Settled 2026-08-05 with Mark.
+    Capability and architecture yes; internal system names, client names, hosting
+    providers, hostnames, spend, churn, headcount, and schema census figures no -
+    a table count and a migration count describe a Company database as surely as
+    its name does. **Nothing about a security incident at a named employer, in any
+    form**: the site says where he works and that he runs production there, so
+    "he did production incident response" identifies the breached party by
+    construction and the role window dates it. The two things that are actually
+    his credential - reconstructing an app from a compiled build, and turning an
+    incident into a gate - are stated separately and never adjacent.
+
 ## Non-goals
 
-- **No Q&A chatbot.** Narrowed 2026-08-05, with Mark. Free-text input is fine;
-  what was rejected is a bot that *answers*. The model here is an actor inside a
-  pipeline - it decides where the visitor should be looking and the page does the
-  rest. It holds no facts about Mark and has no tool that can state one, so it
-  cannot become a conversation partner by drift. A chat box that replies in prose
-  would be generic and would demonstrate nothing.
+- **No Q&A chatbot.** Narrowed twice. 2026-08-05, with Mark: free-text input is
+  fine, what was rejected is a bot that *answers from general knowledge*. Narrowed
+  again the same day, at his explicit instruction ("i want it to chat for stuff
+  not found in my site with guardrails obviously"): it now holds a closed fact
+  corpus and a tool that states one of those facts. What still holds is that it
+  cannot become a conversation partner by drift, because the corpus is closed, the
+  output is grounded against it, and anything outside it is declined rather than
+  guessed. A chat box that replies from a model's own knowledge would be generic
+  and would demonstrate nothing.
 - **No self-scored capability charts.** Arbitrary self-assessment destroys
   credibility with the exact audience this site targets.
 - **No "available for hire" banner.** The site reads as a senior engineer's work,

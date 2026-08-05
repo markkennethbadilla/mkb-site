@@ -1,4 +1,3 @@
-import Navbar from "@/components/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DATA } from "@/data/resume";
@@ -6,7 +5,6 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { FlickeringGrid } from "@/components/magicui/flickering-grid";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -84,28 +82,15 @@ export default function RootLayout({
             user got flashbanged and then reached for an extension - which is
             exactly the thing the darkreader-lock below opts out of. */}
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TooltipProvider delayDuration={0}>
-            <div className="absolute inset-0 top-0 left-0 right-0 h-[100px] overflow-hidden z-0">
-              <FlickeringGrid
-                className="h-full w-full"
-                squareSize={2}
-                gridGap={2}
-                style={{
-                  maskImage: "linear-gradient(to bottom, black, transparent)",
-                  WebkitMaskImage: "linear-gradient(to bottom, black, transparent)",
-                }}
-              />
-            </div>
-            {/* ONE container width for the whole page. Previously this was
-                max-w-2xl and the demo broke out of it, so a single section
-                randomly spanned the viewport while everything else sat in a
-                thin ribbon - which read as a bug, not a layout. Everything now
-                shares this edge; prose constrains its own line length inside. */}
-            <div className="relative z-10 mx-auto w-full max-w-4xl px-6 py-12 pb-24 sm:py-24">
-              {children}
-            </div>
-            <Navbar />
-          </TooltipProvider>
+          {/* Deliberately thin: html, body, providers, and nothing else. The site's
+              measure, background grid and dock moved into (site)/layout.tsx so the
+              exhibition rooms under /demos can have their own stage without having
+              to undo any of it after hydration.
+
+              body is also the element the rooms re-tint - see
+              src/components/demos/shell/room-tint.tsx for why it has to be body
+              and not a wrapper. */}
+          <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

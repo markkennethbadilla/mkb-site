@@ -17,7 +17,14 @@ import { motion, useReducedMotion } from "motion/react";
  * literal animal dates badly.
  */
 
-export type EntityMood = "idle" | "thinking" | "talking";
+/**
+ * "dormant" is what the entity looks like inside an exhibition room, where it is a
+ * back button and nothing else. It does not bob and does not blink, because a
+ * creature that blinks at you is a creature that is listening, and in a room it is
+ * not - there is no guide there to answer. Implying otherwise is the small lie this
+ * site keeps refusing to tell.
+ */
+export type EntityMood = "idle" | "thinking" | "talking" | "dormant";
 
 const BLINK_EVERY_MS = 4200;
 
@@ -37,6 +44,7 @@ export default function Entity({
   // piece of motion that should survive reduced-motion: it conveys state rather
   // than decorating, and it moves nothing across the screen.
   useEffect(() => {
+    if (mood === "dormant") return;
     let timeout: ReturnType<typeof setTimeout>;
     const schedule = () => {
       timeout = setTimeout(() => {
@@ -49,7 +57,7 @@ export default function Entity({
     return () => clearTimeout(timeout);
   }, [mood]);
 
-  const bob = reduced
+  const bob = reduced || mood === "dormant"
     ? {}
     : {
         y: mood === "thinking" ? [0, -3, 0] : [0, -6, 0],

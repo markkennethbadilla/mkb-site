@@ -30,6 +30,7 @@ import { generateText } from "ai";
 import { z } from "zod";
 import { handleGuide } from "./guide";
 import { budgetStatus, type BudgetEnv } from "./budget";
+import { handleDemos, type DemoEnv } from "./demos/router";
 import type { Env as GuideEnv } from "./models";
 
 export interface Env {
@@ -336,6 +337,13 @@ const worker = {
     if (url.pathname === "/api/agent") return handleAgent(req, env);
     if (url.pathname === "/api/models") return handleModels(env);
     if (url.pathname === "/api/guide") return handleGuide(req, env as GuideEnv);
+    // One prefix, one router. Every room endpoint goes through worker/demos/router.ts
+    // so the request budget is charged in exactly one place - see the docstring
+    // there for why three rooms accounting for themselves is three chances to
+    // spend the site guide's allowance by accident.
+    if (url.pathname.startsWith("/api/demos/")) {
+      return handleDemos(req, env as unknown as DemoEnv);
+    }
     return env.ASSETS.fetch(req);
   },
 };
