@@ -54,27 +54,22 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
   // A request costs a Worker request whether or not it can do any work, and
   // bounding Worker requests is the whole point - charging only the requests that
   // succeed would leave a loop against a misconfigured endpoint free.
-  const overBudget = await reserve(env, "guide", ip, 1);
+  // The body is read first because the cache lookup needs the question, then the
+  // budget reserve and the cache lookup run TOGETHER - neither depends on the
+  // other, and each is several KV round trips. Serialised, they were the single
+  // largest cost on a cache hit, which does no thinking at all.
+  const body = await req.json().catch(() => null);
+  const parsed = GuideRequest.safeParse(body);
+
+  const [overBudget, cached] = await Promise.all([
+    reserve(env, "guide", ip, 1),
+    parsed.success ? lookup(env.DEMO_KV, parsed.data.question) : Promise.resolve(null),
+  ]);
+
   if (overBudget) return json(degraded(`rate-limited:${overBudget.reason}`, overBudget.detail));
-
-  const key = env.DEEPSEEK_API_KEY;
-  if (!key) return json(degraded("no-key"));
-
-  // Inference spend is a separate ceiling, reserved only once there is a key and
-  // model calls are actually going to happen.
-  const refused = await refuseForQuota(env, ip, MAX_STEPS);
-  if (refused) return json(degraded(`rate-limited:${refused}`));
-
-  const parsed = GuideRequest.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return json({ error: parsed.error.issues[0]?.message ?? "invalid request" }, 400);
   }
-
-  // Before any inference: has this question, or one close enough to it, already
-  // been answered? A portfolio gets the same dozen questions in different words,
-  // and paying six seconds and a model call for each rephrasing is waste in both
-  // directions. Cache hits are labelled as such rather than passed off as a run.
-  const cached = await lookup(env.DEMO_KV, parsed.data.question);
   if (cached) {
     return json({
       ...cached.hit,
@@ -84,6 +79,14 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
       ms: Date.now() - startedAll,
     });
   }
+
+  const key = env.DEEPSEEK_API_KEY;
+  if (!key) return json(degraded("no-key"));
+
+  // Inference spend is a separate ceiling, reserved only once there is a key and
+  // model calls are actually going to happen.
+  const refused = await refuseForQuota(env, ip, MAX_STEPS);
+  if (refused) return json(degraded(`rate-limited:${refused}`));
 
   // Runtime discovery is gone from this path. It existed because the free tier
   // churns and a pinned slug guarantees a dead demo within weeks; a key Mark owns
