@@ -55,6 +55,32 @@ async function get(path) {
 
 console.log(`exhibition rooms boot-probe against ${BASE}\n`);
 
+// --- Is the source actually readable by a stranger? -------------------------
+//
+// check-demos.mjs asserts every sourceFiles path exists IN THE WORKING TREE, which
+// is necessary and says nothing about whether a visitor can open it. For a while
+// it could not: the repo was private, so every "read the source" link under every
+// room 404'd for everyone except Mark, while the section above them was headed
+// "Things I built to be inspected". A gate that proves a file exists on the author's
+// disk is not a gate on inspectability - this is.
+{
+  const { ROOMS, REPO_URL, sourceLink } = await import("../src/lib/demos/registry.ts");
+  const targets = [REPO_URL, ...ROOMS.flatMap((r) => r.sourceFiles.map(sourceLink))];
+  for (const url of targets) {
+    let status = 0;
+    try {
+      status = (await fetch(url, { method: "HEAD", redirect: "follow" })).status;
+    } catch (e) {
+      status = `unreachable (${String(e).slice(0, 60)})`;
+    }
+    check(
+      `a stranger can open ${url.replace(/^https:\/\/github\.com\//, "")}`,
+      status === 200,
+      `Got ${status}. The room advertises this as readable source. If the repository is private every one of these is a dead link under a heading that says "built to be inspected".`
+    );
+  }
+}
+
 // --- The router's own guarantees, which no room can opt out of ---------------
 
 {

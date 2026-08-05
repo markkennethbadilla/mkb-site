@@ -356,11 +356,16 @@ const worker = {
     let retryPath: string | null = null;
 
     if (!url.pathname.endsWith("/") && !last.includes(".")) {
-      // A route that is BOTH a page and a parent of other pages. The export
-      // writes the gallery as `out/demos.html` and the rooms as
-      // `out/demos/<slug>.html`, so `demos` exists as a file AND as a directory;
-      // Assets resolves the directory, finds no index.html inside, and stops. The
-      // rooms are fine only because nothing is nested under them.
+      // A route that is BOTH a page and a parent of other pages. The export writes
+      // such a route as `out/<name>.html` while its children live in
+      // `out/<name>/`, so the name exists as a file AND as a directory; Assets
+      // resolves the directory, finds no index.html inside, and stops.
+      //
+      // Nothing currently hits this. `/demos` did - it was a gallery index above
+      // `/demos/<slug>` - and was deleted for rendering the same content as
+      // `/#projects`. Kept because the shape returns the moment any page gains a
+      // child route, and it costs one extra Assets lookup on a request that was
+      // already going to 404.
       retryPath = `${url.pathname}.html`;
     } else if (/^__next\..+\.txt$/.test(last)) {
       // Segment prefetch payloads. Next writes them nested -

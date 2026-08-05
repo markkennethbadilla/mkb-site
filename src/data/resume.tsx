@@ -1,5 +1,5 @@
 import { Icons } from "@/components/icons";
-import { HomeIcon, NotebookIcon } from "lucide-react";
+import { FileTextIcon, HomeIcon } from "lucide-react";
 import { ReactLight } from "@/components/ui/svgs/reactLight";
 import { NextjsIconDark } from "@/components/ui/svgs/nextjsIconDark";
 import { Typescript } from "@/components/ui/svgs/typescript";
@@ -28,9 +28,44 @@ export const DATA = {
     { name: "Postgres", icon: Postgresql },
     { name: "Docker", icon: Docker },
   ],
+  // The summary the printable resume opens with.
+  //
+  // Deliberately NOT `summary` above. That one is the About paragraph and it ends
+  // by naming the previous employer and the degree - which on the web page is
+  // useful context and on a resume is the same information the reader is about to
+  // meet twice more, in Experience and in Education. Measured, the duplication was
+  // costing about 20mm of a 297mm page, which is the difference between comfortable
+  // headroom and a second sheet appearing the next time a line is added.
+  //
+  // Same graded material, nothing new asserted.
+  resumeSummary:
+    "AI Engineer working on agentic engineering: the harness around LLM agents - gated codebases, deterministic guardrails and verification - so an agent can ship production code without breaking things. I build the checks that make a bad change uncommittable, deploy without downtime, and rehearse the recovery rather than diagramming it.",
+
+  // The skills the printable resume lists, as plain strings.
+  //
+  // Separate from `skills` above, which is the seven-icon row the site renders and
+  // is chosen for recognisability. A resume is read by a keyword matcher as well as
+  // a person, so this is the full honest stack from the fact corpus rather than the
+  // subset that has a nice logo. Written out, comma-separated, never as pills - see
+  // the note in src/components/resume/sheet.tsx.
+  resumeSkills: [
+    "TypeScript", "Node.js", "Bun", "Python", "PostgreSQL", "Redis", "Docker",
+    "Next.js", "React", "Drizzle ORM", "SQLite", "Cloudflare Workers",
+    "LLM tooling", "MCP", "Vercel AI SDK", "Git", "CI/CD", "Linux",
+  ],
+
+  certifications: ["TOPCIT Level 3", "PhilNITS Fundamental Engineer (FE)"],
+
   // Blog is deliberately not linked: an empty blog reads worse than no blog.
   // Re-add the entry once there is real writing in content/.
-  navbar: [{ href: "/", icon: HomeIcon, label: "Home" }],
+  //
+  // Resume sits in the dock rather than as a link buried in the page: it is the
+  // one thing a recruiter arrives wanting, and the dock is the only chrome that
+  // follows them down the whole page.
+  navbar: [
+    { href: "/", icon: HomeIcon, label: "Home" },
+    { href: "/resume", icon: FileTextIcon, label: "Resume" },
+  ],
   contact: {
     email: "markkennethbadilla@gmail.com",
     tel: "",

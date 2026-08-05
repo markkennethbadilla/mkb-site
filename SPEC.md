@@ -40,6 +40,7 @@ deterministic gates so it physically cannot ship a dangerous change.
 | Route | Type | Purpose |
 |---|---|---|
 | `/` | static | The resume surface and the guide. Single page. |
+| `/resume` | static | One A4 page, ATS-parseable, print-to-PDF. Outside the site chrome. |
 | `/demos/ledger-under-fire` | static | Room 1. |
 | `/demos/score-audit` | static | Room 2. |
 | `/demos/split-brain` | static | Room 3. |
@@ -218,6 +219,24 @@ deterministic gates so it physically cannot ship a dangerous change.
     construction and the role window dates it. The two things that are actually
     his credential - reconstructing an app from a compiled build, and turning an
     incident into a gate - are stated separately and never adjacent.
+
+28. **The printable resume is print-to-PDF, never a JS PDF library.** `/resume` is
+    A4-sized with a `@page` rule and downloads through `window.print()`. A
+    client-side renderer like html2canvas rasterises the page into an image, and
+    an image is exactly what an applicant tracking system cannot read - which
+    would defeat the only reason the page exists. Printing also keeps the text
+    selectable and adds nothing to the bundle. Everything must fit ONE page;
+    tighten the layout rather than cut content.
+29. **The demo source is public, and a gate proves a stranger can open it.**
+    Published 2026-08-05 with Mark. Until then the repository was private while
+    every room footer linked files inside it and the section above them was
+    headed "Things I built to be inspected" - so every one of those links 404'd
+    for everyone but him. `check-demos.mjs` asserted only that the paths existed
+    in the working tree, which is true of a private repo too; `probe-demos.mjs`
+    now fetches each source URL and requires a 200.
+30. **There is no `/demos` index.** It rendered the same gallery component as
+    `/#projects`, so a visitor who followed it arrived at a page identical to the
+    one they left. Removed 2026-08-05 (Mark). Room back-links go to `/#projects`.
 
 ## Non-goals
 

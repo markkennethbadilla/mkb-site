@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icons } from "@/components/icons";
 import { nextRoom, sourceLink, REPO_URL, type DemoRoom } from "@/lib/demos/registry";
 
 /**
@@ -60,7 +61,14 @@ export default function SourceFooter({ room }: { room: DemoRoom }) {
         </Link>
       )}
 
-      <div className="space-y-2.5">
+      {/* The repository is a BUTTON, not one more underlined path in the list.
+          It was a text link the same size and weight as the file links, so the one
+          control a reader is most likely to want - "show me the whole thing" - was
+          the least visible thing in the footer. The per-file links stay above it
+          because "start with this file, the difference is one SQL statement" is a
+          better invitation than a repo root, but the way out to everything should
+          look like a way out. */}
+      <div className="space-y-3">
         <p className="text-[13px] leading-relaxed text-muted-foreground">{room.readFirst}</p>
         <ul className="flex flex-wrap gap-x-4 gap-y-1.5">
           {room.sourceFiles.map((path) => (
@@ -75,17 +83,19 @@ export default function SourceFooter({ room }: { room: DemoRoom }) {
               </a>
             </li>
           ))}
-          <li>
-            <a
-              href={REPO_URL}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="font-mono text-[11px] text-muted-foreground underline decoration-border underline-offset-4 transition-colors hover:text-foreground"
-            >
-              whole repository
-            </a>
-          </li>
         </ul>
+        <a
+          href={REPO_URL}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="group inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3.5 py-2 text-[13px] font-medium transition-colors hover:border-foreground/25 hover:bg-accent"
+        >
+          <Icons.github className="size-3.5 text-muted-foreground transition-colors group-hover:text-foreground" />
+          <span>Source on GitHub</span>
+          <span aria-hidden className="text-muted-foreground transition-transform group-hover:translate-x-0.5">
+            &rarr;
+          </span>
+        </a>
       </div>
     </footer>
   );
