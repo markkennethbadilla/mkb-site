@@ -7,6 +7,7 @@ import Link from "next/link";
 import Markdown from "react-markdown";
 import ContactSection from "@/components/section/contact-section";
 import ProjectsSection from "@/components/section/projects-section";
+import SkillGroups from "@/components/section/skill-groups";
 import WorkSection from "@/components/section/work-section";
 import Harness from "@/components/demo/harness";
 import AgentConsole from "@/components/demo/agent-console";
@@ -134,37 +135,7 @@ export default function Page() {
           <BlurFade delay={BLUR_FADE_DELAY * 9}>
             <h2 className="text-xl font-bold">Skills</h2>
           </BlurFade>
-          {/* The icon row is the seven anyone recognises at a glance. It is a
-              visual anchor, not the stack - reading it as the stack is what made
-              this section describe a competent web developer and say nothing about
-              the agent tooling the rest of the page is entirely about. */}
-          <div className="flex flex-wrap gap-2">
-            {DATA.skills.map((skill, id) => (
-              <BlurFade key={skill.name} delay={BLUR_FADE_DELAY * 10 + id * 0.05}>
-                <div className="border bg-background border-border ring-2 ring-border/20 rounded-xl h-8 w-fit px-4 flex items-center gap-2">
-                  {skill.icon && <skill.icon className="size-4 rounded overflow-hidden object-contain" />}
-                  <span className="text-foreground text-sm font-medium">{skill.name}</span>
-                </div>
-              </BlurFade>
-            ))}
-          </div>
-          {/* And the rest of it, grouped, from the same list the resume prints. One
-              source means the two can never drift into telling different stories
-              about what he works in. */}
-          <div className="mt-2 flex flex-col gap-y-2">
-            {DATA.resumeSkills.map((g, id) => (
-              <BlurFade key={g.group} delay={BLUR_FADE_DELAY * 11 + id * 0.04}>
-                <div className="flex flex-col gap-x-3 gap-y-1 sm:flex-row">
-                  <span className="w-[9.5rem] shrink-0 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:pt-[3px]">
-                    {g.group}
-                  </span>
-                  <span className="text-[13px] leading-relaxed text-foreground/85">
-                    {g.items.join(", ")}
-                  </span>
-                </div>
-              </BlurFade>
-            ))}
-          </div>
+          <SkillGroups delayStart={BLUR_FADE_DELAY * 10} />
         </div>
       </section>
       {/* ProjectsSection renders its own <section id="projects">, so it is NOT
