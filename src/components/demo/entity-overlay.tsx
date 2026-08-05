@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, useReducedMotion } from "motion/react";
 import Entity from "@/components/demo/entity";
@@ -47,6 +47,8 @@ export default function EntityOverlay({
   const arrived = stage === "perched";
   const reduced = useReducedMotion();
   const [rect, setRect] = useState<Rect>(() => readRect(target));
+  const entityRef = useRef<HTMLDivElement>(null);
+  const [entityBox, setEntityBox] = useState<Rect | null>(null);
 
   // The page keeps scrolling under the overlay - smooth-scroll is still settling
   // when this mounts - so the rect has to be re-read continuously rather than
@@ -64,6 +66,16 @@ export default function EntityOverlay({
           Math.abs(prev.height - next.height) < 0.5;
         return same ? prev : next;
       });
+      // The entity is measured on the same tick. It moves under a spring, so its
+      // position is only knowable by asking the DOM.
+      if (entityRef.current) {
+        const next = readRect(entityRef.current);
+        setEntityBox((prev) =>
+          prev && Math.abs(prev.left - next.left) < 0.5 && Math.abs(prev.width - next.width) < 0.5
+            ? prev
+            : next
+        );
+      }
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -98,13 +110,21 @@ export default function EntityOverlay({
   const bubbleLeft = clampX(narrow ? rect.left : perchLeft - BUBBLE_W + ENTITY_SIZE, BUBBLE_W);
   const bubbleTop = perchTop + ENTITY_SIZE + 10;
 
-  // Where the tail meets the bubble: under the entity's centre, not the bubble's.
-  // Computed from the entity's real position rather than assumed, because both are
-  // clamped to the viewport independently and near an edge they stop lining up.
-  // Kept a corner-radius clear of each end so the tail never grows out of a curve.
+  // Where the tail meets the bubble: under the entity's ACTUAL centre.
+  //
+  // The first version derived this from perchLeft, the value we hand to `left`.
+  // It sat 138px off, because the entity is a motion.div driven by a shared layout
+  // animation - motion positions it with a transform, so its rendered centre is
+  // not the number we set. Anything computed from perchLeft describes where we
+  // asked it to be, not where it is. So the element is measured, like the section
+  // rect above it.
+  //
+  // Falls back to the geometric estimate for the single frame before the ref
+  // attaches, which is invisible because the bubble has not faded in yet.
   const TAIL = 11;
+  const entityCentre = entityBox ? entityBox.left + entityBox.width / 2 : perchLeft + ENTITY_SIZE / 2;
   const tailLeft = Math.min(
-    Math.max(perchLeft - bubbleLeft + ENTITY_SIZE / 2 - TAIL, 18),
+    Math.max(entityCentre - bubbleLeft - TAIL, 18),
     BUBBLE_W - 18 - TAIL * 2
   );
 
@@ -138,6 +158,7 @@ export default function EntityOverlay({
       {/* The entity itself. layoutId is shared with the parked console, so motion
           interpolates the flight instead of us hand-animating a path. */}
       <motion.div
+        ref={entityRef}
         layoutId="site-guide-entity"
         className="absolute pointer-events-auto"
         style={{ top: perchTop, left: perchLeft }}

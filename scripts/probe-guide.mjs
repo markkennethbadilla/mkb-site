@@ -20,13 +20,14 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText, stepCountIs, tool } from "ai";
 import { z } from "zod";
 import { SECTION_IDS, buildGuidePrompt } from "../src/lib/site-sections.ts";
+import { GUIDE_CHAIN, DEEPSEEK_BASE_URL } from "../src/lib/guide-models.ts";
 import { checkGrounding } from "../src/lib/grounding.ts";
 import { FACTS_BRIEF, LICENSED_TERMS } from "../src/lib/public-facts.ts";
 
 const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 
 const VAULT = process.env.MKB_VAULT_CSV ?? "A:\\credentials\\personal-credential-vault.csv";
-const SLUG = "openrouter/personal-api-key";
+const SLUG = "deepseek/personal-api-key";
 
 function parseCsv(text) {
   const rows = [];
@@ -54,26 +55,18 @@ if (!cred?.secret_value) {
   process.exit(1);
 }
 
-const res = await fetch("https://openrouter.ai/api/v1/models", { headers: { accept: "application/json" } });
-const chain = ((await res.json()).data ?? [])
-  .filter((m) => Number(m.pricing?.prompt ?? 1) === 0 && Number(m.pricing?.completion ?? 1) === 0)
-  .filter((m) => {
-    const out = m.architecture?.output_modalities ?? [];
-    return out.includes("text") && !out.some((o) => ["audio", "image", "video"].includes(o));
-  })
-  .filter((m) => m.supported_parameters?.includes("tools"))
-  .sort((a, b) => (b.context_length ?? 0) - (a.context_length ?? 0))
-  .slice(0, 3)
-  .map((m) => m.id);
-
-console.log(`tool-capable free models: ${chain.length}\n${chain.map((c) => "  " + c).join("\n")}`);
+// Points at the provider and the exact chain production uses. It used to discover
+// free OpenRouter models, which stopped testing anything real the moment the guide
+// moved to DeepSeek - a probe aimed at a provider you do not ship is worse than no
+// probe, because it reports green about code nobody runs.
+const chain = [...GUIDE_CHAIN];
+console.log(`chain under test: ${chain.join(" then ")}`);
 
 const openrouter = createOpenAICompatible({
-  name: "openrouter",
-  baseURL: "https://openrouter.ai/api/v1",
+  name: "deepseek",
+  baseURL: DEEPSEEK_BASE_URL,
   apiKey: cred.secret_value,
   supportsStructuredOutputs: false,
-  headers: { "HTTP-Referer": "https://markkennethbadilla.com", "X-Title": "guide probe" },
 });
 
 const CASES = [

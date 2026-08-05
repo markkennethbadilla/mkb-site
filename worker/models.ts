@@ -30,31 +30,10 @@ import { reserve } from "./budget";
 export const FINAL_FALLBACK = "deepseek/deepseek-v4-flash";
 export const MAX_ATTEMPTS = 3;
 
-/**
- * The guide runs on Mark's own DeepSeek key, not the free OpenRouter tier.
- *
- * Free models answered in 6-9 seconds, which is long enough that a visitor
- * assumes it is broken. Measured on this exact task (scripts/bench-guide.mjs, six
- * representative questions):
- *
- *   deepseek-v4-flash   mean 2279 ms, median 2540, max 3380   5/6 correct
- *   deepseek-v4-pro     mean 6259 ms, median 6476, max 11884  6/6 correct
- *
- * So pro is SLOWER than the free tier it would be replacing, which makes it the
- * wrong default for a page whose complaint was latency. Flash is the primary.
- *
- * DELIBERATE DEVIATION, written down rather than done quietly: the blessed-model
- * rule says a fallback must never be an upgrade, because a costly path that fires
- * on failure runs exactly when nobody is watching. Here it is inverted - flash
- * first, pro only when flash returns no usable tool call (its one miss in the
- * benchmark). The escalation is bounded on four sides: it is a single retry, the
- * daily call ceiling caps volume, the similarity cache means a repeated question
- * never reaches a model at all, and the key itself is capped. The alternative -
- * pro first - costs every visitor six seconds to avoid a retry that happens
- * rarely.
- */
-export const GUIDE_CHAIN = ["deepseek-v4-flash", "deepseek-v4-pro"] as const;
-export const DEEPSEEK_BASE_URL = "https://api.deepseek.com";
+// The guide's model chain lives in src/lib/guide-models.ts, a leaf module, so the
+// probe can load it under Node and test what actually ships. Re-exported here
+// because the Worker is where callers expect to find it.
+export { GUIDE_CHAIN, DEEPSEEK_BASE_URL } from "../src/lib/guide-models";
 
 const CACHE_PREFIX = "openrouter:free-models:v4";
 const CACHE_TTL = 3600;

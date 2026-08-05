@@ -106,6 +106,21 @@ deterministic gates so it physically cannot ship a dangerous change.
 12. **`prefers-reduced-motion` skips the journey, never the destination.** Gate the
     animation, never the element tree - branching the tree on `useReducedMotion`
     makes server and client markup disagree and React discards the subtree.
+13. **The guide shows its own workings, with no toggle.** One line of small
+    monospace under every answer: model or cache, latency, whether the text passed
+    the grounding check, and which tools ran. A "show the work" button would hide
+    the evidence behind an interaction most visitors never perform, on a page whose
+    argument is that a demo should be inspectable. A recruiter skips the line
+    without effort; an engineer does not have to go looking for proof.
+14. **Copy never asserts behaviour the guide does not always perform.** The waiting
+    line used to read "Working out where that lives", which is false for every
+    question answered in place. Phase-accurate copy costs nothing and a visitor
+    catches the discrepancy immediately.
+15. **Anything positioned against the entity is MEASURED, not computed.** It moves
+    under a shared layout animation, so motion renders it with a transform and its
+    real centre is not the value passed to `left`. The speech-bubble tail derived
+    its position arithmetically and sat 138px off; it now reads the element's rect
+    on the same rAF tick as the section rect.
 
 ## Non-goals
 
