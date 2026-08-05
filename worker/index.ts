@@ -346,30 +346,44 @@ const worker = {
     }
 
     const asset = await env.ASSETS.fetch(req);
+    if (asset.status !== 404 || (req.method !== "GET" && req.method !== "HEAD")) return asset;
 
-    // A route that is BOTH a page and a parent of other pages 404s on Assets.
-    // The static export writes /demos as `out/demos.html` and the rooms as
-    // `out/demos/<slug>.html`, so `demos` exists as a file AND as a directory;
-    // Assets resolves the directory, finds no index.html inside it, and stops.
-    // The rooms themselves are fine because nothing is nested under them.
-    //
-    // One retry with the explicit .html, only on a GET that already 404'd and has
-    // no extension of its own. Not a rewrite rule and not a guess about arbitrary
-    // paths - it asks for the exact file the exporter wrote, and if that is not
-    // there either the original 404 stands.
-    if (
-      asset.status === 404 &&
-      (req.method === "GET" || req.method === "HEAD") &&
-      !url.pathname.endsWith("/") &&
-      !url.pathname.split("/").pop()?.includes(".")
-    ) {
-      const asHtml = new URL(req.url);
-      asHtml.pathname = `${url.pathname}.html`;
-      const retry = await env.ASSETS.fetch(new Request(asHtml, req));
-      if (retry.status !== 404) return retry;
+    // TWO PLACES WHERE `output: "export"` WRITES A FILE UNDER A NAME THE CLIENT
+    // DOES NOT ASK FOR. Both are retried exactly once, both only after a real 404,
+    // and both ask for a specific file the exporter demonstrably wrote rather than
+    // rewriting arbitrary paths. If the retry misses too, the original 404 stands.
+    const last = url.pathname.split("/").pop() ?? "";
+    let retryPath: string | null = null;
+
+    if (!url.pathname.endsWith("/") && !last.includes(".")) {
+      // A route that is BOTH a page and a parent of other pages. The export
+      // writes the gallery as `out/demos.html` and the rooms as
+      // `out/demos/<slug>.html`, so `demos` exists as a file AND as a directory;
+      // Assets resolves the directory, finds no index.html inside, and stops. The
+      // rooms are fine only because nothing is nested under them.
+      retryPath = `${url.pathname}.html`;
+    } else if (/^__next\..+\.txt$/.test(last)) {
+      // Segment prefetch payloads. Next writes them nested -
+      // out/demos/split-brain/__next.demos/split-brain/__PAGE__.txt - and the
+      // client asks for the segments joined with dots -
+      // __next.demos.split-brain.__PAGE__.txt. Every one 404s, seven of them on
+      // the gallery alone.
+      //
+      // Nothing breaks: a missed segment prefetch falls back to the full payload.
+      // What it costs is a console full of red on a site whose whole argument is
+      // that you should open it and check, which is the one place a harmless
+      // error is expensive. The experimental flag that would turn this off does
+      // not exist in this version, so it is fixed here.
+      const parts = last.slice("__next.".length, -".txt".length).split(".");
+      const dir = url.pathname.slice(0, -last.length);
+      retryPath = `${dir}__next.${parts.join("/")}.txt`;
     }
 
-    return asset;
+    if (!retryPath) return asset;
+    const retryUrl = new URL(req.url);
+    retryUrl.pathname = retryPath;
+    const retry = await env.ASSETS.fetch(new Request(retryUrl, req));
+    return retry.status === 404 ? asset : retry;
   },
 };
 
