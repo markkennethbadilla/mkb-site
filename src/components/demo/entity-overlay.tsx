@@ -50,6 +50,17 @@ export default function EntityOverlay({
   const entityRef = useRef<HTMLDivElement>(null);
   const [entityBox, setEntityBox] = useState<Rect | null>(null);
 
+  // MINIMISED IS NOT DISMISSED, and keeping those two apart is the whole point of
+  // this state. The bubble is the widest thing on screen and it sits directly over
+  // the section it is describing, so the moment a visitor wants to actually LOOK at
+  // what was highlighted, the answer is in the way. Minimising collapses it to a
+  // small pressable bubble beside the entity and changes nothing else - the entity
+  // stays exactly where it perched, the spotlight stays exactly as it is, and
+  // pressing it puts the answer back. Ending the visit is a separate gesture
+  // (clicking away), because a visitor who wants the view back has not finished
+  // with the answer.
+  const [minimised, setMinimised] = useState(false);
+
   // The page keeps scrolling under the overlay - smooth-scroll is still settling
   // when this mounts - so the rect has to be re-read continuously rather than
   // measured once. rAF rather than a scroll listener, because the smooth scroll
@@ -130,6 +141,18 @@ export default function EntityOverlay({
 
   return createPortal(
     <div className="fixed inset-0 z-50 pointer-events-none">
+      {/* Clicking away is what ends the visit, and it is the ONLY thing that does
+          now that the bubble minimises rather than closes. A sibling rather than an
+          ancestor of the entity and the bubble, so a click on either of those never
+          reaches it - React events bubble to ancestors, not across siblings.
+          Rendered first so it sits under everything it must not intercept. */}
+      <button
+        aria-label="Return the guide to its place"
+        tabIndex={-1}
+        onClick={onDismiss}
+        className="absolute inset-0 cursor-default pointer-events-auto"
+      />
+
       {/* Spotlight */}
       <motion.div
         aria-hidden
@@ -173,14 +196,52 @@ export default function EntityOverlay({
       {/* The bubble is held back until the page has actually arrived. It is the
           punchline, and it landing mid-scroll is what made the sequence feel like
           three things happening at once instead of one. */}
+      {/* Minimised: the answer is still there, it is just out of the way. A small
+          bubble with its own tail, sitting where the big one starts, so the thing
+          you press to get the answer back is in the place the answer just left. */}
+      <motion.button
+        type="button"
+        aria-label="Show the answer again"
+        onClick={() => setMinimised(false)}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={
+          arrived && minimised ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }
+        }
+        transition={{ duration: reduced ? 0 : 0.2, ease: "easeOut" }}
+        style={{
+          top: bubbleTop,
+          left: clampX(entityCentre - 22, 44),
+          pointerEvents: arrived && minimised ? "auto" : "none",
+        }}
+        className={cn(
+          "absolute flex h-11 w-11 items-center justify-center rounded-full",
+          "border border-border bg-popover/95 backdrop-blur-sm shadow-lg",
+          "transition-colors hover:bg-accent"
+        )}
+      >
+        <span
+          aria-hidden
+          className="absolute -top-[5px] left-1/2 size-[11px] -translate-x-1/2 rotate-45 rounded-[2px] border-l border-t border-border bg-popover/95"
+        />
+        {/* Three dots rather than an icon set: it reads as "there is more to say"
+            in any locale and needs no icon font on the critical path. */}
+        <span className="relative -mt-0.5 text-[15px] leading-none tracking-[0.12em] text-muted-foreground">
+          &#8230;
+        </span>
+      </motion.button>
+
       <motion.div
         initial={{ opacity: 0, y: 10, scale: 0.94 }}
-        animate={arrived ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 10, scale: 0.94 }}
+        animate={
+          arrived && !minimised
+            ? { opacity: 1, y: 0, scale: 1 }
+            : { opacity: 0, y: 10, scale: 0.94 }
+        }
         style={{
           top: bubbleTop,
           left: bubbleLeft,
           width: BUBBLE_W,
-          pointerEvents: arrived ? "auto" : "none",
+          pointerEvents: arrived && !minimised ? "auto" : "none",
         }}
         transition={{ delay: reduced || !arrived ? 0 : 0.14, duration: reduced ? 0 : 0.34, ease: "easeOut" }}
         // A speech bubble, not a panel. rounded-[1.25rem] is deliberately rounder
@@ -202,7 +263,24 @@ export default function EntityOverlay({
           className="absolute size-[22px] rotate-45 rounded-[4px] border-l border-t border-border bg-popover/95"
           style={{ top: -11, left: tailLeft }}
         />
-        <span className="relative text-[9px] uppercase tracking-widest text-muted-foreground">{label}</span>
+        <div className="relative flex items-start justify-between gap-2">
+          <span className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</span>
+          {/* Minimise, not close. The distinction matters enough to spell out in
+              the label: a visitor who reads "close" expects the whole thing to go
+              away, and then presses it, and then has to ask again. */}
+          <button
+            type="button"
+            onClick={() => setMinimised(true)}
+            aria-label="Minimise the answer and keep the highlight"
+            title="Minimise"
+            className={cn(
+              "-mr-1 -mt-1 flex size-6 shrink-0 items-center justify-center rounded-full",
+              "text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            )}
+          >
+            <span aria-hidden className="block h-px w-2.5 bg-current" />
+          </button>
+        </div>
         <p className="text-[13px] leading-relaxed text-pretty">{answer}</p>
         {meta}
         <button
