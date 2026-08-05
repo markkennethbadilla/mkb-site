@@ -13,6 +13,7 @@ import { SECTIONS, SECTION_IDS, SUGGESTIONS, buildGuidePrompt } from "../src/lib
 import { checkGrounding, GROUNDING_CASES } from "../src/lib/grounding.ts";
 import { PUBLIC_FACTS, FACTS_BRIEF, LICENSED_TERMS } from "../src/lib/public-facts.ts";
 import { tokenise, similarity, SIMILARITY_CASES } from "../worker/cache.ts";
+import { guardSql, HOSTILE_SQL, ALLOWED_SQL } from "../src/lib/sql-guard.ts";
 
 // Composed the same way the Worker composes it, so the gate tests what ships.
 const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
@@ -157,6 +158,28 @@ for (const id of SECTION_IDS) {
     `prompt describes "${id}"`,
     GUIDE_SYSTEM_PROMPT.includes(`- ${id}:`),
     "The system prompt no longer lists this section, so the model cannot choose it."
+  );
+}
+
+// The SQL guard carried its own hostile corpus and nothing ran it. A guard nobody
+// exercises is indistinguishable from a comment, and this one now protects live
+// per-visitor arena rows added by migration 0004, so it needs to be proven in both
+// directions on every build - refusing what it must refuse, and allowing what it
+// must allow. A guard that only ever refuses is easy to write and useless.
+for (const c of HOSTILE_SQL) {
+  const v = guardSql(c.sql);
+  check(
+    `sql guard refuses: ${c.label}`,
+    !v.ok && v.rule === c.rule,
+    v.ok ? `ALLOWED it. Expected rule "${c.rule}".` : `Refused with "${v.rule}", expected "${c.rule}".`
+  );
+}
+for (const c of ALLOWED_SQL) {
+  const v = guardSql(c.sql);
+  check(
+    `sql guard allows: ${c.label}`,
+    v.ok,
+    v.ok ? "" : `Refused a legitimate query with "${v.rule}": ${v.reason}`
   );
 }
 

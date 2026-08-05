@@ -46,6 +46,21 @@ export const MAX_ROWS = 100;
 const MAX_SQL_CHARS = 2000;
 
 /**
+ * Tables no query may read, whatever else it does.
+ *
+ * SELECT-only is not the same as safe once the database stops being uniformly
+ * public. The ledger demo writes live arena rows keyed by a random run id, and
+ * that id is what stops one visitor reaching another's run over HTTP. A read tool
+ * pointed at the same database would walk straight around it - the FORBIDDEN list
+ * blocks writes, not reads, so `SELECT * FROM ledger_race_accounts` would return
+ * every live arena on the site.
+ *
+ * Added with migration 0004 rather than after the tool that needs it exists,
+ * because the gap opens the moment the tables do.
+ */
+const DENIED_TABLES = [/\bledger_race_[a-z_]*/i];
+
+/**
  * Statements that only ever mutate. `REPLACE` is deliberately absent: SQLite uses
  * it both as an INSERT variant and as a scalar string function, so it is handled
  * separately by looking at what follows it.
@@ -188,6 +203,24 @@ export function guardSql(input: string): SqlVerdict {
     );
   }
 
+  // PRAGMA gets its own rule because the word-boundary check cannot see it.
+  //
+  // SQLite exposes pragmas twice: as the statement `PRAGMA table_list`, which
+  // \bpragma\b catches, and as table-valued FUNCTIONS named `pragma_table_list`,
+  // which it does not - an underscore is a word character, so there is no boundary
+  // after "pragma" to match. That means
+  //   SELECT * FROM customers UNION SELECT 1 FROM pragma_table_list
+  // passed a guard whose stated purpose includes refusing PRAGMA. It was found by
+  // running this file's own hostile corpus in the build gate, which until then
+  // nothing executed.
+  if (/\bpragma_?\w*/i.test(maskedBody)) {
+    return refuse(
+      "read-only",
+      "The statement uses PRAGMA, either as a statement or as one of the pragma_ table-valued functions, which reads database internals rather than data.",
+      "Read the tables directly with SELECT. Schema introspection is available through sqlite_master."
+    );
+  }
+
   for (const word of FORBIDDEN) {
     if (new RegExp(`\\b${word}\\b`, "i").test(maskedBody)) {
       return refuse(
@@ -197,6 +230,17 @@ export function guardSql(input: string): SqlVerdict {
       );
     }
   }
+  for (const denied of DENIED_TABLES) {
+    const hit = maskedBody.match(denied);
+    if (hit) {
+      return refuse(
+        "denied-table",
+        `"${hit[0]}" holds other visitors' live demo runs and is not readable through this tool.`,
+        "Query the seeded demo dataset instead. The arena tables are scoped to a single run and are not public."
+      );
+    }
+  }
+
   // REPLACE(a, b, c) is a perfectly ordinary string function; REPLACE INTO is not.
   if (/\breplace\b(?!\s*\()/i.test(maskedBody)) {
     return refuse(
@@ -245,10 +289,16 @@ export const HOSTILE_SQL: { label: string; sql: string; rule: string }[] = [
   { label: "Schema change", rule: "select-only", sql: "ALTER TABLE invoices ADD COLUMN backdoor TEXT" },
   { label: "CTE hiding a delete", rule: "read-only", sql: "WITH x AS (DELETE FROM payments RETURNING *) SELECT * FROM x" },
   { label: "Pragma probe", rule: "read-only", sql: "SELECT * FROM customers WHERE 1=1 UNION SELECT 1 FROM pragma_table_list" },
-  { label: "Transaction control", rule: "read-only", sql: "BEGIN; SELECT 1" },
+  // Refused for being two statements before the keyword rule is ever reached. The
+  // rule name is what the guard actually did, not what you might expect it to do -
+  // an expectation that does not match the code is a test asserting a fiction.
+  { label: "Transaction control", rule: "one-statement", sql: "BEGIN; SELECT 1" },
   { label: "Attaching another database", rule: "select-only", sql: "ATTACH DATABASE 'x.db' AS x" },
-  { label: "REPLACE INTO", rule: "read-only", sql: "REPLACE INTO plans VALUES (1, 'free', 'Free', 0, 0, 1)" },
+  // Caught by the opening-keyword rule, which fires before the REPLACE special case.
+  { label: "REPLACE INTO", rule: "select-only", sql: "REPLACE INTO plans VALUES (1, 'free', 'Free', 0, 0, 1)" },
   { label: "Non-numeric LIMIT", rule: "unbounded-limit", sql: "SELECT * FROM customers LIMIT (SELECT COUNT(*) FROM customers)" },
+  { label: "Reading another visitor's live demo run", rule: "denied-table", sql: "SELECT * FROM ledger_race_accounts" },
+  { label: "Joining to a denied table", rule: "denied-table", sql: "SELECT c.name FROM customers c JOIN ledger_race_arenas a ON a.run_id = c.name" },
 ];
 
 /**
