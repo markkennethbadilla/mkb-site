@@ -31,6 +31,7 @@ export default function EntityOverlay({
   stage,
   label,
   answer,
+  meta,
   onDismiss,
 }: {
   target: HTMLElement;
@@ -38,6 +39,9 @@ export default function EntityOverlay({
   stage: "outbound" | "perched";
   label: string;
   answer: string;
+  /** What actually ran, in small type. Shown here as well as in the console, so a
+   *  visitor who only ever sees the perched bubble still sees the evidence. */
+  meta?: React.ReactNode;
   onDismiss: () => void;
 }) {
   const arrived = stage === "perched";
@@ -92,7 +96,17 @@ export default function EntityOverlay({
   const perchTop = narrow ? rect.top + rect.height + 8 : rect.top + 4;
 
   const bubbleLeft = clampX(narrow ? rect.left : perchLeft - BUBBLE_W + ENTITY_SIZE, BUBBLE_W);
-  const bubbleTop = perchTop + ENTITY_SIZE + 8;
+  const bubbleTop = perchTop + ENTITY_SIZE + 10;
+
+  // Where the tail meets the bubble: under the entity's centre, not the bubble's.
+  // Computed from the entity's real position rather than assumed, because both are
+  // clamped to the viewport independently and near an edge they stop lining up.
+  // Kept a corner-radius clear of each end so the tail never grows out of a curve.
+  const TAIL = 11;
+  const tailLeft = Math.min(
+    Math.max(perchLeft - bubbleLeft + ENTITY_SIZE / 2 - TAIL, 18),
+    BUBBLE_W - 18 - TAIL * 2
+  );
 
   return createPortal(
     <div className="fixed inset-0 z-50 pointer-events-none">
@@ -148,14 +162,28 @@ export default function EntityOverlay({
           pointerEvents: arrived ? "auto" : "none",
         }}
         transition={{ delay: reduced || !arrived ? 0 : 0.14, duration: reduced ? 0 : 0.34, ease: "easeOut" }}
+        // A speech bubble, not a panel. rounded-[1.25rem] is deliberately rounder
+        // than the site's rounded-xl cards: the entity is the one thing on the page
+        // allowed to be soft, and matching the card radius made it read as a
+        // tooltip rather than something talking.
         className={cn(
-          "absolute rounded-2xl border border-border",
-          "bg-popover/95 backdrop-blur-sm p-3.5 shadow-xl flex flex-col gap-2.5"
+          "absolute rounded-[1.25rem] border border-border",
+          "bg-popover/95 backdrop-blur-sm px-4 py-3.5 shadow-xl flex flex-col gap-2.5"
         )}
         role="status"
       >
-        <span className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</span>
+        {/* The tail. One rotated square with two of its borders showing, sitting
+            half outside the bubble so the bubble's own background covers the seam.
+            A CSS triangle cannot do this - a border-triangle has no border of its
+            own, so it cannot carry the outline the rest of the bubble has. */}
+        <span
+          aria-hidden
+          className="absolute size-[22px] rotate-45 rounded-[4px] border-l border-t border-border bg-popover/95"
+          style={{ top: -11, left: tailLeft }}
+        />
+        <span className="relative text-[9px] uppercase tracking-widest text-muted-foreground">{label}</span>
         <p className="text-[13px] leading-relaxed text-pretty">{answer}</p>
+        {meta}
         <button
           onClick={onDismiss}
           className="self-start rounded-lg bg-foreground px-2.5 py-1.5 text-[11px] font-medium text-background"

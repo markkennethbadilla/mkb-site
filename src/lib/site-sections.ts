@@ -110,25 +110,27 @@ export function sectionById(id: SectionId): SiteSection {
 }
 
 /**
- * Questions the agent will answer, offered as chips so a visitor never has to
- * guess what it is for. Each one is answerable from a real section - none of them
- * invite it to speculate.
+ * Questions the guide will answer, offered as chips so a visitor never has to
+ * guess what it is for.
+ *
+ * Every one is answerable from the fact corpus, and the mix is deliberate: the
+ * first three land on a section and take you there, the last two have no section
+ * and are answered in place. A visitor who only ever clicks chips should see both
+ * behaviours, because a guide that always flies away trains people to expect a
+ * flight and then looks broken when it stays put.
+ *
+ * One was removed rather than reworded: "Has he shipped anything with LLMs in
+ * production?" pointed at the gate-harness section, which is no longer on the
+ * page. A chip that routes nowhere is the kind of quiet rot a gate should catch,
+ * so check-guide.mjs now asserts each chip is answerable.
  */
 export const SUGGESTIONS: string[] = [
   "Where did he go to school?",
   "What is he working on right now?",
-  "Has he shipped anything with LLMs in production?",
-  "What does he actually know how to build?",
   "How do I get in touch?",
+  "Does he have any pets?",
+  "What is his favourite colour?",
 ];
-
-/**
- * What the agent says when a question is not about Mark or this site.
- *
- * Refusal is a routing decision, not a moral one: this thing knows about one
- * person and one page, and pretending otherwise is how a portfolio bot ends up
- * confidently wrong about something a visitor can check.
- */
 /**
  * The guide's system prompt, derived from the section list above so the two can
  * never disagree about what the page contains.
@@ -165,5 +167,3 @@ Your answer is checked against that list before the visitor sees it. Anything yo
 
 You have two ways to respond and no others: one respond call, or one decline call.`;
 
-export const OFF_TOPIC_REPLY =
-  "I only know about Mark and this page. Ask me about his work, his stack, where he studied, or how to reach him.";

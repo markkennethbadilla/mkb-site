@@ -9,7 +9,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { SECTIONS, SECTION_IDS, buildGuidePrompt } from "../src/lib/site-sections.ts";
+import { SECTIONS, SECTION_IDS, SUGGESTIONS, buildGuidePrompt } from "../src/lib/site-sections.ts";
 import { checkGrounding, GROUNDING_CASES } from "../src/lib/grounding.ts";
 import { PUBLIC_FACTS, FACTS_BRIEF, LICENSED_TERMS } from "../src/lib/public-facts.ts";
 import { tokenise, similarity, SIMILARITY_CASES } from "../worker/cache.ts";
@@ -77,6 +77,31 @@ for (const c of GROUNDING_CASES) {
     verdict.grounded === c.grounded,
     `${c.why} Got grounded=${verdict.grounded}` +
       (verdict.grounded ? "" : ` (unlicensed: ${verdict.unlicensed.join(", ")})`)
+  );
+}
+
+// A suggestion chip that routes nowhere is quiet rot: one of these pointed at the
+// gate-harness section for a while after that section came off the page. There is
+// no cheap way to prove a model will answer a given chip, but there IS a cheap way
+// to prove the corpus contains the material - every chip must share a distinctive
+// word with some fact or some section summary.
+const CORPUS = (
+  PUBLIC_FACTS.map((f) => f.text).join(" ") +
+  " " +
+  SECTIONS.map((s) => `${s.id} ${s.summary}`).join(" ")
+).toLowerCase();
+const CHIP_STOP = new Set([
+  "what", "where", "when", "who", "how", "does", "do", "did", "is", "are", "was",
+  "he", "his", "him", "the", "a", "an", "to", "of", "in", "on", "at", "for", "with",
+  "and", "or", "i", "get", "go", "any", "it", "right", "now", "actually", "know",
+]);
+for (const chip of SUGGESTIONS) {
+  const words = chip.toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/).filter((w) => w.length > 2 && !CHIP_STOP.has(w));
+  const covered = words.some((w) => CORPUS.includes(w));
+  check(
+    `suggestion is answerable: "${chip}"`,
+    covered,
+    `No word in this chip appears anywhere in the fact corpus or the section summaries, so the guide has nothing to answer it with. Words checked: ${words.join(", ") || "(none)"}.`
   );
 }
 

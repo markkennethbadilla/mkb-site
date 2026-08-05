@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Entity from "@/components/demo/entity";
 import EntityOverlay from "@/components/demo/entity-overlay";
+import RunMeta from "@/components/demo/run-meta";
 import { SUGGESTIONS, isSectionId, sectionById } from "@/lib/site-sections";
 import { MOCK_MODE, mockRun, type AgentRun } from "@/components/demo/agent-run.mock";
 import { scrollToElement } from "@/lib/smooth-scroll";
@@ -129,10 +130,18 @@ export default function AgentConsole() {
 
         <div className="flex flex-col gap-1 min-w-0">
           <h3 className="text-lg font-bold tracking-tight">Ask about Mark</h3>
+          {/* Both lines used to assert something the guide does not always do.
+              "Working out where that lives" claims it is looking for a place on
+              the page, but most questions about his pets or what he watches have
+              no place - it answers where you stand. Saying so and then not doing
+              it is a small lie that a visitor catches immediately, which is a bad
+              trade for a bit of flavour. */}
           <p className="text-sm text-muted-foreground text-pretty">
             {phase === "thinking"
-              ? "Working out where that lives..."
-              : "It will take you to the part of the page that answers you."}
+              ? "Thinking..."
+              : phase === "outbound"
+                ? "Taking you there..."
+                : "Ask it something. If the answer is on the page it will take you to it."}
           </p>
         </div>
       </div>
@@ -188,14 +197,25 @@ export default function AgentConsole() {
 
       <AnimatePresence>
         {inPlace && (
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="text-sm text-muted-foreground text-pretty border-l-2 border-border pl-3"
+            className={cn(
+              "flex flex-col gap-2 border-l-2 pl-3",
+              run.degraded ? "border-amber-500/50" : "border-border"
+            )}
           >
-            {run.answer}
-          </motion.p>
+            <p
+              className={cn(
+                "text-sm text-pretty",
+                run.degraded ? "text-amber-500" : "text-muted-foreground"
+              )}
+            >
+              {run.answer}
+            </p>
+            <RunMeta run={run} />
+          </motion.div>
         )}
         {error && (
           <motion.p
@@ -215,6 +235,7 @@ export default function AgentConsole() {
             stage={phase}
             label={sectionById(run.section).label}
             answer={run.answer}
+            meta={<RunMeta run={run} />}
             onDismiss={dismiss}
           />
         )}

@@ -32,6 +32,10 @@ export type AgentRun = {
   steps: { tool: string; args: Record<string, unknown> }[];
   /** Present only when the guide could not run: "no-key", "all-models-failed", etc. */
   degraded?: string;
+  /** True when the answer came from the similarity cache and no model was called. */
+  cached?: boolean;
+  /** True when the model's own words passed the grounding check. */
+  grounded?: boolean;
 };
 
 /**

@@ -62,7 +62,12 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "education",
-    text: "He studied BS Information Technology at Cebu Institute of Technology from 2021 to 2025, and graduated Magna Cum Laude.",
+    // "school" and "university" are in the text on purpose. Nobody asks "where did
+    // he pursue tertiary education" - they ask where he went to school, and a
+    // corpus that never uses the word people use is a corpus the model has to
+    // bridge on its own. The build gate enforces this: every suggestion chip must
+    // share a word with the corpus.
+    text: "He went to school at Cebu Institute of Technology - University, where he studied BS Information Technology from 2021 to 2025 and graduated Magna Cum Laude.",
     terms: ["BS", "Information", "Technology", "Cebu", "Institute", "Technology", "University", "2021", "2025", "Magna", "Cum", "Laude"],
   },
   {
@@ -105,7 +110,7 @@ export const PUBLIC_FACTS: PublicFact[] = [
   // on the other end, and none of them is anything he would mind a stranger knowing.
   {
     id: "pets",
-    text: "He has two cats and two chickens.",
+    text: "He has pets: two cats and two chickens.",
     terms: [],
   },
   {
