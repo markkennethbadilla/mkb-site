@@ -44,9 +44,20 @@ deterministic gates so it physically cannot ship a dangerous change.
 3. **Static export, not the OpenNext Workers adapter.** OpenNext cannot build from
    a non-`C:` drive on Windows (Node's ESM loader rejects an `a:` URL scheme), and
    every route here prerenders anyway. A Worker handles only `/api/*`.
-4. **Free models are discovered at runtime, never hardcoded.** OpenRouter's free
-   tier churns; pinned slugs guarantee a dead demo within weeks. Only the final
-   fallback (`deepseek/deepseek-v4-flash`) is fixed.
+4. **Free models are discovered at runtime, never hardcoded** - still true of the
+   gate harness (`/api/agent`), because OpenRouter's free tier churns and a pinned
+   slug guarantees a dead demo within weeks. **The guide no longer discovers.** A
+   key Mark owns has a stable published model list, so discovery would be a
+   network round trip to learn something already known. Its chain is pinned to
+   exact versioned ids, never a floating alias, which would repoint both the model
+   and the price under a running site.
+4b. **The guide's fallback is an upgrade, deliberately.** `deepseek-v4-flash`
+   first, `deepseek-v4-pro` only when flash returns no usable tool call. This
+   inverts the usual rule that a fallback must be cheaper, because that rule exists
+   to stop a costly path running unwatched - and here the escalation is a single
+   retry, capped by the daily ceiling, made rare by the cache, and backstopped by
+   the key's own limit. The alternative, pro first, costs every visitor six seconds
+   to avoid a retry that happens once in six questions.
 5. **Filter free models on modality exclusively, not inclusively.** Google's Lyria
    advertises `output_modalities: ["text","audio"]`, so `includes("text")` accepts
    a music model. A usable chat model emits text and nothing else.
@@ -109,8 +120,16 @@ deterministic gates so it physically cannot ship a dangerous change.
 - **No "available for hire" banner.** The site reads as a senior engineer's work,
   not as an appeal.
 - **No blog until there is real writing.** An empty blog reads worse than none.
-- **No paid infrastructure.** Cloudflare free tier, free-tier inference, hard
-  daily cap.
+- **No paid infrastructure**, with one named exception. Hosting stays entirely on
+  the Cloudflare free tier. **Inference does not**: the guide runs on Mark's own
+  DeepSeek key, changed 2026-08-05. Free models answered in 6 to 9 seconds, which
+  is long enough that a visitor assumes the page is broken, and a demo nobody
+  waits for demonstrates nothing. Measured on the real task
+  (`scripts/bench-guide.mjs`): `deepseek-v4-flash` 2279 ms mean against
+  `deepseek-v4-pro` 6259 ms and free models at 6-9 s. Spend is bounded on four
+  sides - a 300/day model-call ceiling, the similarity cache so a repeated
+  question never reaches a model, the per-IP and per-pool request budgets, and the
+  key's own spending cap.
 
 ## Guardrails on the demo
 

@@ -24,11 +24,10 @@ import { buildToolbox, type GuideDecision } from "./guide-tools";
 import { lookup, remember } from "./cache";
 import { reserve } from "./budget";
 import {
-  discoverFreeModels,
   json,
   refuseForQuota,
-  FINAL_FALLBACK,
-  MAX_ATTEMPTS,
+  GUIDE_CHAIN,
+  DEEPSEEK_BASE_URL,
   type Env,
 } from "./models";
 
@@ -58,7 +57,7 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
   const overBudget = await reserve(env, "guide", ip, 1);
   if (overBudget) return json(degraded(`rate-limited:${overBudget.reason}`, overBudget.detail));
 
-  const key = env.OPENROUTER_API_KEY;
+  const key = env.DEEPSEEK_API_KEY;
   if (!key) return json(degraded("no-key"));
 
   // Inference spend is a separate ceiling, reserved only once there is a key and
@@ -86,20 +85,20 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
     });
   }
 
-  const openrouter = createOpenAICompatible({
-    name: "openrouter",
-    baseURL: "https://openrouter.ai/api/v1",
+  // Runtime discovery is gone from this path. It existed because the free tier
+  // churns and a pinned slug guarantees a dead demo within weeks; a key Mark owns
+  // has a stable, published model list, so discovery would be a network round trip
+  // to learn something already known. The chain is pinned to exact versioned ids -
+  // never a floating alias, which would repoint the model and the price under a
+  // running site.
+  const deepseek = createOpenAICompatible({
+    name: "deepseek",
+    baseURL: DEEPSEEK_BASE_URL,
     apiKey: key,
     supportsStructuredOutputs: false,
-    headers: {
-      "HTTP-Referer": "https://markkennethbadilla.com",
-      "X-Title": "markkennethbadilla.com site guide",
-    },
   });
 
-  const discovered = await discoverFreeModels(env, { requireTools: true });
-  if (!discovered.length && !FINAL_FALLBACK) return json(degraded("no-tool-capable-model"));
-  const chain = [...discovered.slice(0, MAX_ATTEMPTS), FINAL_FALLBACK];
+  const chain = [...GUIDE_CHAIN];
 
   for (const model of chain) {
     const decision: GuideDecision = {
@@ -112,7 +111,7 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
     const startedAt = Date.now();
     try {
       const result = await generateText({
-        model: openrouter(model),
+        model: deepseek(model),
         system: GUIDE_SYSTEM_PROMPT,
         prompt: parsed.data.question,
         tools: buildToolbox(decision),
@@ -218,8 +217,9 @@ function degraded(reason: string, detail?: string) {
 
 const DEGRADED_COPY: Record<string, string> = {
   "no-key": "The guide is not configured with a model key right now, so it cannot think. Everything on the page is still here to read.",
+  "rate-limited:ip-daily-cap": "You have used your share of today's guide budget. It resets at midnight UTC.",
+  "rate-limited:pool-exhausted": "The guide has used today's request budget. It is back at midnight UTC.",
   "rate-limited:burst": "That was a lot of questions at once. Give it a few seconds and ask again.",
   "rate-limited:daily-cap": "The guide has used up today's free inference budget. It will be back tomorrow.",
-  "no-tool-capable-model": "No free model that can use tools is available right now, and the guide will not pretend to navigate without one.",
   "all-models-failed": "Every model in the chain failed on that question. Nothing was made up to cover for it.",
 };

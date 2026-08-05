@@ -17,6 +17,8 @@ export interface Env {
   DEMO_KV: KVNamespace;
   DEMO_DB?: D1Database;
   OPENROUTER_API_KEY?: string;
+  /** Mark's own DeepSeek key. The guide runs on this; the old harness does not. */
+  DEEPSEEK_API_KEY?: string;
   /** Cloudflare native rate limiter, 6/60s. Absent in local dev; treated as open. */
   BURST_LIMITER?: { limit: (o: { key: string }) => Promise<{ success: boolean }> };
   /** 60/60s, for endpoints a single click legitimately calls in a burst. */
@@ -28,6 +30,32 @@ import { reserve } from "./budget";
 export const FINAL_FALLBACK = "deepseek/deepseek-v4-flash";
 export const MAX_ATTEMPTS = 3;
 
+/**
+ * The guide runs on Mark's own DeepSeek key, not the free OpenRouter tier.
+ *
+ * Free models answered in 6-9 seconds, which is long enough that a visitor
+ * assumes it is broken. Measured on this exact task (scripts/bench-guide.mjs, six
+ * representative questions):
+ *
+ *   deepseek-v4-flash   mean 2279 ms, median 2540, max 3380   5/6 correct
+ *   deepseek-v4-pro     mean 6259 ms, median 6476, max 11884  6/6 correct
+ *
+ * So pro is SLOWER than the free tier it would be replacing, which makes it the
+ * wrong default for a page whose complaint was latency. Flash is the primary.
+ *
+ * DELIBERATE DEVIATION, written down rather than done quietly: the blessed-model
+ * rule says a fallback must never be an upgrade, because a costly path that fires
+ * on failure runs exactly when nobody is watching. Here it is inverted - flash
+ * first, pro only when flash returns no usable tool call (its one miss in the
+ * benchmark). The escalation is bounded on four sides: it is a single retry, the
+ * daily call ceiling caps volume, the similarity cache means a repeated question
+ * never reaches a model at all, and the key itself is capped. The alternative -
+ * pro first - costs every visitor six seconds to avoid a retry that happens
+ * rarely.
+ */
+export const GUIDE_CHAIN = ["deepseek-v4-flash", "deepseek-v4-pro"] as const;
+export const DEEPSEEK_BASE_URL = "https://api.deepseek.com";
+
 const CACHE_PREFIX = "openrouter:free-models:v4";
 const CACHE_TTL = 3600;
 
@@ -36,7 +64,14 @@ const CACHE_TTL = 3600;
  * calls, so counting requests would let a single visitor burn the day's budget in
  * a handful of clicks.
  */
-const DAILY_MODEL_CALLS = 1500;
+/**
+ * Tightened hard when the guide moved from free inference to a paid key. 1500
+ * calls a day was a sensible ceiling when a call cost nothing; at roughly 5k
+ * tokens a call against a metered balance it is not. The cache absorbs repeats,
+ * so this bounds genuinely distinct questions per day, and the key's own spending
+ * cap is the backstop underneath it.
+ */
+const DAILY_MODEL_CALLS = 300;
 
 type OpenRouterModel = {
   id: string;
