@@ -41,17 +41,62 @@ export const DATA = {
   resumeSummary:
     "AI Engineer working on agentic engineering, which is the harness around LLM agents. Gated codebases, deterministic guardrails and verification, so an agent can ship production code without breaking things. I build the checks that make a bad change uncommittable, deploy without downtime, and rehearse the recovery rather than diagramming it.",
 
-  // The skills the printable resume lists, as plain strings.
+  // The real stack, grouped.
   //
   // Separate from `skills` above, which is the seven-icon row the site renders and
-  // is chosen for recognisability. A resume is read by a keyword matcher as well as
-  // a person, so this is the full honest stack from the fact corpus rather than the
-  // subset that has a nice logo. Written out, comma-separated, never as pills - see
-  // the note in src/components/resume/sheet.tsx.
+  // is chosen for recognisability. This is the honest list, and it is grouped
+  // because an ungrouped run of forty comma-separated words is a wall that a human
+  // skips and a keyword matcher reads no better.
+  //
+  // WHAT WAS MISSING, AND WHY IT MATTERED (Mark, 2026-08-05: "my stack is
+  // misrepresenting me"). The old list was eighteen mainstream web technologies. It
+  // said nothing about the agent tooling he works in every day, nothing about the
+  // automation platforms, nothing about speech, and nothing about design - so the
+  // page described a competent web developer rather than the person who builds
+  // agent harnesses. Sourced from life-db/mark-knowledge-base.md and the impact
+  // dossier rather than from memory.
+  //
+  // THE LINE ON EMPLOYER TOOLING. A tool he can USE is a skill and belongs here; a
+  // tool an employer SUBSCRIBES TO is clause 4.1 material and does not. So n8n,
+  // GoHighLevel, OpenRouter and the rest are in - they are generic, transferable
+  // and say nothing about who runs what. Apollo, Teramind, ClickUp and Breezy stay
+  // out: he audited those as line items, which is not the same as a skill.
   resumeSkills: [
-    "TypeScript", "Node.js", "Bun", "Python", "PostgreSQL", "Redis", "Docker",
-    "Next.js", "React", "Drizzle ORM", "SQLite", "Cloudflare Workers",
-    "LLM tooling", "MCP", "Vercel AI SDK", "Git", "CI/CD", "Linux",
+    {
+      group: "Languages",
+      items: ["TypeScript", "JavaScript", "Python", "SQL", "HTML", "CSS"],
+    },
+    {
+      group: "Frontend",
+      items: ["React", "Next.js", "Tailwind CSS", "shadcn/ui", "HTMX", "Figma"],
+    },
+    {
+      group: "Backend",
+      items: ["Node.js", "Bun", "NestJS", "REST APIs", "Zod", "BullMQ"],
+    },
+    {
+      group: "Data",
+      items: ["PostgreSQL", "SQLite", "Redis", "Drizzle ORM", "Prisma ORM", "Cloudflare D1", "NocoDB"],
+    },
+    {
+      group: "AI and agents",
+      items: [
+        "OpenRouter", "Model cascades", "Vercel AI SDK", "MCP", "RAG",
+        "Claude Code", "OpenCode", "Antigravity", "Codex",
+        "Whisper STT", "ElevenLabs", "Kokoro TTS", "Pinecone",
+      ],
+    },
+    {
+      group: "Infrastructure",
+      items: [
+        "Docker", "Docker Compose", "Cloudflare Workers", "Cloudflare Tunnels",
+        "Caddy", "Tailscale", "Linux", "Git", "CI/CD",
+      ],
+    },
+    {
+      group: "Automation",
+      items: ["n8n", "GoHighLevel", "Webhook and cron orchestration"],
+    },
   ],
 
   certifications: ["TOPCIT Level 3", "PhilNITS Fundamental Engineer (FE)"],

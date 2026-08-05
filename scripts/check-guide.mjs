@@ -183,12 +183,33 @@ for (const fact of PUBLIC_FACTS) {
 // the resume text is the one a visitor reads without asking anything, and it is
 // where a paragraph gets pasted in from a CV draft that was written for a named
 // recruiter rather than for the open internet.
-const resumeSrc = read("src/data/resume.tsx");
-const resumeHits = FORBIDDEN.filter((_, i) => FORBIDDEN_RE[i].test(resumeSrc));
+//
+// PROSE ONLY, and the length threshold is what makes that precise. The risk this
+// guards is a SENTENCE that describes an employer's systems - "we run X" - not a
+// one-word entry in a skills inventory. A tool he can use is a transferable skill
+// and belongs on a resume; a tool an employer subscribes to is clause 4.1 material
+// and does not. Scanning every string in the file conflated those two and failed on
+// "GoHighLevel" sitting in a list beside "n8n" and "Figma".
+//
+// It also stopped scanning comments, which it never should have: the first version
+// failed on a comment whose entire purpose was to record WHY Apollo, Teramind,
+// ClickUp and Breezy are excluded. A guard that fires on its own documentation
+// teaches people to delete the documentation.
+// Comments are stripped BEFORE the strings are extracted, and the order matters.
+// A quoted phrase inside a comment - this file quotes Mark - opens a match that
+// then runs through the surrounding comment text until the next quote, so the
+// scanner read a paragraph of prose that does not exist and failed on words that
+// only appear in a note explaining why they are excluded.
+const resumeSrc = read("src/data/resume.tsx")
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/^\s*\/\/.*$/gm, "");
+const PROSE_MIN = 60;
+const resumeProse = [...resumeSrc.matchAll(/"((?:[^"\\]|\\.){60,})"/g)].map((m) => m[1]).join("\n");
+const resumeHits = FORBIDDEN.filter((_, i) => FORBIDDEN_RE[i].test(resumeProse));
 check(
-  "page copy names no employer internal",
+  `page prose names no employer internal (strings over ${PROSE_MIN} chars)`,
   resumeHits.length === 0,
-  `src/data/resume.tsx contains ${resumeHits.join(", ")}.`
+  `src/data/resume.tsx prose contains ${resumeHits.join(", ")}.`
 );
 
 // The cache threshold, on the pairs it has to get right.

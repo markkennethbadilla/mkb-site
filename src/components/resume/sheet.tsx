@@ -151,10 +151,25 @@ export default function Sheet() {
       </Section>
 
       <Section title="Skills">
-        {/* A comma-separated line, not a grid of pills. Pills are the classic ATS
-            trap: they look like a skills matrix and flatten into an unpunctuated
-            run of words that a parser cannot split into individual skills. */}
-        <p className="text-[8.4pt] leading-[1.45]">{DATA.resumeSkills.join(", ")}</p>
+        {/* Grouped, comma-separated lines. Never a grid of pills - pills are the
+            classic ATS trap, because they look like a skills matrix and flatten
+            into an unpunctuated run of words a parser cannot split back apart.
+            The group label is a real text prefix on the same line, so a parser
+            reading straight through gets "Languages TypeScript, JavaScript..."
+            rather than a heading orphaned from the list it introduces. */}
+        {/* Sized tight on purpose. Seven groups is a lot of lines, and adding them
+            took the page from 39mm of headroom to 10mm - close enough that one more
+            skill would have pushed it to a second sheet without anyone noticing. A
+            narrower label column also buys the values more width, which is what
+            actually removes wrapped lines. */}
+        <dl className="space-y-[0.4mm]">
+          {DATA.resumeSkills.map((g) => (
+            <div key={g.group} className="flex gap-[1.5mm] text-[7.9pt] leading-[1.32]">
+              <dt className="w-[20mm] shrink-0 font-semibold">{g.group}</dt>
+              <dd>{g.items.join(", ")}</dd>
+            </div>
+          ))}
+        </dl>
       </Section>
 
       <Section title="Projects">
