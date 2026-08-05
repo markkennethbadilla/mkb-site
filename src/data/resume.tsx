@@ -41,61 +41,118 @@ export const DATA = {
   resumeSummary:
     "AI Engineer working on agentic engineering, which is the harness around LLM agents. Gated codebases, deterministic guardrails and verification, so an agent can ship production code without breaking things. I build the checks that make a bad change uncommittable, deploy without downtime, and rehearse the recovery rather than diagramming it.",
 
-  // The real stack, grouped.
+  // The real stack, grouped, and every entry carries three things beyond its name.
   //
-  // Separate from `skills` above, which is the seven-icon row the site renders and
-  // is chosen for recognisability. This is the honest list, and it is grouped
-  // because an ungrouped run of forty comma-separated words is a wall that a human
-  // skips and a keyword matcher reads no better.
+  // WHY EACH ONE EARNS ITS PLACE. A bare list of forty words assumes the reader
+  // already knows all forty, which nobody does - a recruiter does not know what
+  // Drizzle or Caddy or Kokoro is, and a specialist in one half of this list does
+  // not know the other half. So:
+  //   `url`   the official site, because a name you cannot look up is trivia
+  //   `blurb` one line saying what it IS, for the reader who does not know
+  //   `icon`  the simple-icons slug, or omitted where the thing has no brand mark
   //
-  // WHAT WAS MISSING, AND WHY IT MATTERED (Mark, 2026-08-05: "my stack is
-  // misrepresenting me"). The old list was eighteen mainstream web technologies. It
-  // said nothing about the agent tooling he works in every day, nothing about the
-  // automation platforms, nothing about speech, and nothing about design - so the
-  // page described a competent web developer rather than the person who builds
-  // agent harnesses. Sourced from life-db/mark-knowledge-base.md and the impact
-  // dossier rather than from memory.
+  // Items with no `icon` are not oversights. "REST APIs", "RAG" and "Model
+  // cascades" are techniques, not products; they get a neutral glyph rather than
+  // some vendor's logo standing in for a concept.
+  //
+  // WHAT WAS MISSING BEFORE (Mark, 2026-08-05: "my stack is misrepresenting me").
+  // The old list was eighteen mainstream web technologies, which described a
+  // competent web developer rather than the person who builds agent harnesses.
+  // Sourced from life-db/mark-knowledge-base.md and the impact dossier.
   //
   // THE LINE ON EMPLOYER TOOLING. A tool he can USE is a skill and belongs here; a
   // tool an employer SUBSCRIBES TO is clause 4.1 material and does not. So n8n,
-  // GoHighLevel, OpenRouter and the rest are in - they are generic, transferable
-  // and say nothing about who runs what. Apollo, Teramind, ClickUp and Breezy stay
-  // out: he audited those as line items, which is not the same as a skill.
+  // GoHighLevel and the rest are in, being generic and transferable; Apollo,
+  // Teramind, ClickUp and Breezy stay out, because auditing a subscription is not
+  // a skill.
   resumeSkills: [
     {
       group: "Languages",
-      items: ["TypeScript", "JavaScript", "Python", "SQL", "HTML", "CSS"],
+      items: [
+        { name: "TypeScript", icon: "typescript", url: "https://www.typescriptlang.org", blurb: "JavaScript with static types, checked before the code runs." },
+        { name: "JavaScript", icon: "javascript", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript", blurb: "The language every browser runs, and half the servers too." },
+        { name: "Python", icon: "python", url: "https://www.python.org", blurb: "General-purpose language, the default for data work and scripting." },
+        { name: "SQL", url: "https://www.postgresql.org/docs/current/sql.html", blurb: "The query language relational databases speak." },
+        { name: "Bash", icon: "gnubash", url: "https://www.gnu.org/software/bash/", blurb: "The Unix shell. Most automation starts as a shell script." },
+        { name: "HTML", icon: "html5", url: "https://developer.mozilla.org/en-US/docs/Web/HTML", blurb: "The markup every web page is made of." },
+        { name: "CSS", icon: "css", url: "https://developer.mozilla.org/en-US/docs/Web/CSS", blurb: "How a web page is styled and laid out." },
+      ],
     },
     {
       group: "Frontend",
-      items: ["React", "Next.js", "Tailwind CSS", "shadcn/ui", "HTMX", "Figma"],
+      items: [
+        { name: "React", icon: "react", url: "https://react.dev", blurb: "The library most interactive interfaces are built with." },
+        { name: "Next.js", icon: "nextdotjs", url: "https://nextjs.org", blurb: "The React framework handling routing, rendering and builds." },
+        { name: "Tailwind CSS", icon: "tailwindcss", url: "https://tailwindcss.com", blurb: "Styling by composing small utility classes instead of writing CSS files." },
+        { name: "shadcn/ui", icon: "shadcnui", url: "https://ui.shadcn.com", blurb: "Accessible components you copy into your own codebase and own." },
+        { name: "HTMX", icon: "htmx", url: "https://htmx.org", blurb: "Interactivity driven by HTML attributes, with almost no JavaScript." },
+        { name: "Figma", icon: "figma", url: "https://www.figma.com", blurb: "The design tool interfaces are drawn and handed off in." },
+        { name: "Motion", icon: "framer", url: "https://motion.dev", blurb: "Animation for React, used for the guide on this page." },
+      ],
     },
     {
       group: "Backend",
-      items: ["Node.js", "Bun", "NestJS", "REST APIs", "Zod", "BullMQ"],
+      items: [
+        { name: "Node.js", icon: "nodedotjs", url: "https://nodejs.org", blurb: "JavaScript on the server, outside a browser." },
+        { name: "Bun", icon: "bun", url: "https://bun.sh", blurb: "A faster JavaScript runtime and package manager." },
+        { name: "NestJS", icon: "nestjs", url: "https://nestjs.com", blurb: "An opinionated Node framework for structured server applications." },
+        { name: "REST APIs", url: "https://developer.mozilla.org/en-US/docs/Glossary/REST", blurb: "The conventional way services talk to each other over HTTP." },
+        { name: "Zod", icon: "zod", url: "https://zod.dev", blurb: "Schema validation that rejects malformed input before it reaches your code." },
+        { name: "BullMQ", icon: "redis", url: "https://docs.bullmq.io", blurb: "A job queue on Redis, for work that should happen later or retry." },
+      ],
     },
     {
       group: "Data",
-      items: ["PostgreSQL", "SQLite", "Redis", "Drizzle ORM", "Prisma ORM", "Cloudflare D1", "NocoDB"],
+      items: [
+        { name: "PostgreSQL", icon: "postgresql", url: "https://www.postgresql.org", blurb: "The relational database most of this work is built on." },
+        { name: "SQLite", icon: "sqlite", url: "https://www.sqlite.org", blurb: "A whole database in a single file. Runs everywhere, including at the edge." },
+        { name: "Redis", icon: "redis", url: "https://redis.io", blurb: "An in-memory store used for caching, queues and locks." },
+        { name: "Drizzle ORM", icon: "drizzle", url: "https://orm.drizzle.team", blurb: "A TypeScript query builder that stays close to the SQL you meant." },
+        { name: "Prisma ORM", icon: "prisma", url: "https://www.prisma.io", blurb: "A schema-first ORM with generated, typed database clients." },
+        { name: "Cloudflare D1", icon: "cloudflare", url: "https://developers.cloudflare.com/d1/", blurb: "SQLite running at Cloudflare's edge. The demos on this site use it." },
+        { name: "NocoDB", url: "https://nocodb.com", blurb: "A spreadsheet-style interface over a real relational database." },
+      ],
     },
     {
       group: "AI and agents",
       items: [
-        "OpenRouter", "Model cascades", "Vercel AI SDK", "MCP", "RAG",
-        "Claude Code", "OpenCode", "Antigravity", "Codex",
-        "Whisper STT", "ElevenLabs", "Kokoro TTS", "Pinecone",
+        { name: "OpenRouter", url: "https://openrouter.ai", blurb: "One API in front of hundreds of models, so you can switch without rewriting." },
+        { name: "Model cascades", url: "https://openrouter.ai/docs/features/model-routing", blurb: "Try a cheap model first and escalate only when it fails. Cost control, not a product." },
+        { name: "Vercel AI SDK", icon: "vercel", url: "https://ai-sdk.dev", blurb: "The toolkit this site's guide uses for tool-calling and streaming." },
+        { name: "MCP", icon: "modelcontextprotocol", url: "https://modelcontextprotocol.io", blurb: "An open standard for giving a model tools and data sources." },
+        { name: "RAG", url: "https://en.wikipedia.org/wiki/Retrieval-augmented_generation", blurb: "Retrieve the relevant documents first, then let the model answer from them." },
+        { name: "Claude Code", icon: "claudecode", url: "https://claude.com/claude-code", blurb: "Anthropic's coding agent. Runs in the terminal and edits real repositories." },
+        { name: "OpenCode", url: "https://opencode.ai", blurb: "An open-source terminal coding agent that runs against any model." },
+        { name: "Antigravity", icon: "googlegemini", url: "https://antigravity.google", blurb: "Google's agent-first development environment." },
+        { name: "Codex", url: "https://openai.com/codex/", blurb: "OpenAI's software engineering agent." },
+        { name: "Whisper STT", url: "https://openai.com/index/whisper/", blurb: "Speech-to-text. Turns recorded audio into a usable transcript." },
+        { name: "ElevenLabs", icon: "elevenlabs", url: "https://elevenlabs.io", blurb: "Text-to-speech with convincing voices." },
+        { name: "Kokoro TTS", icon: "huggingface", url: "https://huggingface.co/hexgrad/Kokoro-82M", blurb: "A small open text-to-speech model, cheap enough to self-host." },
+        { name: "Pinecone", url: "https://www.pinecone.io", blurb: "A vector database, for finding text by meaning rather than keyword." },
       ],
     },
     {
       group: "Infrastructure",
       items: [
-        "Docker", "Docker Compose", "Cloudflare Workers", "Cloudflare Tunnels",
-        "Caddy", "Tailscale", "Linux", "Git", "CI/CD",
+        { name: "Docker", icon: "docker", url: "https://www.docker.com", blurb: "Packages an app with everything it needs so it runs the same anywhere." },
+        { name: "Docker Compose", icon: "docker", url: "https://docs.docker.com/compose/", blurb: "Defines and runs a whole multi-container stack from one file." },
+        { name: "Cloudflare Workers", icon: "cloudflareworkers", url: "https://workers.cloudflare.com", blurb: "Code that runs at the edge, close to the visitor. This site is one." },
+        { name: "Cloudflare Tunnels", icon: "cloudflare", url: "https://www.cloudflare.com/products/tunnel/", blurb: "Exposes a service without opening a single port on the machine." },
+        { name: "Caddy", icon: "caddy", url: "https://caddyserver.com", blurb: "A web server that gets and renews HTTPS certificates on its own." },
+        { name: "Tailscale", icon: "tailscale", url: "https://tailscale.com", blurb: "A private network between machines, with no public exposure." },
+        { name: "Linux", icon: "linux", url: "https://www.kernel.org", blurb: "The operating system every server here runs." },
+        { name: "Git", icon: "git", url: "https://git-scm.com", blurb: "Version control. The history that makes a rollback possible." },
+        { name: "CI/CD", icon: "githubactions", url: "https://docs.github.com/en/actions", blurb: "Automated checks and deploys that run on every change." },
       ],
     },
     {
       group: "Automation",
-      items: ["n8n", "GoHighLevel", "Webhook and cron orchestration"],
+      items: [
+        { name: "n8n", icon: "n8n", url: "https://n8n.io", blurb: "Self-hostable workflow automation. Connects services without writing glue code." },
+        { name: "GoHighLevel", url: "https://www.gohighlevel.com", blurb: "A CRM and marketing platform, usually automated against via its API." },
+        { name: "Webhooks", url: "https://en.wikipedia.org/wiki/Webhook", blurb: "One service calling yours the moment something happens, instead of polling." },
+        { name: "Cron", icon: "linux", url: "https://en.wikipedia.org/wiki/Cron", blurb: "The scheduler that runs a job at a fixed time, every time." },
+      ],
     },
   ],
 

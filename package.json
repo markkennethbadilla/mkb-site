@@ -15,7 +15,9 @@
     "probe:guide": "node scripts/probe-guide.mjs",
     "seed": "node scripts/gen-seed.mjs",
     "cf": "node scripts/cf.mjs",
-    "deploy": "bun run build && node scripts/cf.mjs deploy"
+    "deploy": "bun run build && node scripts/cf.mjs deploy",
+    "icons": "node scripts/gen-skill-icons.mjs",
+    "check:links": "node scripts/check-links.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "3.0.22",
@@ -57,6 +59,7 @@
     "eslint": "9.39.2",
     "eslint-config-next": "16.1.1",
     "postcss": "8.5.6",
+    "simple-icons": "16.28.0",
     "typescript": "5.9.3",
     "wrangler": "4.118.0",
     "zod": "4.4.3"

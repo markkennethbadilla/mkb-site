@@ -166,7 +166,10 @@ export default function Sheet() {
           {DATA.resumeSkills.map((g) => (
             <div key={g.group} className="flex gap-[1.5mm] text-[7.9pt] leading-[1.32]">
               <dt className="w-[20mm] shrink-0 font-semibold">{g.group}</dt>
-              <dd>{g.items.join(", ")}</dd>
+              {/* Names only. The site's pills carry each item's logo, link and
+                  one-line explanation; on paper those are noise at best, and a
+                  hyperlink is invisible. An ATS wants the words. */}
+              <dd>{g.items.map((i) => i.name).join(", ")}</dd>
             </div>
           ))}
         </dl>
