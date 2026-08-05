@@ -1,0 +1,187 @@
+"use client";
+
+import { useState } from "react";
+import { useReducedMotion } from "motion/react";
+import { roomBySlug } from "@/lib/demos/registry";
+import { TelemetryStrip } from "@/components/demos/shell/telemetry";
+import { GUIDE_CHAIN } from "@/lib/guide-models";
+import { QUESTIONS, type Preset } from "@/lib/demos/score-audit-questions";
+import { Gauges } from "./gauges";
+import { QuestionRow, type QuestionResult } from "./question-row";
+
+const room = roomBySlug("score-audit")!;
+
+type RunResponse = {
+  preset: Preset;
+  canQuery: boolean;
+  model: string;
+  ms: number;
+  totalQuestions: number;
+  sampleSize: number;
+  correctCount: number;
+  meanConfidence: number;
+  accuracyPct: number;
+  calibrationGap: number;
+  results: QuestionResult[];
+  inputTokens: number | null;
+  outputTokens: number | null;
+};
+
+type Status = "idle" | "running" | "done" | "error";
+
+// The shell already prints room.promise above this component (RoomShell's <h1>/<p>).
+// Repeating it here would be the same sentence twice on one screen, so this room's
+// own big line is a distinct hook pointed at the mechanism, not a restatement.
+const HOOK_LINE = "How sure did it sound - and was it right?";
+
+/**
+ * The control names what it takes away, not a difficulty. "Hard" would imply the
+ * questions changed; they do not. The only variable is whether the model may look.
+ */
+const PRESETS: { id: Preset; label: string; note: string }[] = [
+  { id: "grounded", label: "With the database", note: "the model may run its own queries first" },
+  { id: "from-memory", label: "From memory", note: "same six questions, query tool withheld" },
+];
+
+/**
+ * Says what the measured gap MEANS, from the measured gap.
+ *
+ * Without this a small gap reads as a broken demo. It is the opposite: a model
+ * that says it is 2 percent sure and then gets none of them right has told you
+ * the truth about itself, and that is the good outcome. The interesting number
+ * was never the accuracy, it is the distance between the two - and the only
+ * reason anyone can see that distance is that something other than the model
+ * checked. Written as a function of the real numbers so it cannot say something
+ * the run did not show.
+ */
+function readGap(gap: number, meanConfidence: number, correct: number, sample: number): string {
+  if (gap > 15) {
+    return `It was ${Math.round(gap)} points more confident than it was right. That is the failure this room is looking for, and it is why a stated confidence is not a check.`;
+  }
+  if (gap < -15) {
+    return `It was ${Math.round(-gap)} points less confident than it needed to be - right more often than it claimed it would be.`;
+  }
+  if (meanConfidence < 25 && correct < sample / 2) {
+    return "It said it did not know, and it did not know. That is a well-calibrated answer, and you can only tell it apart from a confident wrong one by checking.";
+  }
+  return "Stated confidence tracked the result on this run. That is the good outcome, not a missing one - and the only way to know it happened is that something other than the model did the checking.";
+}
+
+export default function Room() {
+  const [preset, setPreset] = useState<Preset>("grounded");
+  const [status, setStatus] = useState<Status>("idle");
+  const [data, setData] = useState<RunResponse | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const reduced = Boolean(useReducedMotion());
+
+  async function run() {
+    setStatus("running");
+    setErrorMsg(null);
+    try {
+      const res = await fetch("/api/demos/score-audit/run", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ preset }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setErrorMsg(body.error ?? `The audit could not run (HTTP ${res.status}).`);
+        setStatus("error");
+        return;
+      }
+      setData(body as RunResponse);
+      setStatus("done");
+    } catch (e) {
+      setErrorMsg(`The request itself failed: ${String(e)}`);
+      setStatus("error");
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
+        <h2 className="text-2xl font-bold tracking-tight text-pretty sm:text-3xl">{HOOK_LINE}</h2>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex rounded-lg border border-border p-0.5">
+            {PRESETS.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setPreset(p.id)}
+                disabled={status === "running"}
+                title={p.note}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  preset === p.id ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={run}
+            disabled={status === "running"}
+            className="rounded-xl bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-50"
+          >
+            {status === "running" ? "Auditing..." : room.startLabel}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        {status === "running" && (
+          <p className="text-sm text-muted-foreground" aria-live="polite">
+            Asking {GUIDE_CHAIN[0]} all {QUESTIONS.length} questions
+            {preset === "grounded" ? " with the query tool in reach" : " with no way to look them up"}, then checking
+            every answer against D1...
+          </p>
+        )}
+
+        {status === "error" && errorMsg && (
+          <div className="rounded-xl border border-destructive/50 bg-destructive/5 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-destructive">Refused</p>
+            <p className="pt-1 text-sm leading-relaxed text-foreground">{errorMsg}</p>
+          </div>
+        )}
+
+        {status === "done" && data && (
+          <>
+            <Gauges
+              meanConfidence={data.meanConfidence}
+              accuracyPct={data.accuracyPct}
+              calibrationGap={data.calibrationGap}
+              sampleSize={data.sampleSize}
+              totalQuestions={data.totalQuestions}
+              reduced={reduced}
+            />
+            <p className="max-w-prose text-[13px] leading-relaxed text-foreground/85">
+              {readGap(data.calibrationGap, data.meanConfidence, data.correctCount, data.sampleSize)}
+            </p>
+            <div className="flex flex-col gap-3">
+              {data.results.map((r, i) => (
+                <QuestionRow key={r.id} result={r} index={i} reduced={reduced} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {status === "done" && data && (
+        <TelemetryStrip
+          items={[
+            { label: "requests", value: `${room.requestsPerRun} of the demo pool` },
+            { label: "ms", value: String(data.ms) },
+            { label: "source", value: data.canQuery ? "live model with a query tool, verified against live D1" : "live model with no query tool, verified against live D1" },
+            { label: "model", value: data.model },
+            { label: "sample", value: `${data.sampleSize} of ${data.totalQuestions} questions` },
+            {
+              label: "tokens",
+              value: data.inputTokens != null ? `${data.inputTokens} in / ${data.outputTokens} out` : "unavailable",
+            },
+          ]}
+        />
+      )}
+    </div>
+  );
+}

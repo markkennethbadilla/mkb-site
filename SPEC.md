@@ -186,11 +186,16 @@ deterministic gates so it physically cannot ship a dangerous change.
     it still could not see the per-visitor cap that actually refuses people. A
     card labelled "live" that then refuses is worse than no label. The room
     explains the refusal on arrival in the budget's own words.
-24. **`sql-guard.ts` is not wired into the rooms, and that is correct.** It exists
-    for untrusted model-authored SQL. Both SQL rooms write their own parameterised
-    statements, which it would refuse on two independent rules, so running it
-    there would be ceremony dressed as enforcement. The reason the agent cannot
-    write to this database is that it has no SQL tool.
+24. **`sql-guard.ts` guards model-authored SQL only, which is ScoreAudit and
+    nothing else.** Ledger and Split-Brain write their own parameterised
+    statements; the guard would refuse those on two independent rules (they are
+    not SELECTs, and they touch denied tables), so running it there would be
+    ceremony dressed as enforcement. ScoreAudit is the case it was written for and
+    its first real consumer: the model gets a `query_db` tool and writes whatever
+    SQL it likes, which is why the room can ask a fair question - it fails on a
+    join or a date boundary, not on the absence of a way to check. The reason no
+    model can write to this database is that the guard admits one statement,
+    SELECT-shaped, and D1 enforces the rest.
 25. **The site guide does not route into rooms.** Its allowlist stays sections of
     `/`, which keeps its contract clean ("it takes you to part of *this page*")
     and keeps `check-guide.mjs`'s id assertion meaningful.

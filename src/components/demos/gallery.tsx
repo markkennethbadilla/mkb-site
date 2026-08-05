@@ -27,7 +27,10 @@ export default function Gallery() {
   const repos = DATA.projects;
 
   return (
-    <div className="mx-auto w-full max-w-[860px] space-y-3">
+    // No width cap of its own. The gallery renders inside two different measures -
+    // the home page's max-w-4xl and the wider /demos - and capping it here put the
+    // cards on a different left edge from the heading above them on the wider one.
+    <div className="w-full space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {featured ? (
           <BlurFade delay={BLUR_FADE_DELAY * 12} className="sm:col-span-2">

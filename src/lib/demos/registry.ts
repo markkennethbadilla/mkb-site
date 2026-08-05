@@ -121,24 +121,26 @@ export const ROOMS: DemoRoom[] = [
     slug: "score-audit",
     name: "ScoreAudit",
     promise:
-      "Ask a language model questions with checkable answers, and make it commit to how sure it is on each one. Then run the checks yourself and put what it claimed next to what is true.",
+      "Ask a language model six questions with checkable answers and make it commit to how sure it is. Run it once with the database in reach and once without, and put what it claimed next to what is true.",
     capability: "Not taking a model's word for it.",
     mechanism:
-      "Self-reported confidence separated from an independent deterministic verifier, with the gap reported rather than the model's own number.",
+      "Self-reported confidence separated from an independent deterministic verifier, with the gap reported rather than the model's own number - and the same six questions asked with and without a real query tool, so the gap has something to move against.",
     scope: {
       real:
-        "A real model call to a real inference endpoint, and a real SQL query against the same database the question is about. The verdict is computed at the verifier layer by comparing the model's stated answer to the query result - the model never grades itself.",
+        "A real model call to a real inference endpoint, and real SQL against the same database the questions are about. The verdict is computed at the verifier layer by comparing the model's stated answer to the query result - the model never grades itself, and never sees the verifying SQL.",
       staged:
-        "The warehouse the questions are about is invented seed data, and the hard preset is chosen to fail: it deliberately asks questions the model tends to get wrong while staying confident, so the gap is visible without waiting for luck.",
+        "The warehouse is invented seed data. Nothing here is rigged to fail: the only difference between the two runs is that one of them withholds the query tool, and the model is not told what confidence to give either way.",
       notProved:
-        "Not that the model is dishonest. It shows the distance between a stated confidence and a checkable result, which is a different and smaller claim. The sample is a handful of questions, so treat the accuracy as an illustration and not a rate.",
+        "Not that the model is dishonest. It shows the distance between a stated confidence and a checkable result, which is a different and smaller claim. Six questions is an illustration, not a rate.",
     },
-    injectionPoint: "the hard preset is chosen to fail",
+    injectionPoint: "the only difference between the two runs is that one of them withholds the query tool",
     hue: 235,
     motion: "measured",
     requestsPerRun: 1,
     rowsPerRun: 4,
-    runSeconds: [3, 12],
+    // Measured, not estimated: 10.0 s for six questions with the query tool in
+    // reach (three model steps, six queries), 5.3 s without it.
+    runSeconds: [5, 12],
     startLabel: "Ask the model, then check it",
     readFirst:
       "Start with worker/demos/score-audit.ts - the verifier is the half that matters, and it never sees the model's confidence.",
