@@ -18,12 +18,18 @@
   // lives here.
   //
   // An earlier version of this comment claimed src/lib/sql-guard.ts stops the
-  // agent writing to this database. That was false: the guard exists but nothing
-  // imports it, because the guide's toolbox is navigate/answer/decline and has no
-  // SQL tool at all. Describing enforcement that is not wired is the exact defect
-  // this site argues against, so the claim is gone. The real reason the agent
-  // cannot write here is that it has no tool that touches the database.
-  // sql-guard.ts is kept for the demo that will be its first real consumer.
+  // agent writing to this database. That was false: the guard existed but nothing
+  // imported it, because the guide's toolbox has no SQL tool at all. Describing
+  // enforcement that is not wired is the exact defect this site argues against,
+  // so the claim was removed.
+  //
+  // It now has one consumer, and only one: the ScoreAudit room gives a model a
+  // real `query_db` tool, and every statement it writes goes through the guard.
+  // That is the case the guard was written for - untrusted, model-authored SQL.
+  // The other two rooms write their own parameterised statements and are not
+  // guarded by it, because it would refuse them on two independent rules; the
+  // reason THEY are safe is that no model is anywhere near them. The site guide
+  // still cannot write here for the original reason: it has no tool that does.
   "d1_databases": [
     {
       "binding": "DEMO_DB",

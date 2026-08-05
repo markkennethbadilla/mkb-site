@@ -344,7 +344,32 @@ const worker = {
     if (url.pathname.startsWith("/api/demos/")) {
       return handleDemos(req, env as unknown as DemoEnv);
     }
-    return env.ASSETS.fetch(req);
+
+    const asset = await env.ASSETS.fetch(req);
+
+    // A route that is BOTH a page and a parent of other pages 404s on Assets.
+    // The static export writes /demos as `out/demos.html` and the rooms as
+    // `out/demos/<slug>.html`, so `demos` exists as a file AND as a directory;
+    // Assets resolves the directory, finds no index.html inside it, and stops.
+    // The rooms themselves are fine because nothing is nested under them.
+    //
+    // One retry with the explicit .html, only on a GET that already 404'd and has
+    // no extension of its own. Not a rewrite rule and not a guess about arbitrary
+    // paths - it asks for the exact file the exporter wrote, and if that is not
+    // there either the original 404 stands.
+    if (
+      asset.status === 404 &&
+      (req.method === "GET" || req.method === "HEAD") &&
+      !url.pathname.endsWith("/") &&
+      !url.pathname.split("/").pop()?.includes(".")
+    ) {
+      const asHtml = new URL(req.url);
+      asHtml.pathname = `${url.pathname}.html`;
+      const retry = await env.ASSETS.fetch(new Request(asHtml, req));
+      if (retry.status !== 404) return retry;
+    }
+
+    return asset;
   },
 };
 

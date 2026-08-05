@@ -41,7 +41,13 @@ export default function Room() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight text-pretty sm:text-3xl">{room.promise}</h2>
+        {/* NOT room.promise. The shell already prints that directly above this
+            component, and setting the same four lines twice on one screen at two
+            different sizes reads as a rendering bug. This is the room's own
+            question, pointed at the mechanism rather than at the instructions. */}
+        <h2 className="text-2xl font-semibold tracking-tight text-pretty sm:text-3xl">
+          Twelve payments, one account, no waiting in line. What do the books say afterwards?
+        </h2>
         {!unsafeAct && (
           <Button size="lg" className="self-start" onClick={runUnsafe} disabled={running !== null}>
             {running ? "Firing..." : room.startLabel}
