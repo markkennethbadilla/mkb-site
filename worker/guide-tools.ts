@@ -1,29 +1,32 @@
 /**
  * The guide's toolbox, and the allowlist that bounds it.
  *
- * Three tools, and the model can call nothing else: it decides where the visitor
- * should be looking, says something short about it, or declines.
+ * TWO tools: say something, or decline. That is a deliberate collapse from three.
  *
- * `answer` is here on the second attempt, and the difference is the only part
- * worth remembering. The first version shipped it with no facts behind it, and
- * scripts/probe-guide.mjs caught every free model inventing a biography for Mark -
- * a university he never attended, an employer he never worked for - fluently, with
- * nothing to signal it had gone wrong. The lesson was not "never let it speak". It
- * was that a model with no material will always produce material.
+ * WHY ONE TOOL INSTEAD OF navigate-THEN-answer. Measured against the live site,
+ * every uncached answer cost two SEQUENTIAL model round trips, and each round trip
+ * from Cloudflare to the inference endpoint is 3 to 6 seconds. The round-trip
+ * count, not the model, was the dominant latency. Folding the destination and the
+ * words into one call makes an answer structurally one round trip rather than
+ * hopefully one - relying on a model to emit two tool calls in a single turn is a
+ * hope, and weak models do not.
  *
- * So it now has real material (src/lib/public-facts.ts, a closed public-facing
- * set) AND its output is checked before anyone sees it: every proper noun, year
- * and figure in an answer must be licensed by that corpus, or the answer is thrown
- * away and the written section line is used instead. The prompt asks for accuracy;
- * checkGrounding is what makes accuracy the only thing that gets through.
+ * Nothing about the guarantees changed. `section` is still a Zod enum built from
+ * the same SECTION_IDS the page renders, so an invented destination is refused
+ * before it reaches the browser. `text` still goes through checkGrounding, so a
+ * claim the fact corpus does not license is still discarded rather than shown.
+ * `section` is now optional, which is what lets the guide answer in place when no
+ * part of the page holds the answer.
  *
- * `navigate_to_section` also cannot name a section that does not exist: the Zod
- * enum is built from the same SECTION_IDS the page renders, so an invented target
- * is rejected before it reaches the browser rather than scrolling to nowhere.
+ * The grounding check is here at all because the first version of this guide had
+ * an answer tool with no facts behind it, and scripts/probe-guide.mjs caught every
+ * free model inventing a biography for Mark - a university he never attended, an
+ * employer he never worked for. The lesson was not "never let it speak". It was
+ * that a model with no material will always produce material.
  *
- * Tools here RECORD the decision; the browser carries it out. The page is the
- * thing that knows whether a section is on screen, and a Worker asserting
- * otherwise would be guessing.
+ * Tools RECORD the decision; the browser carries it out. The page is the thing
+ * that knows whether a section is on screen, and a Worker asserting otherwise
+ * would be guessing.
  */
 
 import { tool } from "ai";
@@ -55,35 +58,22 @@ export function buildToolbox(decision: GuideDecision) {
   };
 
   return {
-    navigate_to_section: tool({
+    respond: tool({
       description:
-        "Take the visitor to the section of the page that answers their question. Call this FIRST, before answering, whenever the answer is visible somewhere on the page.",
+        "Answer the visitor. Give `text` always. Give `section` as well when a section of the page shows the answer, and omit it when none does - questions about his pets, what he watches or his favourite colour have no section, so answer those without one. This is the only way to say anything to the visitor; plain text replies are discarded.",
       inputSchema: z.object({
-        section: SectionEnum.describe("Which section of the page answers the question."),
+        section: SectionEnum.nullish().describe(
+          "The section of the page that shows the answer, or null when none does."
+        ),
+        text: z.string().min(1).max(320).describe("The answer. One or two short sentences, no markdown."),
       }),
       execute: async (input) => {
-        // Validated a second time, by us. The SDK already checked the schema, but
-        // the guarantee that nothing outside the allowlist can reach the browser
-        // should not depend on the SDK continuing to behave as documented.
-        const parsed = z.object({ section: SectionEnum }).safeParse(input);
+        const parsed = z
+          .object({ section: SectionEnum.nullish(), text: z.string().min(1).max(320) })
+          .safeParse(input);
         if (!parsed.success) {
-          return { ok: false, error: "That is not a section of this page." };
+          return { ok: false, error: "The answer was empty, too long, or named a section that does not exist." };
         }
-        decision.section = parsed.data.section;
-        record("navigate_to_section", { section: parsed.data.section });
-        return { ok: true, showing: parsed.data.section };
-      },
-    }),
-
-    answer: tool({
-      description:
-        "Say the answer in one or two short sentences, using only what you were told about Mark. Call this AFTER navigate_to_section when a section of the page shows the answer, or ON ITS OWN when it does not - questions about his pets, what he watches, or his favourite colour have no section, so answer them here without navigating. This tool is the only way to say anything to the visitor; plain text replies are discarded.",
-      inputSchema: z.object({
-        text: z.string().min(1).max(320).describe("The answer. Plain language, no markdown."),
-      }),
-      execute: async (input) => {
-        const parsed = z.object({ text: z.string().min(1).max(320) }).safeParse(input);
-        if (!parsed.success) return { ok: false, error: "The answer was empty or too long." };
 
         // Em and en dashes are the loudest tell that a machine wrote something.
         // Asking the model not to use them is unreliable; replacing them is not.
@@ -91,19 +81,20 @@ export function buildToolbox(decision: GuideDecision) {
 
         // The prompt asked for factual; this is what enforces it. Rejected text is
         // never shown - the caller falls back to the written section line, which is
-        // always true. The model is told WHY, so a retry has something to work with.
+        // always true.
         const verdict = checkGrounding(text, LICENSED_TERMS);
         if (!verdict.grounded) {
           decision.rejected.push({ text, unlicensed: verdict.unlicensed });
-          record("answer:rejected", { unlicensed: verdict.unlicensed });
+          record("respond:rejected", { unlicensed: verdict.unlicensed });
           return {
             ok: false,
-            error: `Rejected. These are not in what you were told about Mark: ${verdict.unlicensed.join(", ")}. Say only what the list supports, or say you do not know.`,
+            error: `Rejected. These are not in what you were told about Mark: ${verdict.unlicensed.join(", ")}.`,
           };
         }
 
+        if (parsed.data.section) decision.section = parsed.data.section;
         decision.answer = text;
-        record("answer", { text });
+        record("respond", { section: parsed.data.section ?? null, text });
         return { ok: true };
       },
     }),
@@ -125,4 +116,4 @@ export function buildToolbox(decision: GuideDecision) {
 }
 
 /** The names the model is permitted to call. Anything else is a bug or an attack. */
-export const ALLOWED_TOOLS = ["navigate_to_section", "answer", "decline"] as const;
+export const ALLOWED_TOOLS = ["respond", "decline"] as const;

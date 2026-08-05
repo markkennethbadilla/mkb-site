@@ -50,14 +50,23 @@ check(
 //    the file cannot.
 const toolsSrc = read("worker/guide-tools.ts");
 check(
-  "the answer tool runs the grounding check",
-  /answer:\s*tool\(/.test(toolsSrc) ? /checkGrounding\(/.test(toolsSrc) : true,
-  "worker/guide-tools.ts has an `answer` tool that does not call checkGrounding. Unchecked, a model with gaps in its facts fills them - the first version produced a university Mark never attended and an employer he never worked for."
+  "whatever tool speaks to the visitor runs the grounding check",
+  !/(respond|answer):\s*tool\(/.test(toolsSrc) || /checkGrounding\(/.test(toolsSrc),
+  "worker/guide-tools.ts has a tool that produces visitor-facing text without calling checkGrounding. Unchecked, a model with gaps in its facts fills them - the first version produced a university Mark never attended and an employer he never worked for."
 );
 check(
   "rejected answers never reach the visitor",
-  !/answer:\s*tool\(/.test(toolsSrc) || /decision\.rejected\.push/.test(toolsSrc),
+  !/(respond|answer):\s*tool\(/.test(toolsSrc) || /decision\.rejected\.push/.test(toolsSrc),
   "An ungrounded answer must be recorded and discarded, not silently used."
+);
+// Latency is a correctness property here: two sequential model calls at 3-6s each
+// is what made the guide feel broken. One tool carrying both the destination and
+// the words is what keeps an answer to a single round trip.
+const guideSrc = read("worker/guide.ts");
+check(
+  "an answer costs one model round trip",
+  /const MAX_STEPS = 1;/.test(guideSrc),
+  "MAX_STEPS is above 1, so an answer can cost more than one sequential model call. Each round trip from Cloudflare to the inference endpoint measured 3 to 6 seconds."
 );
 
 // The grounding check itself, run on the fabrications that actually happened.

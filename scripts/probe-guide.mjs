@@ -98,27 +98,25 @@ async function run(model, question) {
   const rejected = [];
   const calls = [];
   const toolbox = {
-    answer: tool({
+    respond: tool({
       description:
-        "Say the answer in one or two short sentences, using only what you were told about Mark. Call this after navigate_to_section.",
-      inputSchema: z.object({ text: z.string().min(1).max(320) }),
-      execute: async ({ text }) => {
+        "Answer the visitor. Give `text` always. Give `section` as well when a section of the page shows the answer, and omit it when none does.",
+      inputSchema: z.object({
+        section: z.enum(SECTION_IDS).nullish(),
+        text: z.string().min(1).max(320),
+      }),
+      execute: async ({ section: s, text }) => {
         const verdict = checkGrounding(text, LICENSED_TERMS);
         if (!verdict.grounded) {
           rejected.push({ text, unlicensed: verdict.unlicensed });
-          calls.push("answer:REJECTED");
-          return { ok: false, error: `Rejected: ${verdict.unlicensed.join(", ")} are not in what you were told.` };
+          calls.push("respond:REJECTED");
+          return { ok: false, error: `Rejected: ${verdict.unlicensed.join(", ")}` };
         }
+        if (s) section = s;
         answer = text;
-        calls.push("answer");
+        calls.push(s ? `respond:${s}` : "respond:in-place");
         return { ok: true };
       },
-    }),
-    navigate_to_section: tool({
-      description:
-        "Take the visitor to the section of the page that answers their question. Call this FIRST, before answering, whenever the answer is visible somewhere on the page.",
-      inputSchema: z.object({ section: z.enum(SECTION_IDS) }),
-      execute: async ({ section: s }) => { section = s; calls.push(`navigate:${s}`); return { ok: true, showing: s }; },
     }),
     decline: tool({
       description:
@@ -133,7 +131,7 @@ async function run(model, question) {
     system: GUIDE_SYSTEM_PROMPT,
     prompt: question,
     tools: toolbox,
-    stopWhen: stepCountIs(4),
+    stopWhen: stepCountIs(1),
     temperature: 0.3,
     maxRetries: 1,
   });

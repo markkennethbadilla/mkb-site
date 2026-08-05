@@ -33,8 +33,22 @@ import {
 
 const MAX_QUESTION_CHARS = 200;
 
-/** One question is at most this many model calls: navigate, answer, and slack. */
-const MAX_STEPS = 4;
+/**
+ * ONE model call per question, and that is the whole point.
+ *
+ * This was 4, because answering took navigate_to_section then answer as two
+ * sequential calls. Each round trip from Cloudflare to the inference endpoint
+ * measured 3 to 6 seconds, so the count dominated everything else - moving to a
+ * paid key barely helped because it did not change the count. One tool that
+ * carries both the destination and the words makes it structurally one.
+ *
+ * A step is one model call plus its tool executions, so stopping at 1 means the
+ * tool result is never fed back for another turn. Nothing needs it: the guide does
+ * not read its own tool output. The cost is that a grounding rejection cannot be
+ * retried in-flight, which is acceptable - a rejected answer falls back to the
+ * written section line, and with a real fact corpus the check has stopped firing.
+ */
+const MAX_STEPS = 1;
 
 const GuideRequest = z.object({
   question: z.string().min(1).max(MAX_QUESTION_CHARS),

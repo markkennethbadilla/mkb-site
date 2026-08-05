@@ -67,16 +67,14 @@ const CASES = [
 async function run(model, question) {
   let section = null, declined = false, answer = null;
   const toolbox = {
-    navigate_to_section: tool({
-      description: "Take the visitor to the section of the page that answers their question.",
-      inputSchema: z.object({ section: z.enum(SECTION_IDS) }),
-      execute: async ({ section: s }) => { section = s; return { ok: true, showing: s }; },
-    }),
-    answer: tool({
+    respond: tool({
       description:
-        "Say the answer in one or two short sentences, using only what you were told about Mark. Call this AFTER navigate_to_section when a section of the page shows the answer, or ON ITS OWN when it does not.",
-      inputSchema: z.object({ text: z.string().min(1).max(320) }),
-      execute: async ({ text }) => { answer = text; return { ok: true }; },
+        "Answer the visitor. Give `text` always. Give `section` as well when a section of the page shows the answer, and omit it when none does.",
+      inputSchema: z.object({
+        section: z.enum(SECTION_IDS).nullish(),
+        text: z.string().min(1).max(320),
+      }),
+      execute: async ({ section: s, text }) => { if (s) section = s; answer = text; return { ok: true }; },
     }),
     decline: tool({
       description: "Use when the question is not about Mark, his work, or this page.",
@@ -91,7 +89,7 @@ async function run(model, question) {
     system: SYSTEM,
     prompt: question,
     tools: toolbox,
-    stopWhen: stepCountIs(4),
+    stopWhen: stepCountIs(1),
     temperature: 0.3,
     maxRetries: 1,
   });
