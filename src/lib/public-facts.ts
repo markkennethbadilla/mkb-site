@@ -163,7 +163,7 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "transcript-intelligence",
-    text: "He mined thousands of meeting transcripts into a structured signals database in one unattended overnight run, then shipped a rules-based, explainable scorer that ranks records by risk with the reason written out in plain language.",
+    text: "He built an unattended LLM extraction pipeline that turns unstructured meeting transcripts into a structured signals database, then shipped a rules-based, explainable scorer that ranks records by risk with the reason written out in plain language.",
     terms: [],
   },
   {
