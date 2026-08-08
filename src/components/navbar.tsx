@@ -18,8 +18,16 @@ export default function Navbar() {
           return (
             <Tooltip key={item.href}>
               <TooltipTrigger asChild>
+                {/* aria-label and title, not just the tooltip. A Radix tooltip
+                    opens on hover and focus, neither of which a phone has, and
+                    an icon-only link with no accessible name is announced as
+                    bare "link". The dock is the only route to the resume, which
+                    is the one artifact a hiring reader arrives wanting, so it
+                    cannot be the one control nobody can name. */}
                 <a
                   href={item.href}
+                  aria-label={item.label}
+                  title={item.label}
                   target={isExternal ? "_blank" : undefined}
                   rel={isExternal ? "noopener noreferrer" : undefined}
                 >
@@ -53,6 +61,8 @@ export default function Navbar() {
                 <TooltipTrigger asChild>
                   <a
                     href={social.url}
+                    aria-label={social.name}
+                    title={social.name}
                     target={isExternal ? "_blank" : undefined}
                     rel={isExternal ? "noopener noreferrer" : undefined}
                   >

@@ -7,14 +7,19 @@ import { cn } from "@/lib/utils";
 
 export function ModeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
+  const next = theme === "dark" ? "light" : "dark";
 
   return (
     <Button
       type="button"
       variant="link"
       size="icon"
+      // Names what pressing it does, and to what. An icon-only button with no
+      // accessible name is announced as bare "button".
+      aria-label={`Switch to ${next} mode`}
+      title={`Switch to ${next} mode`}
       className={cn(className)}
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={() => setTheme(next)}
     >
       <SunIcon className="h-full w-full" />
       <MoonIcon className="hidden h-full w-full" />

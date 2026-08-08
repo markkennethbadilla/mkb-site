@@ -221,11 +221,14 @@ export const DATA = {
         "Own AI and data automation end to end. Built the internal operations platform (Next.js and PostgreSQL) in ten weeks, with a six-area permission grid that has no bypass role by design and its own gate suite wired into the build, so bad code is uncommittable whether a person or an agent wrote it. Run it on three self-hosted servers across three separate providers with zero-downtime deploys, and rehearse recovery rather than diagramming it. Six live outage drills including killing the main server outright, back to writing in 66 seconds. Every deploy backs up production, restores it into a scratch database and diffs the row counts before anything migrates. Mined thousands of meeting transcripts into a structured signals database in one unattended overnight run, then shipped a rules-based, explainable scorer that ranks records by risk with the reason written out. Killed my own flagship predictive-model project when a label audit showed the data could not support an honest model, and shipped an explainable rules-based detector instead.",
     },
     {
+      // No trailing roman-numeral level on this title, ever. It reads as a fresh
+      // grad to anyone skimming, and the level was internal to one employer's
+      // ladder, so it carries no information to a reader outside that ladder.
       company: "Hatchit Solutions",
       href: "https://hatchitsolutions.com",
       badges: [],
       location: "Cebu City",
-      title: "Software Engineer I",
+      title: "Software Engineer",
       logoUrl: "/hatchit.png",
       start: "June 2025",
       end: "April 2026",

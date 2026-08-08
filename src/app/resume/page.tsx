@@ -34,12 +34,14 @@ export default function ResumePage() {
         >
           <span aria-hidden>&larr;</span> {DATA.name}
         </Link>
-        <div className="flex items-center gap-2">
-          <span className="hidden text-[11px] text-muted-foreground sm:inline">
-            One page, A4, real text
-          </span>
-          <PrintButton />
-        </div>
+        {/* No caption beside the button. It read "One page, A4, real text" - a
+            comma-separated triplet of specifications, which is the exact shape a
+            language model reaches for when it has nothing to say and space to fill.
+            The button says Print. Pressing it produces the page. Anything else here
+            is the site explaining its own competence, which is what competence
+            never does.
+            See skill 09-core-make-work-that-does-not-read-as-ai-generated, TEXT. */}
+        <PrintButton />
       </div>
 
       {/* The shadow is the "sheet on a desk" cue and is screen-only; on paper the
