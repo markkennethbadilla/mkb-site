@@ -28,10 +28,22 @@ export const DATA = {
   // is hiring for the thing he actually does all day. Leading with the systems and
   // keeping the guardrails as the differentiator widens the funnel without giving
   // up the sentence nobody else can write.
+  // serena-cannot: Serena holds driftwood as its active root, so this path is outside it
+  //
+  // VERBATIM from driftwood/profiles-master.md. Do not reword it here. That file is the
+  // single source and every surface renders a subset of it; the whole reason four surfaces
+  // once told four different versions of this career is that each one kept its own phrasing.
+  // If this sentence should change, change it THERE and re-render, then move the stamp in
+  // that file's Surface log.
   description:
-    "Full Stack AI Engineer. I build AI systems end to end, from the conversational interface down to the database, and the guardrails that make them trustworthy.",
+    "Full Stack AI Engineer. Hand me a goal instead of a spec and I come back with the diagnosis, the recommendation and the system.",
+  // serena-cannot: Serena holds driftwood as its active root, so this path is outside it
+  //
+  // Summary blocks 1 to 4 from driftwood/profiles-master.md, verbatim, joined into the
+  // running paragraph this surface wants. Same sentences LinkedIn, Bossjob and Y Combinator
+  // carry; only the block COUNT differs per surface, never the wording.
   summary:
-    "I am a full stack engineer who builds AI systems end to end, and the guardrails that keep them trustworthy. The product half is conversational interfaces, admin dashboards, the APIs underneath them, and the integrations that connect them to everything else. The other half is the harness, which is how I get the full potential out of LLMs without prompting harder. Gated codebases, physical guardrails, and agentic workflows that let AI agents ship production systems fast without breaking them. In practice nothing ships unless it passes checks I wrote, more than 300 of them, wired into the build itself, so a bad change cannot be committed at all. One deploy pipeline runs every app I own and takes none of them offline to do it, backing up production and restoring it into a scratch database to diff the row counts before any migration runs. The infrastructure is self-hosted across three servers on three separate providers with no open ports on any of them, and I rehearse the recovery rather than diagramming it. Six live outage drills, including killing the main server outright, back to writing in 66 seconds. I cover the ground of a small team because diagnosing an inefficiency is only half the job if you cannot ship the fix yourself. Previously I built core systems for a multi-tenant ERP platform at Hatchit Solutions. [BS Information Technology, Magna Cum Laude](/#education).",
+    "Hand me a goal instead of a spec and I come back with the diagnosis, the recommendation and the system. At WeAssist I own AI and data automation end to end. The work arrived as a goal rather than a backlog, so the first thing I built was the picture: how work really moved between departments and the tools they already had, written up with a buy-versus-build recommendation. I argued for buying or consolidating wherever something adequate existed, and reserved custom work for the one gap nothing covered. I built the internal operations platform (Next.js and PostgreSQL) in ten weeks on additive-only migrations, with a six-area permission grid that has no bypass role by design and its own gate suite wired into the build, so bad code is uncommittable whether a person or an agent wrote it. It runs on three self-hosted servers across three separate providers with nothing exposed to the public internet, and I rehearse recovery rather than diagramming it: six live outage drills including killing the main server outright, back to writing in 66 seconds with zero data loss. Every deploy backs up the database, restores it into a scratch database and diffs the row counts before anything migrates. Also built: a meeting platform used daily, an unattended LLM extraction pipeline with a ranked plain-language risk worklist on top, and desktop AI agents for non-technical staff. When a label audit showed the data could not support an honest predictive model, I killed that path on its own evidence and shipped the explainable rules-based detector instead. Before that, core systems for a multi-tenant ERP platform at Hatchit Solutions, where one bug is every client's bug at once. [BS Information Technology, Magna Cum Laude](/#education).",
   avatarUrl: "/me.png",
   skills: [
     { name: "Typescript", icon: Typescript },
@@ -52,8 +64,10 @@ export const DATA = {
   // headroom and a second sheet appearing the next time a line is added.
   //
   // Same graded material, nothing new asserted.
+  // serena-cannot: Serena holds driftwood as its active root, so this path is outside it
+  // Summary block 1 verbatim, plus the one-line short form, both from profiles-master.md.
   resumeSummary:
-    "Full Stack AI Engineer. I build the interface, the services and the schema, then the agentic harness around the LLM. Gated codebases, deterministic guardrails and verification, so an agent can ship production code without breaking things. I build the checks that make a bad change uncommittable, deploy without downtime, and rehearse the recovery rather than diagramming it.",
+    "Full Stack AI Engineer. Hand me a goal instead of a spec and I come back with the diagnosis, the recommendation and the system. I work out how the job actually gets done today, decide what to buy and what to build, then build and run the result: interface, services, schema, infrastructure, and the AI on top. Gated codebases and deterministic verification, so an agent can ship production code without breaking things.",
 
   // The real stack, grouped, and every entry carries three things beyond its name.
   //

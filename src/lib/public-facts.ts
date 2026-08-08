@@ -62,7 +62,8 @@ export type PublicFact = {
 export const PUBLIC_FACTS: PublicFact[] = [
   {
     id: "identity",
-    text: "His name is Mark Kenneth Badilla and he works as a Full Stack AI Engineer.",
+    // serena-cannot: Serena holds driftwood as its active root, so this path is outside it
+    text: "His name is Mark Kenneth Badilla and he works as a Full Stack AI Engineer. Hand him a goal instead of a spec and he comes back with the diagnosis, the recommendation and the system.",
     terms: ["Mark", "Kenneth", "Badilla", "Full", "Stack", "AI", "Engineer"],
   },
   {
