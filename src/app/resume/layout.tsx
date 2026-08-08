@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Resume",
   description:
-    "Mark Kenneth Badilla - AI Engineer. One page, printable, and readable by an applicant tracking system.",
+    "Mark Kenneth Badilla - Full Stack AI Engineer. One page, printable, and readable by an applicant tracking system.",
 };
 
 /**

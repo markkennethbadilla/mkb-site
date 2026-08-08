@@ -84,7 +84,7 @@ export default function Sheet() {
     >
       <header>
         <h1 className="text-[19pt] font-bold leading-[1.05] tracking-tight">{DATA.name}</h1>
-        <p className="mt-[1.2mm] text-[9.5pt] font-medium">AI Engineer</p>
+        <p className="mt-[1.2mm] text-[9.5pt] font-medium">Full Stack AI Engineer</p>
         {/* Contact is one plain line: text a parser can read, wrapped in anchors a
             harvester can read. Separators are literal characters, not borders. */}
         <p className="mt-[1.8mm] text-[8pt] leading-[1.5]">

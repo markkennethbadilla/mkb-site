@@ -62,8 +62,8 @@ export type PublicFact = {
 export const PUBLIC_FACTS: PublicFact[] = [
   {
     id: "identity",
-    text: "His name is Mark Kenneth Badilla and he works as an AI Engineer.",
-    terms: ["Mark", "Kenneth", "Badilla", "AI", "Engineer"],
+    text: "His name is Mark Kenneth Badilla and he works as a Full Stack AI Engineer.",
+    terms: ["Mark", "Kenneth", "Badilla", "Full", "Stack", "AI", "Engineer"],
   },
   {
     id: "current-role",

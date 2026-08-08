@@ -238,6 +238,21 @@ deterministic gates so it physically cannot ship a dangerous change.
     `/#projects`, so a visitor who followed it arrived at a page identical to the
     one they left. Removed 2026-08-05 (Mark). Room back-links go to `/#projects`.
 
+31. **The positioning title is "Full Stack AI Engineer". The WeAssist role title
+    stays "AI Engineer".** Changed 2026-08-08 at Mark's instruction: plain "AI
+    Engineer" was undermining his experience by hiding the half of the work that is
+    interfaces, services and schemas. Every place the site speaks in its own voice now
+    says Full Stack AI Engineer - the hero line, the printable sheet's subtitle, the
+    `/resume` metadata description, the `resumeSummary`, and the guide's identity fact.
+    **The Experience entry for WeAssist was deliberately NOT changed**, because that
+    field reports the title his employer gave him and inflating it there would be a
+    false claim about his employment rather than a positioning choice. The two can
+    differ honestly, and a reader who notices the difference is reading it correctly.
+    The fact corpus needed the same edit or the guide would have broken: `checkGrounding`
+    licenses only terms the corpus carries, so "Full" and "Stack" had to be added to the
+    identity fact's `terms` or every answer using the new title would have been
+    discarded as ungrounded and silently replaced by the written section line.
+
 ## Non-goals
 
 - **No Q&A chatbot.** Narrowed twice. 2026-08-05, with Mark: free-text input is
