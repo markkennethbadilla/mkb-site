@@ -69,6 +69,19 @@ export default function RootLayout({
             the standard way, for the browser and any other extension. */}
         <meta name="darkreader-lock" />
         <meta name="color-scheme" content="light dark" />
+        {/* The lock alone stopped being enough around Dark Reader 4.9.86. It
+            drops its dynamic theme as asked, but leaves behind the anti-flash
+            sheet it injects at document-start, and that sheet alone carries
+            `html, body, body :not(iframe) { background:#181a1b !important;
+            color:#e8e6e3 !important }` - which flattens every green in the
+            palette to the same grey. Sweep it, and keep watching head in case a
+            settings change re-injects it. Scoped to the fallback node only, so a
+            build that honours the lock properly is left alone. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var sweep=function(){document.querySelectorAll("style.darkreader--fallback").forEach(function(el){el.remove()})};sweep();new MutationObserver(sweep).observe(document.head,{childList:true})})();`,
+          }}
+        />
       </head>
       <body
         className={cn(
