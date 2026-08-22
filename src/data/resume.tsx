@@ -39,11 +39,35 @@ export const DATA = {
   // The About surface renders blocks 2 to 4 as a lede, a bullet list and a closing line.
   // Block 1 is dropped here because the hero already renders it as DATA.description, 200px
   // higher up the same page, and a reader who meets the identical sentence twice in one
-  // screen reads the second one as padding. It stays one double-quoted string with literal
-  // \n escapes, because scripts/check-guide.mjs only scans double-quoted literals for
-  // employer-confidential words and a template literal would silently leave the scan.
+  // screen reads the second one as padding.
+  //
+  // NO PARAGRAPHS ANYWHERE (Mark, 2026-08-22: "never a block of paragraphs, no one will
+  // read that"). The lede and the closing line used to be running prose either side of the
+  // bullets. They are label-and-value pairs, so they are pair lists now and the About
+  // section renders them as real <dl> markup rather than sentences a skimmer skips. Same
+  // words, no fact added or dropped; only the connective scaffolding is gone.
+  //
+  // Every string here stays a double-quoted literal, because scripts/check-guide.mjs and
+  // tests/guide.test.mjs only scan double-quoted literals for employer-confidential words
+  // and a template literal would silently leave the scan.
+  summaryLede: [
+    ["What I own", "AI and data automation at WeAssist, end to end."],
+    ["What arrived", "A goal rather than a backlog."],
+    [
+      "What I built first",
+      "The picture of how work really moved between departments and the tools they already had, written up with a buy-versus-build recommendation.",
+    ],
+  ],
+  // One claim per bullet, and the four that carried two or three claims each are split at
+  // their own claim boundaries. Lengths are deliberately uneven - a list where every item
+  // is the same length and shape reads as generated.
   summary:
-    "At WeAssist I own AI and data automation end to end. The work arrived as a goal rather than a backlog, so the first thing I built was the picture of how work really moved between departments and the tools they already had, written up with a buy-versus-build recommendation.\n\n- I argued for buying or consolidating wherever something adequate existed, and reserved custom work for the one gap nothing covered.\n- I built the internal operations platform (Next.js and PostgreSQL) **in ten weeks** on additive-only migrations, with a six-area permission grid that has no bypass role by design and its own gate suite wired into the build, so bad code is uncommittable whether a person or an agent wrote it.\n- It runs on **three self-hosted servers across three separate providers** with nothing exposed to the public internet, and I rehearse recovery rather than diagramming it - six live outage drills including killing the main server outright, back to writing in **66 seconds** with zero data loss.\n- Every deploy backs up the database, restores it into a scratch database and diffs the row counts before anything migrates.\n- Also built a meeting platform used daily, an unattended LLM extraction pipeline with a ranked plain-language risk worklist on top, and desktop AI agents for non-technical staff.\n- When a label audit showed the data could not support an honest predictive model, I killed that path on its own evidence and shipped the explainable rules-based detector instead.\n\nBefore that, core systems for a multi-tenant ERP platform at Hatchit Solutions, where one bug is every client's bug at once. [BS Information Technology, Magna Cum Laude](/#education).",
+    "- I argued for buying or consolidating wherever something adequate existed, and reserved custom work for the one gap nothing covered.\n- I built the internal operations platform (Next.js and PostgreSQL) **in ten weeks**, on additive-only migrations.\n- A six-area permission grid that has no bypass role by design.\n- Its own gate suite is wired into the build, so bad code is uncommittable whether a person or an agent wrote it.\n- It runs on **three self-hosted servers across three separate providers**, with nothing exposed to the public internet.\n- I rehearse recovery rather than diagramming it.\n- Six live outage drills including killing the main server outright, back to writing in **66 seconds** with zero data loss.\n- Every deploy backs up the database, restores it into a scratch database and diffs the row counts before anything migrates.\n- Also built a meeting platform used daily.\n- An unattended LLM extraction pipeline with a ranked plain-language risk worklist on top.\n- Desktop AI agents for non-technical staff.\n- A label audit showed the data could not support an honest predictive model.\n- I killed that path on its own evidence and shipped the explainable rules-based detector instead.",
+  // The closing line, minus its "Before that," opener - the label carries that now. The
+  // degree row beside it is not repeated here: the About section reads it from
+  // DATA.education so the two surfaces cannot drift.
+  summaryBefore:
+    "Core systems for a multi-tenant ERP platform at Hatchit Solutions, where one bug is every client's bug at once.",
   avatarUrl: "/me.png",
   // The summary the printable resume opens with.
   //
@@ -58,13 +82,20 @@ export const DATA = {
   // serena-cannot: Serena holds driftwood as its active root, so this path is outside it
   // Summary block 1 verbatim, plus the one-line short form, both from profiles-master.md.
   //
-  // Split into sentences by the author rather than by a regex at render time. Element 0 is
-  // the sheet's bold lede, elements 1 and 2 are the body paragraph under it. The leading
+  // Split into claims by the author rather than by a regex at render time. Element 0 is
+  // the sheet's bold lede; the rest print as bullets under it, two to a row. The leading
   // "Full Stack AI Engineer." fragment is gone because the sheet already prints that as its
   // own title line 4mm above this block.
+  //
+  // Element 1 was a 33-word chain of three claims joined by commas, which printed as a
+  // paragraph (Mark, 2026-08-22: no paragraphs anywhere). It is split at its own claim
+  // boundaries into the three things he actually does in order - work it out, decide, build
+  // and run - and the only words dropped are the connectives "I" and "then". No fact moved.
   resumeSummary: [
     "Hand me a goal instead of a spec and I come back with the diagnosis, the recommendation and the system.",
-    "I work out how the job actually gets done today, decide what to buy and what to build, then build and run the result - interface, services, schema, infrastructure, and the AI on top.",
+    "Work out how the job actually gets done today.",
+    "Decide what to buy and what to build.",
+    "Build and run the result - interface, services, schema, infrastructure, and the AI on top.",
     "Gated codebases and deterministic verification, so an agent can ship production code without breaking things.",
   ],
 
@@ -239,14 +270,25 @@ export const DATA = {
       // 18-step deploy pipeline - are already published on this site in
       // src/lib/public-facts.ts. Scope and figures are the honest answer to a short tenure.
       // There is no years line anywhere in this file, on purpose.
+      //
+      // Split again 2026-08-22, at the claim boundaries the longest four entries were
+      // hiding. Nothing is reworded and no figure moved; a 55-word bullet is a paragraph
+      // wearing a marker, and on the printed sheet each new line lands at or under the
+      // 120-character measure so it still costs one printed line.
       description: [
         "Own AI and data automation end to end.",
-        "Built the internal operations platform (Next.js and PostgreSQL) in ten weeks, with access control rebuilt from 55 scattered permissions into a six-area grid that has no bypass role by design, and its own gate suite of 300+ checks wired into the build, so bad code is uncommittable whether a person or an agent wrote it.",
-        "Run it on three self-hosted servers across three separate providers on one 18-step zero-downtime deploy pipeline every app shares, and rehearse recovery rather than diagramming it.",
+        "Built the internal operations platform (Next.js and PostgreSQL) in ten weeks.",
+        "Access control rebuilt from 55 scattered permissions into a six-area grid with no bypass role by design.",
+        "Its own gate suite of 300+ checks wired into the build.",
+        "Bad code is uncommittable whether a person or an agent wrote it.",
+        "Run it on three self-hosted servers across three separate providers.",
+        "One 18-step zero-downtime deploy pipeline every app shares, and I rehearse recovery rather than diagramming it.",
         "Six live outage drills including killing the main server outright, back to writing in 66 seconds.",
         "Every deploy backs up production, restores it into a scratch database and diffs the row counts before anything migrates.",
-        "Built an unattended LLM extraction pipeline that turns unstructured meeting transcripts into a structured signals database, then shipped a rules-based, explainable scorer that ranks records by risk with the reason written out.",
-        "Killed my own flagship predictive-model project when a label audit showed the data could not support an honest model, and shipped an explainable rules-based detector instead.",
+        "Built an unattended LLM extraction pipeline that turns unstructured meeting transcripts into a structured signals database.",
+        "Then shipped a rules-based, explainable scorer that ranks records by risk with the reason written out.",
+        "Killed my own flagship predictive-model project when a label audit showed the data could not support an honest model.",
+        "Shipped an explainable rules-based detector instead.",
       ],
     },
     {
@@ -304,8 +346,19 @@ export const DATA = {
       href: "https://github.com/markkennethbadilla/public-agent-provisioning",
       dates: "2026",
       active: true,
-      description:
-        "A forkable template for making AI coding agents safe by construction. Rules loaded every turn, skills loaded on demand, hooks that intercept tool calls before they run, git guards that block the commit, and a self-check tier that forces every guard to fire and fails if it does not.",
+      // Element 0 is the claim a reader repeats, elements 1 onward are the mechanisms
+      // underneath it. Five mechanisms welded into one sentence is a paragraph, and the
+      // sheet was cutting it back to the first sentence with a slice at ". " - which is
+      // exactly the render-time guess the header comment of every other list here forbids.
+      // Authored split, so both surfaces get the same first line without inferring it.
+      description: [
+        "A forkable template for making AI coding agents safe by construction.",
+        "Rules loaded every turn.",
+        "Skills loaded on demand.",
+        "Hooks that intercept tool calls before they run.",
+        "Git guards that block the commit.",
+        "A self-check tier that forces every guard to fire and fails if it does not.",
+      ],
       technologies: ["Python", "Node.js", "Shell", "Git hooks"],
       links: [
         {

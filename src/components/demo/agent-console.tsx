@@ -156,7 +156,7 @@ export default function AgentConsole() {
               ? "Thinking..."
               : phase === "outbound"
                 ? "Taking you there..."
-                : "Ask it something. If the answer is on the page it will take you to it."}
+                : "Ask it something, and if the answer is on the page it will take you to it."}
           </p>
         </div>
       </div>

@@ -20,11 +20,15 @@ export default function ProjectsSection() {
                     </div>
                     <div className="flex flex-col gap-y-3 items-center justify-center">
                         <h2 className="text-2xl font-bold tracking-tight">Things I built to be inspected</h2>
-                        <p className="text-muted-foreground text-[15px]/relaxed text-balance text-center">
-                            Three of these run for real when you press the button, against a
-                            real database. Each one states what it does not prove before you
-                            start it, and links the file that implements it.
-                        </p>
+                        {/* Three parallel promises about the gallery below, and they
+                            were welded into two sentences nobody finishes. Short and
+                            independent, so three columns carry more per glance than a
+                            paragraph does; one column on a phone. */}
+                        <ul className="grid w-full gap-2 text-muted-foreground text-[15px]/relaxed text-balance text-center sm:grid-cols-3">
+                            <li>Three of these run for real when you press the button, against a real database.</li>
+                            <li>Each one states what it does not prove before you start it.</li>
+                            <li>Each links the file that implements it.</li>
+                        </ul>
                     </div>
                 </div>
                 <Gallery />

@@ -1,4 +1,5 @@
 import { DATA } from "@/data/resume";
+import { cn } from "@/lib/utils";
 
 /**
  * One sheet of A4, and everything about it is shaped by two readers who want
@@ -39,15 +40,23 @@ import { DATA } from "@/data/resume";
  * title. Section headings are therefore the largest thing on the sheet after the
  * name, and nothing below them may be raised past them.
  *
- * NOTHING HERE INFERS WHERE A CLAIM ENDS. Job descriptions arrive pre-split, one
- * claim per array element, from src/data/resume.tsx, and the summary arrives as its
- * own sentences. The author states the split. The single string this file shortens
- * is the project blurb, and that is a page-budget cut with its reason written above
- * it, not a parser deciding what a sentence is.
+ * NOTHING HERE INFERS WHERE A CLAIM ENDS, and nothing here is a paragraph. Job
+ * descriptions, the summary and the project blurb all arrive pre-split from
+ * src/data/resume.tsx, one claim per array element, and each one prints as a real
+ * list item. The author states every split. This file no longer cuts a string at a
+ * full stop to find the first sentence, because there is no longer a string to cut.
  *
  * Every fact comes from src/data/resume.tsx. Nothing is added here, and in
  * particular no figure is re-introduced that that file deliberately dropped.
  */
+
+// The claim line of a project blurb. The gallery card on the site prints the whole
+// mechanism list under it; on paper only this line fits, because the rest sits
+// directly above a technologies line already carrying the same keywords. The union
+// is here because the same field is one authored sentence for a project with
+// nothing more to say and a list of claims for one that has.
+const claimLine = (description: string | readonly string[]) =>
+  typeof description === "string" ? description : description[0];
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -102,40 +111,74 @@ export default function Sheet() {
       </header>
 
       <Section title="Summary">
-        {/* The mandate sentence is set bold and a shade larger than the body that
-            follows it, so the first line a six-second reader lands on is the one
-            that says what he is hired to do. The rest stays a plain paragraph. */}
+        {/* The mandate sentence is set bold and a shade larger than the claims that
+            follow it, so the first line a six-second reader lands on is the one
+            that says what he is hired to do. */}
         <p className="text-[9.2pt] font-semibold leading-[1.35]">{DATA.resumeSummary[0]}</p>
-        <p className="mt-[1mm] text-[9pt] leading-[1.35]">
-          {DATA.resumeSummary.slice(1).join(" ")}
-        </p>
+        {/* The rest was one running paragraph and is now one claim per bullet. Two
+            columns rather than a stack, and that is the page budget rather than a
+            style: stacked, these four claims cost four printed lines, where the
+            paragraph they replaced cost three. Measured, a column is 334px wide and
+            holds about 56 characters, which puts the block back at three lines.
+
+            Grid ROW flow, never grid-flow-col and never CSS columns. Either one
+            leaves the DOM in one order and the eye reading in another, and the whole
+            point of this file is that those two orders are the same. */}
+        <ul className="mt-[1mm] grid list-disc grid-cols-2 gap-x-[3mm] gap-y-[0.4mm] pl-[4.2mm] text-[9pt] leading-[1.35]">
+          {DATA.resumeSummary.slice(1).map((claim) => (
+            <li key={claim}>{claim}</li>
+          ))}
+        </ul>
       </Section>
 
       <Section title="Experience">
-        {DATA.work.map((job) => (
-          <div key={`${job.company}-${job.title}`} className="mt-[2mm] first:mt-0">
-            <div className="flex items-baseline justify-between gap-3">
-              {/* Title, employer and place on one line. The location used to sit on
-                  its own italic line under this row, which cost three printed lines
-                  across three roles and gave a parser a second thing to attribute. */}
-              <h3 className="text-[9.5pt] font-semibold">
-                {job.title}
-                {", "}
-                {job.company}
-                {", "}
-                {job.location}
-              </h3>
-              <span className="shrink-0 text-[8.6pt] tabular-nums">
-                {job.start} - {job.end}
-              </span>
+        {DATA.work.map((job) => {
+          // A role whose claims are all short prints two to a row, and that is where
+          // the room for the longer role's split-out bullets comes from. Measured on
+          // the built page: the Hatchit engineer role goes from six printed lines to
+          // five, which is the ~4mm the sheet needed back.
+          //
+          // 60 is a little past the ~56 characters a 334px column actually fits, so
+          // the two longest items there wrap once and their rows print two lines.
+          // That is deliberate - tightening it to 56 drops the role back to one
+          // column and six lines, which costs more than the ragged row does. The
+          // WeAssist claims run to twice this length, so that role stays one column
+          // rather than wrapping every second line.
+          const twoUp = job.description.every((line) => line.length <= 60);
+          return (
+            <div key={`${job.company}-${job.title}`} className="mt-[2mm] first:mt-0">
+              <div className="flex items-baseline justify-between gap-3">
+                {/* Title, employer and place on one line. The location used to sit on
+                    its own italic line under this row, which cost three printed lines
+                    across three roles and gave a parser a second thing to attribute. */}
+                <h3 className="text-[9.5pt] font-semibold">
+                  {job.title}
+                  {", "}
+                  {job.company}
+                  {", "}
+                  {job.location}
+                </h3>
+                <span className="shrink-0 text-[8.6pt] tabular-nums">
+                  {job.start} - {job.end}
+                </span>
+              </div>
+              {/* Row flow, for the same reason as the summary above. The order of
+                  these claims carries meaning - what he owns first, the judgement
+                  call last - and a column-major flow would have the eye reading them
+                  in one order while the DOM says another. */}
+              <ul
+                className={cn(
+                  "mt-[1mm] list-disc pl-[4.2mm] text-[9pt] leading-[1.3]",
+                  twoUp ? "grid grid-cols-2 gap-x-[3mm] gap-y-[0.4mm]" : "space-y-[0.4mm]",
+                )}
+              >
+                {job.description.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
             </div>
-            <ul className="mt-[1mm] list-disc space-y-[0.4mm] pl-[4.2mm] text-[9pt] leading-[1.3]">
-              {job.description.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+          );
+        })}
       </Section>
 
       {/* Skills sits directly under Experience rather than fourth. Where the dates
@@ -207,15 +250,7 @@ export default function Sheet() {
               </h3>
               <span className="shrink-0 text-[8.6pt] tabular-nums">{p.dates}</span>
             </div>
-            {/* First sentence only, and this is a page-budget cut rather than any
-                attempt to understand the prose. The site tells the whole story; on
-                paper the rest of this blurb is a five-clause run-on sitting directly
-                above a technologies line that already carries the same keywords, and
-                the sheet has one page to spend. Falls back to the whole string when
-                there is no sentence break to cut at. */}
-            <p className="text-[9pt] leading-[1.4]">
-              {p.description.slice(0, p.description.indexOf(". ") + 1) || p.description}
-            </p>
+            <p className="text-[9pt] leading-[1.4]">{claimLine(p.description)}</p>
             <p className="text-[8.6pt] leading-[1.35]">{p.technologies.join(", ")}</p>
           </div>
         ))}

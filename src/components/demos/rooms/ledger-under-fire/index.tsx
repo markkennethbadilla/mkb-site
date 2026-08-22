@@ -56,11 +56,16 @@ export default function Room() {
             {running ? "Firing..." : room.startLabel}
           </Button>
         )}
-        <p className="max-w-2xl text-xs leading-relaxed text-muted-foreground">
-          Every payment debits the same operating account and credits a vendor account. Only the
-          debit is raced: crediting is one atomic SQL increment in both modes, so the bug you are
-          about to watch is isolated to the single read-then-write gap the unsafe path takes.
-        </p>
+        {/* A list, not the paragraph this was. Three uneven facts a visitor can take
+            one at a time, and the last one is the only one an engineer needs. */}
+        <ul className="flex max-w-2xl list-disc flex-col gap-1 pl-4 text-xs leading-relaxed text-muted-foreground">
+          <li>Every payment debits the same operating account and credits a vendor account.</li>
+          <li>Only the debit is raced.</li>
+          <li>
+            Crediting is one atomic SQL increment in both modes, so the bug sits in the single
+            read-then-write gap the unsafe path takes.
+          </li>
+        </ul>
       </div>
 
       {/* role="alert" rather than a live region kept mounted. An alert node is

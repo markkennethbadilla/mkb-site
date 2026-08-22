@@ -11,8 +11,21 @@ import SkillGroups from "@/components/section/skill-groups";
 import WorkSection from "@/components/section/work-section";
 import AgentConsole from "@/components/demo/agent-console";
 import { ArrowUpRight } from "lucide-react";
+import { Fragment } from "react";
 
 const BLUR_FADE_DELAY = 0.04;
+
+// DATA.description is one verbatim string from driftwood and has to stay one string:
+// src/app/layout.tsx feeds it straight to the page metadata and to the Open Graph card,
+// and a title welded to a tagline is what a search result wants. On the page it is a job
+// title followed by a claim, which is a label and a value, so the split happens HERE at
+// render rather than in the data. The sheet already prints the title as its own line.
+const HERO_BREAK = DATA.description.indexOf(". ");
+const HERO_TITLE = DATA.description.slice(0, HERO_BREAK);
+const HERO_TAGLINE = DATA.description.slice(HERO_BREAK + 2);
+
+// Small-caps mono, the same label treatment the guide and the demo rooms already use.
+const LABEL = "font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground";
 
 export default function Page() {
   return (
@@ -33,27 +46,37 @@ export default function Page() {
                 yOffset={8}
                 text={`Hi, I'm ${DATA.name.split(" ")[0]}`}
               />
-              <BlurFadeText
-                className="text-muted-foreground max-w-[600px] md:text-lg lg:text-xl"
-                delay={BLUR_FADE_DELAY}
-                text={DATA.description}
-              />
+              <BlurFade delay={BLUR_FADE_DELAY}>
+                <dl className="max-w-[600px] space-y-1.5">
+                  <dt className={LABEL}>{HERO_TITLE}</dt>
+                  <dd className="text-muted-foreground md:text-lg lg:text-xl">
+                    {HERO_TAGLINE}
+                  </dd>
+                </dl>
+              </BlurFade>
               {/* The three facts a recruiter opens the page for - where he is,
                   what he does now, and the one-page version - were all further
                   down or behind the dock. Every value reads from DATA, so the
-                  role here cannot drift away from the work section. */}
+                  role here cannot drift away from the work section.
+                  A real <ul>, because the three facts sat in one <p> separated
+                  by <span> middots - which is a bullet character pretending to
+                  be list structure, so a parser read one run-on sentence. The
+                  middots survive as decoration inside the items they precede,
+                  marked aria-hidden. */}
               <BlurFade delay={BLUR_FADE_DELAY}>
-                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-                  <span>{DATA.location}</span>
-                  <span aria-hidden className="text-muted-foreground/40">&middot;</span>
-                  <span>
+                <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+                  <li>{DATA.location}</li>
+                  <li className="flex items-center gap-x-2">
+                    <span aria-hidden className="text-muted-foreground/40">&middot;</span>
                     {DATA.work[0].title} at {DATA.work[0].company} since {DATA.work[0].start}
-                  </span>
-                  <span aria-hidden className="text-muted-foreground/40">&middot;</span>
-                  <Link href="/resume" className="underline underline-offset-4 transition-colors hover:text-foreground">
-                    One-page resume
-                  </Link>
-                </p>
+                  </li>
+                  <li className="flex items-center gap-x-2">
+                    <span aria-hidden className="text-muted-foreground/40">&middot;</span>
+                    <Link href="/resume" className="underline underline-offset-4 transition-colors hover:text-foreground">
+                      One-page resume
+                    </Link>
+                  </li>
+                </ul>
               </BlurFade>
             </div>
             <BlurFade delay={BLUR_FADE_DELAY} className="order-1 md:order-2">
@@ -79,11 +102,38 @@ export default function Page() {
           <BlurFade delay={BLUR_FADE_DELAY * 3}>
             <h2 className="text-2xl font-bold tracking-tight">About</h2>
           </BlurFade>
+          {/* Three shapes, no paragraphs. The lede and the closing line are
+              label-and-value pairs and are rendered as real definition lists;
+              only the middle block is a bullet list, and it is the only part
+              that still goes through Markdown, for its ** emphasis.
+              The label column is fixed on sm and up and collapses to a stacked
+              single column on a phone, the same grid idiom the demo rooms use. */}
           <BlurFade delay={BLUR_FADE_DELAY * 4}>
-            <div className="prose max-w-none text-pretty font-sans leading-relaxed text-muted-foreground dark:prose-invert prose-strong:text-foreground">
-              <Markdown>
-                {DATA.summary}
-              </Markdown>
+            <div className="flex flex-col gap-y-6 text-pretty font-sans leading-relaxed text-muted-foreground">
+              <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-[10.5rem_1fr]">
+                {DATA.summaryLede.map(([term, detail]) => (
+                  <Fragment key={term}>
+                    <dt className={`${LABEL} sm:pt-1`}>{term}</dt>
+                    <dd className="mb-3 sm:mb-0">{detail}</dd>
+                  </Fragment>
+                ))}
+              </dl>
+              <div className="prose max-w-none font-sans leading-relaxed text-muted-foreground dark:prose-invert prose-strong:text-foreground">
+                <Markdown>{DATA.summary}</Markdown>
+              </div>
+              <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-[10.5rem_1fr]">
+                <dt className={`${LABEL} sm:pt-1`}>Before that</dt>
+                <dd className="mb-3 sm:mb-0">{DATA.summaryBefore}</dd>
+                <dt className={`${LABEL} sm:pt-1`}>Degree</dt>
+                <dd>
+                  <Link
+                    href="/#education"
+                    className="underline underline-offset-4 transition-colors hover:text-foreground"
+                  >
+                    {DATA.education[0].degree}
+                  </Link>
+                </dd>
+              </dl>
             </div>
           </BlurFade>
         </div>

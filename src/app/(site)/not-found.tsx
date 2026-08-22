@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Fragment } from "react";
 import { Home } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -35,21 +36,27 @@ export default function NotFound() {
                         <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                             Looking for a demo?
                         </p>
-                        <ul className="mt-2 space-y-1">
+                        {/* A room name and what it does are a label and a value, and
+                            they were welded into one line with a margin between them,
+                            so a parser read a run-on. A <dl> makes the pairing real
+                            and lets the names line up down the left. */}
+                        <dl className="mt-2 grid gap-x-4 gap-y-1 sm:grid-cols-[9rem_1fr]">
                             {OPEN_ROOMS.map((room) => (
-                                <li key={room.slug}>
-                                    <Link
-                                        href={`/demos/${room.slug}`}
-                                        className="text-[13px] text-foreground/80 underline decoration-border underline-offset-4 transition-colors hover:text-foreground"
-                                    >
-                                        {room.name}
-                                    </Link>
-                                    <span className="ml-2 text-[13px] text-muted-foreground">
+                                <Fragment key={room.slug}>
+                                    <dt>
+                                        <Link
+                                            href={`/demos/${room.slug}`}
+                                            className="text-[13px] text-foreground/80 underline decoration-border underline-offset-4 transition-colors hover:text-foreground"
+                                        >
+                                            {room.name}
+                                        </Link>
+                                    </dt>
+                                    <dd className="mb-2 text-[13px] text-muted-foreground sm:mb-0">
                                         {room.capability}
-                                    </span>
-                                </li>
+                                    </dd>
+                                </Fragment>
                             ))}
-                        </ul>
+                        </dl>
                     </div>
                 </div>
             </div>

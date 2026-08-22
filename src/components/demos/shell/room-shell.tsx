@@ -43,9 +43,15 @@ export default function RoomShell({
           <p className="max-w-prose text-[15px] leading-relaxed text-foreground/85">
             {room.promise}
           </p>
-          <p className="max-w-prose text-[15px] leading-relaxed text-muted-foreground">
-            {room.promiseDetail}
-          </p>
+          {/* Numbered, because these happen in this order and a visitor about to
+              press a button is reading them as instructions. It was a second
+              paragraph under the first, which made the order a thing you had to
+              infer from the word "then". */}
+          <ol className="max-w-prose list-decimal space-y-1 pl-5 text-[15px] leading-relaxed text-muted-foreground marker:font-mono marker:text-[12px] marker:text-muted-foreground/60">
+            {room.promiseSteps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
         </div>
 
         {/* Same dl idiom, same label column width and same type scale as the wall

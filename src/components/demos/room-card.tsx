@@ -75,12 +75,20 @@ export default function RoomCard({ room, featured }: { room: DemoRoom; featured?
 
       <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{room.promise}</p>
 
-      <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-4 font-mono text-[10px] text-muted-foreground/75">
-        <span>
-          about {room.runSeconds[0]} to {room.runSeconds[1]} seconds
-        </span>
-        <span aria-hidden className="text-muted-foreground/40">·</span>
-        <span>runs for real when you press the button</span>
+      {/* Two facts, so a real list. They were three sibling spans with a middot
+          span between them doing a bullet's job, which is a bullet nothing but a
+          sighted reader can see. The middot stays as decoration inside the second
+          item; the arrow is not a fact and stays outside the list. */}
+      <div className="mt-auto flex items-center gap-3 pt-4 font-mono text-[10px] text-muted-foreground/75">
+        <ul className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <li>
+            about {room.runSeconds[0]} to {room.runSeconds[1]} seconds
+          </li>
+          <li className="flex items-center gap-3">
+            <span aria-hidden className="text-muted-foreground/40">·</span>
+            <span>runs for real when you press the button</span>
+          </li>
+        </ul>
         <span
           aria-hidden
           className="ml-auto transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"

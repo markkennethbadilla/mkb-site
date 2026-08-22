@@ -61,7 +61,17 @@ export default function Gallery() {
               <span className="font-mono text-[13px] font-medium">{project.title}</span>
               <Icons.github className="ml-auto size-3.5 text-muted-foreground transition-colors group-hover:text-foreground" />
             </div>
-            <p className="text-[13px] leading-relaxed text-muted-foreground">{project.description}</p>
+            {/* Element 0 is the claim, the rest are the mechanisms under it.
+                They arrived as one sentence with five clauses hanging off it,
+                which nobody reads to the end of; four of the five are under
+                fifty characters, so they pair up two to a row and stack on a
+                phone. The split is authored in the data, not guessed here. */}
+            <p className="text-[13px] leading-relaxed text-muted-foreground">{project.description[0]}</p>
+            <ul className="grid gap-x-4 gap-y-0.5 text-[13px] leading-relaxed text-muted-foreground/80 sm:grid-cols-2">
+              {project.description.slice(1).map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
           </a>
         </BlurFade>
       ))}

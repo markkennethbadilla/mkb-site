@@ -53,15 +53,22 @@ export type DemoRoom = {
    * Never "demonstrates concurrency control". A promise may quantify its INPUTS
    * ("fire twelve payments") and never its OUTCOMES ("see the two that got
    * refused") - an outcome printed before the run is either a lie or proof the run
-   * is scripted. The same rule governs promiseDetail, and the gate checks both.
+   * is scripted. The same rule governs promiseSteps, and the gate checks every one.
    *
    * This was one 40-word paragraph, set at 15px across the full width of the
    * featured card, and it was the first prose a visitor met. Good paragraph, bad
    * hook. The gallery card shows this line; the room page shows both.
    */
   promise: string;
-  /** The second half of the hook. Shown on the room page, under the promise. */
-  promiseDetail: string;
+  /**
+   * The rest of the hook, one line per thing the visitor is about to watch.
+   *
+   * It was `promiseDetail`, one string, printed under the promise as a second
+   * paragraph. It never was a paragraph: it is a sequence, so RoomShell numbers
+   * it. Two or three items, authored rather than split at a full stop, because
+   * inferring where a claim ends is how a claim gets cut in half.
+   */
+  promiseSteps: string[];
   /** The transferable engineering capability, in one clause, for a recruiter. */
   capability: string;
   /**
@@ -113,13 +120,15 @@ export const ROOMS: DemoRoom[] = [
     name: "Ledger Under Fire",
     promise:
       "Fire twelve payments at one account at the same moment, on the unsafe path and then the safe one.",
-    promiseDetail:
-      "Watch the balance come out wrong, then watch it come out right, and read which writes were refused and why.",
+    promiseSteps: [
+      "Watch the balance come out wrong, then watch it come out right.",
+      "Read which writes were refused and why.",
+    ],
     capability: "Keeping money correct when several things touch the same record at once.",
     mechanism: [
       "Read-then-write race, two requests read the same balance before either one writes, so the second quietly overwrites the first.",
       "Idempotency key, an id the caller sends and the database stores, so a retried payment lands once instead of twice.",
-      "Conditional update, one statement that carries the balance it expected and refuses if that changed, so the rule holds inside the write rather than in a nightly repair job.",
+      "Conditional update, one statement that refuses if the balance changed, so the rule holds inside the write rather than in a nightly repair job.",
     ],
     scope: {
       real:
@@ -148,8 +157,10 @@ export const ROOMS: DemoRoom[] = [
     name: "ScoreAudit",
     promise:
       "Ask a language model six questions with checkable answers and make it commit to how sure it is.",
-    promiseDetail:
-      "Run it once with the database in reach and once without, then put what it claimed next to what is true.",
+    promiseSteps: [
+      "Run it once with the database in reach and once without.",
+      "Put what it claimed next to what is true.",
+    ],
     capability: "Not taking a model's word for it.",
     mechanism: [
       "Stated confidence, the model scores every answer from 0 to 100 for how sure it is, with nothing telling it what to say.",
@@ -174,7 +185,7 @@ export const ROOMS: DemoRoom[] = [
     runSeconds: [5, 12],
     startLabel: "Ask the model, then check it",
     readFirst:
-      "Start with worker/demos/score-audit.ts. The verifier is the half that matters, and it never sees the model's confidence.",
+      "Start with worker/demos/score-audit.ts, where the verifier is the half that matters and it never sees the model's confidence.",
     sourceFiles: ["worker/demos/score-audit.ts", "migrations/warehouse/0002_seed_warehouse.sql"],
     order: 2,
     featured: false,
@@ -183,10 +194,14 @@ export const ROOMS: DemoRoom[] = [
   {
     slug: "split-brain",
     name: "Split-Brain Sandbox",
-    promise:
-      "Three nodes, one job, and only one may run it. Split brain is what happens when two of them both believe they are in charge.",
-    promiseDetail:
-      "Cut the primary off from the store and watch a second node take over, then let the first one come back still believing it is the leader.",
+    // The gloss of "split brain" that used to be the promise's second sentence now
+    // lives in the room's own GLOSSARY, where a term a reader does not know costs
+    // them one line instead of half the hook.
+    promise: "Three nodes, one job, and only one may run it.",
+    promiseSteps: [
+      "Cut the primary off from the store and watch a second node take over.",
+      "Let the first one come back still believing it is the leader.",
+    ],
     capability: "Making sure exactly one worker owns a job when the network cannot be trusted.",
     mechanism: [
       "Lease, a timed claim on the job that expires unless the holder renews it, so a node that goes silent loses it automatically.",

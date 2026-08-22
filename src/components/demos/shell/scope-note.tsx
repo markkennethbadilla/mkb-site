@@ -25,6 +25,17 @@ import type { DemoRoom } from "@/lib/demos/registry";
  * takes the whole claim. tests/demos.test.mjs caps every value at 32 words and
  * requires the second sentence, which is what keeps this split from silently
  * degrading back into one paragraph rendered slightly bolder at the front.
+ *
+ * A REAL TABLE, because that is what this already was. Three rows, and every row
+ * is the same pair - the claim, then the qualifier on it. Rendered as a dl with
+ * both halves inside one dd it was still one text block per row, and a bolder
+ * first sentence is a hint rather than a structure. Two cells make the pairing
+ * something a parser can see and something the eye can read down a column.
+ *
+ * The display swap below sm strips the implicit table roles in Chrome and Safari,
+ * which is why every part carries an explicit role. Three columns of 13px text do
+ * not fit a phone, and the one block the site cannot afford to have skipped is not
+ * the block to make people scroll sideways for.
  */
 const ROWS = [
   { key: "real" as const, label: "What is real" },
@@ -38,28 +49,46 @@ const split = (value: string): [string, string] => {
   return i === -1 ? [value, ""] : [value.slice(0, i + 1), value.slice(i + 2)];
 };
 
+// No aria-label on the wrapper any more. The table's caption names this block now,
+// and two elements announcing the same name is one of them read twice.
 export default function ScopeNote({ room }: { room: DemoRoom }) {
   return (
-    <section
-      aria-label="What this demo is and is not"
-      className="rounded-lg border border-border bg-card/60 px-4 py-3 sm:px-5 sm:py-4"
-    >
-      <dl className="grid gap-2.5 sm:grid-cols-[10.5rem_1fr] sm:gap-x-6 sm:gap-y-3">
-        {ROWS.map((row) => {
-          const [lead, rest] = split(room.scope[row.key]);
-          return (
-            <div key={row.key} className="contents">
-              <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:pt-[3px]">
-                {row.label}
-              </dt>
-              <dd className="text-[13px] leading-relaxed text-muted-foreground">
-                <span className="font-medium text-foreground">{lead}</span>
-                {rest ? ` ${rest}` : null}
-              </dd>
-            </div>
-          );
-        })}
-      </dl>
+    <section className="rounded-lg border border-border bg-card/60 px-4 py-3 sm:px-5 sm:py-4">
+      <table role="table" className="block w-full border-collapse sm:table">
+        <caption className="sr-only">What this demo is and is not</caption>
+        <tbody role="rowgroup" className="block sm:table-row-group">
+          {ROWS.map((row) => {
+            const [lead, rest] = split(room.scope[row.key]);
+            return (
+              <tr
+                role="row"
+                key={row.key}
+                className="block pb-2.5 last:pb-0 sm:table-row sm:pb-0"
+              >
+                <th
+                  role="rowheader"
+                  scope="row"
+                  className="block text-left align-top font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-muted-foreground sm:table-cell sm:w-[10.5rem] sm:pb-3 sm:pr-6 sm:pt-[3px]"
+                >
+                  {row.label}
+                </th>
+                <td
+                  role="cell"
+                  className="block align-top text-[13px] font-medium leading-relaxed text-foreground sm:table-cell sm:pb-3 sm:pr-6"
+                >
+                  {lead}
+                </td>
+                <td
+                  role="cell"
+                  className="block align-top text-[13px] leading-relaxed text-muted-foreground sm:table-cell sm:pb-3"
+                >
+                  {rest}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </section>
   );
 }

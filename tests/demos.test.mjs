@@ -136,29 +136,53 @@ describe("promises", () => {
   const PROMISE_WORD_CAP = 26;
 
   for (const room of ROOMS) {
-    for (const key of ["promise", "promiseDetail"]) {
-      test(`"${room.slug}" ${key} promises no outcome`, () => {
-        assert.ok(
-          !OUTCOME_SHAPES.test(room[key]),
-          `${key} names a quantity of results before the run happens: "${room[key]}". Inputs may be counted; outcomes may not.`
-        );
-      });
-    }
+    test(`"${room.slug}" promise promises no outcome`, () => {
+      assert.ok(
+        !OUTCOME_SHAPES.test(room.promise),
+        `promise names a quantity of results before the run happens: "${room.promise}". Inputs may be counted; outcomes may not.`
+      );
+    });
 
     test(`"${room.slug}" promise is a hook, not a paragraph`, () => {
       const words = room.promise.trim().split(/\s+/).length;
       assert.ok(
         words <= PROMISE_WORD_CAP,
-        `${words} words, and the cap is ${PROMISE_WORD_CAP}. Everything past the hook belongs in promiseDetail, which the room page prints and the card does not.`
+        `${words} words, and the cap is ${PROMISE_WORD_CAP}. Everything past the hook belongs in promiseSteps, which the room page prints and the card does not.`
       );
     });
 
-    test(`"${room.slug}" writes a promiseDetail`, () => {
+    // promiseDetail was one string and got one length check, so the second half of
+    // the hook could be any shape at all as long as it was longer than 20
+    // characters. It is a sequence, RoomShell numbers it, and every item now
+    // carries the promise's own two rules rather than only the first line.
+    test(`"${room.slug}" writes promiseSteps`, () => {
       assert.ok(
-        typeof room.promiseDetail === "string" && room.promiseDetail.trim().length > 20,
-        "The hook alone tells a visitor what to press and not what they are looking at."
+        Array.isArray(room.promiseSteps) &&
+          room.promiseSteps.length >= 2 &&
+          room.promiseSteps.length <= 3,
+        "Two or three steps. The hook alone tells a visitor what to press and not what they are looking at, and a one-item ordered list is a sentence wearing a list's clothes."
       );
     });
+
+    for (const [i, step] of (room.promiseSteps ?? []).entries()) {
+      test(`"${room.slug}" promiseSteps[${i}] is a step a visitor can read`, () => {
+        assert.ok(
+          typeof step === "string" && step.trim().length > 20,
+          `Empty or near-empty step: "${step}".`
+        );
+
+        const words = step.trim().split(/\s+/).length;
+        assert.ok(
+          words <= PROMISE_WORD_CAP,
+          `${words} words, and the cap is ${PROMISE_WORD_CAP}. "${step}"`
+        );
+
+        assert.ok(
+          !OUTCOME_SHAPES.test(step),
+          `This step names a quantity of results before the run happens: "${step}". Inputs may be counted; outcomes may not.`
+        );
+      });
+    }
   }
 });
 
@@ -168,7 +192,9 @@ describe("the mechanism", () => {
   // anchor anywhere in it, which gave a non-technical reader nothing and gave a
   // skimming engineer a keyword list. A list costs an unfamiliar reader one line
   // rather than the whole paragraph.
-  const MECHANISM_WORD_CAP = 30;
+  // 25, the house ceiling on any single rendered text block. It was 30, which let
+  // one line render as a 29-word paragraph in a list's clothing.
+  const MECHANISM_WORD_CAP = 25;
 
   for (const room of ROOMS) {
     test(`"${room.slug}" mechanism is three lines`, () => {
@@ -202,7 +228,7 @@ describe("the house prose rules", () => {
   const VISITOR_STRINGS = (room) => [
     ["name", room.name],
     ["promise", room.promise],
-    ["promiseDetail", room.promiseDetail],
+    ...room.promiseSteps.map((s, i) => [`promiseSteps[${i}]`, s]),
     ["capability", room.capability],
     ...room.mechanism.map((l, i) => [`mechanism[${i}]`, l]),
     ...["real", "staged", "notProved"].map((k) => [`scope.${k}`, room.scope[k]]),

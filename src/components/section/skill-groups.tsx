@@ -63,21 +63,29 @@ function SkillIcon({ slug, className }: { slug?: string; className?: string }) {
 
 export default function SkillGroups({ delayStart = 0 }: { delayStart?: number }) {
   return (
-    <div className="flex flex-col gap-y-5">
+    <dl className="flex flex-col gap-y-5">
       {DATA.resumeSkills.map((group, gi) => (
-        <BlurFade key={group.group} delay={delayStart + gi * 0.05}>
-          <div className="flex flex-col gap-y-2">
-            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-              {group.group}
-            </span>
-            <div className="flex flex-wrap gap-1.5">
+        // The BlurFade div IS the dl's group wrapper. A dl allows exactly one level of
+        // div between itself and a dt, so the extra layout div that used to sit inside
+        // this one had to go and its classes moved up here.
+        <BlurFade
+          key={group.group}
+          delay={delayStart + gi * 0.05}
+          className="flex flex-col gap-y-2"
+        >
+          <dt className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+            {group.group}
+          </dt>
+          <dd>
+            <ul className="flex flex-wrap gap-1.5">
               {group.items.map((item) => {
                 // `icon` is optional, and the data is `as const`, so the entries
                 // without one genuinely do not have the property rather than having
                 // it set to undefined. An `in` check is what narrows that safely.
                 const slug = "icon" in item ? item.icon : undefined;
                 return (
-                <Tooltip key={item.name}>
+                <li key={item.name}>
+                <Tooltip>
                   <TooltipTrigger asChild>
                     <a
                       href={item.url}
@@ -105,12 +113,13 @@ export default function SkillGroups({ delayStart = 0 }: { delayStart?: number })
                     <TooltipArrow className="fill-primary" />
                   </TooltipContent>
                 </Tooltip>
+                </li>
                 );
               })}
-            </div>
-          </div>
+            </ul>
+          </dd>
         </BlurFade>
       ))}
-    </div>
+    </dl>
   );
 }

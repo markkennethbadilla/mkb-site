@@ -77,7 +77,9 @@ export function buildToolbox(decision: GuideDecision) {
 
         // Em and en dashes are the loudest tell that a machine wrote something.
         // Asking the model not to use them is unreliable; replacing them is not.
-        const text = parsed.data.text.replace(/\s*[–—]\s*/g, " - ").trim();
+        // Written as escapes, not as the characters, so the repo-wide grep that
+        // bans them does not trip over the one line that removes them.
+        const text = parsed.data.text.replace(/\s*[\u2013\u2014]\s*/g, " - ").trim();
 
         // The prompt asked for factual; this is what enforces it. Rejected text is
         // never shown - the caller falls back to the written section line, which is
