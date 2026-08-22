@@ -1,6 +1,7 @@
 "use client";
 
-import { useSettle } from "./use-settle";
+import { useEffect } from "react";
+import { animate, motion, useMotionValue, useTransform } from "motion/react";
 
 /**
  * Two bars settling in parallel - stated confidence against measured accuracy -
@@ -25,16 +26,15 @@ export function Gauges({
   totalQuestions: number;
   reduced: boolean;
 }) {
-  const confidence = useSettle(meanConfidence, 800, 0, reduced);
-  const accuracy = useSettle(accuracyPct, 800, 150, reduced);
-
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border p-4 sm:p-5">
-      <Bar label="Stated confidence" value={confidence} variant="claim" />
+      <Bar label="Stated confidence" target={meanConfidence} variant="claim" delay={0} reduced={reduced} />
       <Bar
         label={`Actual accuracy (${sampleSize} of ${totalQuestions} questions)`}
-        value={accuracy}
+        target={accuracyPct}
         variant="measured"
+        delay={0.15}
+        reduced={reduced}
       />
       <div className="flex items-baseline justify-between border-t border-border pt-3">
         <span className="text-xs text-muted-foreground">Calibration gap</span>
@@ -60,25 +60,54 @@ export function Gauges({
   );
 }
 
+/**
+ * A linear settle, not a spring. This room's motion character is "measured" - a
+ * gauge easing to its final reading over a fixed span, never overshooting and never
+ * bouncing - which is `ease: "linear"`, the same transition question-row.tsx uses a
+ * file away.
+ *
+ * ONE motion value drives both the width and the number, so the bar and the reading
+ * beside it cannot disagree at any frame. Reduced motion sets the value rather than
+ * skipping the element, because SPEC.md's rule is to gate the animation and never
+ * the tree - branching the tree on a media query makes server and client markup
+ * disagree.
+ */
 function Bar({
   label,
-  value,
+  target,
   variant,
+  delay,
+  reduced,
 }: {
   label: string;
-  value: number;
+  target: number;
   variant: "claim" | "measured";
+  delay: number;
+  reduced: boolean;
 }) {
+  const value = useMotionValue(reduced ? target : 0);
+  const width = useTransform(value, (v) => `${Math.min(100, Math.max(0, v))}%`);
+  const readout = useTransform(value, (v) => `${v.toFixed(1)}%`);
+
+  useEffect(() => {
+    if (reduced) {
+      value.set(target);
+      return;
+    }
+    const controls = animate(value, target, { duration: 0.8, delay, ease: "linear" });
+    return () => controls.stop();
+  }, [value, target, delay, reduced]);
+
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-baseline justify-between text-xs">
         <span className="text-muted-foreground">{label}</span>
-        <span className="font-mono tabular-nums">{value.toFixed(1)}%</span>
+        <motion.span className="font-mono tabular-nums">{readout}</motion.span>
       </div>
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
-        <div
+        <motion.div
           className={"h-full rounded-full " + (variant === "measured" ? "bg-foreground" : "bg-muted-foreground")}
-          style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+          style={{ width }}
         />
       </div>
     </div>

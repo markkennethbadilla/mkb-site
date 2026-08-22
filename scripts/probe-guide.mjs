@@ -15,45 +15,18 @@
 //
 // Usage: node scripts/probe-guide.mjs
 
-import { readFileSync } from "node:fs";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText, stepCountIs, tool } from "ai";
 import { z } from "zod";
 import { SECTION_IDS, buildGuidePrompt } from "../src/lib/site-sections.ts";
 import { GUIDE_CHAIN, DEEPSEEK_BASE_URL } from "../src/lib/guide-models.ts";
 import { checkGrounding } from "../src/lib/grounding.ts";
-import { FACTS_BRIEF, LICENSED_TERMS } from "../src/lib/public-facts.ts";
+import { FACTS_BRIEF, LICENCE } from "../src/lib/public-facts.ts";
+import { vaultRow } from "./vault.mjs";
 
 const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 
-const VAULT = process.env.MKB_VAULT_CSV ?? "A:\\credentials\\personal-credential-vault.csv";
-const SLUG = "deepseek/personal-api-key";
-
-function parseCsv(text) {
-  const rows = [];
-  let row = [], field = "", quoted = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (quoted) {
-      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else quoted = false; }
-      else field += c;
-      continue;
-    }
-    if (c === '"') quoted = true;
-    else if (c === ",") { row.push(field); field = ""; }
-    else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
-    else if (c !== "\r") field += c;
-  }
-  if (field.length || row.length) { row.push(field); rows.push(row); }
-  const [header, ...body] = rows.filter((r) => r.length > 1);
-  return body.map((r) => Object.fromEntries(header.map((h, i) => [h, r[i] ?? ""])));
-}
-
-const cred = parseCsv(readFileSync(VAULT, "utf8")).find((r) => r.credential_slug === SLUG);
-if (!cred?.secret_value) {
-  console.error(`No secret for "${SLUG}" in ${VAULT}`);
-  process.exit(1);
-}
+const cred = vaultRow("deepseek/personal-api-key");
 
 // Points at the provider and the exact chain production uses. It used to discover
 // free OpenRouter models, which stopped testing anything real the moment the guide
@@ -99,7 +72,7 @@ async function run(model, question) {
         text: z.string().min(1).max(320),
       }),
       execute: async ({ section: s, text }) => {
-        const verdict = checkGrounding(text, LICENSED_TERMS);
+        const verdict = checkGrounding(text, LICENCE);
         if (!verdict.grounded) {
           rejected.push({ text, unlicensed: verdict.unlicensed });
           calls.push("respond:REJECTED");

@@ -49,7 +49,6 @@ export default function Rail({ room }: { room: DemoRoom }) {
                 key={r.slug}
                 href={`/demos/${r.slug}`}
                 aria-current={here ? "page" : undefined}
-                title={r.name}
                 className={cn(
                   "rounded-md px-2 py-1 text-[11px] transition-colors",
                   here
@@ -59,8 +58,14 @@ export default function Rail({ room }: { room: DemoRoom }) {
               >
                 <span className="hidden md:inline">{r.name}</span>
                 {/* Below md the names do not fit. A number is still a label; three
-                    unlabelled dots at an 8px target are not. */}
-                <span className="md:hidden">{r.order}</span>
+                    unlabelled dots at an 8px target are not. The name goes with it
+                    anyway, out of sight. The number used to carry the whole
+                    accessible name on the one viewport where a title attribute is
+                    unreachable, so the link announced itself as "1". */}
+                <span aria-hidden className="md:hidden">
+                  {r.order}
+                </span>
+                <span className="sr-only md:hidden">{r.name}</span>
               </Link>
             );
           })}

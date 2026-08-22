@@ -18,12 +18,25 @@ import type { DemoRoom } from "@/lib/demos/registry";
  * idea what "production volume" or "a free-tier database" means, and the line is
  * unskippable by design, so it cannot afford to be the least readable thing on the
  * page for half the audience.
+ *
+ * It was exactly that for a while: three rows of unbroken 30-to-45-word prose at
+ * 13px with nothing to catch the eye. Each value is now two sentences and the first
+ * one is set at foreground weight, so a reader who takes only the bold half still
+ * takes the whole claim. tests/demos.test.mjs caps every value at 32 words and
+ * requires the second sentence, which is what keeps this split from silently
+ * degrading back into one paragraph rendered slightly bolder at the front.
  */
 const ROWS = [
   { key: "real" as const, label: "What is real" },
   { key: "staged" as const, label: "What is staged" },
   { key: "notProved" as const, label: "What this does not prove" },
 ];
+
+/** First sentence, then the rest. The gate guarantees there is a rest. */
+const split = (value: string): [string, string] => {
+  const i = value.indexOf(". ");
+  return i === -1 ? [value, ""] : [value.slice(0, i + 1), value.slice(i + 2)];
+};
 
 export default function ScopeNote({ room }: { room: DemoRoom }) {
   return (
@@ -32,14 +45,20 @@ export default function ScopeNote({ room }: { room: DemoRoom }) {
       className="rounded-lg border border-border bg-card/60 px-4 py-3 sm:px-5 sm:py-4"
     >
       <dl className="grid gap-2.5 sm:grid-cols-[10.5rem_1fr] sm:gap-x-6 sm:gap-y-3">
-        {ROWS.map((row) => (
-          <div key={row.key} className="contents">
-            <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:pt-[3px]">
-              {row.label}
-            </dt>
-            <dd className="text-[13px] leading-relaxed text-foreground/85">{room.scope[row.key]}</dd>
-          </div>
-        ))}
+        {ROWS.map((row) => {
+          const [lead, rest] = split(room.scope[row.key]);
+          return (
+            <div key={row.key} className="contents">
+              <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:pt-[3px]">
+                {row.label}
+              </dt>
+              <dd className="text-[13px] leading-relaxed text-muted-foreground">
+                <span className="font-medium text-foreground">{lead}</span>
+                {rest ? ` ${rest}` : null}
+              </dd>
+            </div>
+          );
+        })}
       </dl>
     </section>
   );

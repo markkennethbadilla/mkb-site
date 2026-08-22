@@ -28,11 +28,24 @@
  * and whatever it reports instead is the finding. Nothing is engineered to fail;
  * one preset removes the thing that made the other work.
  *
- * THE TOOLS. `query_db` runs whatever SELECT/WITH the model writes, through
- * src/lib/sql-guard.ts - which was written for exactly this case, untrusted
- * model-authored SQL, and had no consumer until this room. `submit_answers` is
- * the only way an answer reaches this file, so free text is never read and a
- * model that never calls it produces no result rather than an invented one.
+ * THE TOOLS. `query_db` runs whatever SELECT or WITH statement the model writes,
+ * through src/lib/sql-guard.ts. `submit_answers` is the only way an answer
+ * reaches this file, so free text is never read and a model that never calls it
+ * produces no result rather than an invented one.
+ *
+ * THE BINDING IS THE SECURITY BOUNDARY, NOT THE GUARD.
+ *
+ * This is the only place on the site where a model's own SQL reaches a database,
+ * so it is the only place that holds WAREHOUSE_DB. That database contains the
+ * invented Tidewater tables and nothing else. Live per-visitor rows from the
+ * other two rooms, the request budget and the guide's answer cache all sit in
+ * DEMO_DB, which this file never touches.
+ *
+ * That split is a fix, not a tidy-up. Both used to be one database, and the only
+ * thing standing between a model-written SELECT and every visitor's live demo run
+ * was a list of banned table names inside the guard. Putting the table name in
+ * double quotes walked straight past it. The guard's own header now carries the
+ * full account of what was allowed and what stops it today.
  *
  * MAX_STEPS is a tool-call budget, not a model cascade: this room always calls
  * GUIDE_CHAIN[0] and nothing else, because falling back to a second model would
@@ -44,7 +57,7 @@ import { generateText, stepCountIs, tool } from "ai";
 import { z } from "zod";
 import { DEEPSEEK_BASE_URL, GUIDE_CHAIN } from "../../src/lib/guide-models";
 import { QUESTIONS, CAN_QUERY, type Question } from "../../src/lib/demos/score-audit-questions";
-import { guardSql } from "../../src/lib/sql-guard";
+import { guardSql, MAX_ROWS } from "../../src/lib/sql-guard";
 import { json, type DemoEnv } from "./router";
 
 export const START_ACTIONS = ["run"] as const;
@@ -72,7 +85,7 @@ function buildSystemPrompt(questions: Question[], canQuery: boolean): string {
   // humility and measure nothing; the whole point is what it reports unprompted.
   const tools = canQuery
     ? `Tools:
-  - query_db(sql): run ONE read-only SELECT or WITH statement to check a fact before you answer. Returns up to 20 rows and a row count.
+  - query_db(sql): run ONE read-only SELECT or WITH statement to check a fact before you answer. No semicolons. Returns up to 20 rows, and its row count is capped at ${MAX_ROWS}, so use COUNT(*) when you want a total.
   - submit_answers(answers): your FINAL answer. Call it once, with one entry per question id below, each carrying a numeric answer and a confidence from 0 (pure guess) to 100 (certain).
 
 You have ${MAX_STEPS} tool calls total, including the final submission. Most questions need at most one query - check what you are unsure about, then submit all of them in one call.`
@@ -101,7 +114,7 @@ type Decision = {
 
 /** Fresh per request, like guide-tools.ts's buildToolbox - a shared mutable record
  *  bound at module scope would leak one visitor's run into another's. */
-function buildToolbox(env: DemoEnv, decision: Decision, ids: [string, ...string[]], canQuery: boolean) {
+function buildToolbox(db: D1Database, decision: Decision, ids: [string, ...string[]], canQuery: boolean) {
   const submit = {
     submit_answers: tool({
       description: "Record your final numeric answer and confidence (0-100) for one or more questions, by id.",
@@ -131,9 +144,9 @@ function buildToolbox(env: DemoEnv, decision: Decision, ids: [string, ...string[
   return {
     ...submit,
     query_db: tool({
-      description: "Run one read-only SELECT or WITH statement against the warehouse. Returns up to 20 rows.",
+      description: `Run one read-only SELECT or WITH statement against the warehouse. No semicolons. Returns up to 20 rows, and rowCount is how many rows came back after a ceiling of ${MAX_ROWS}, so use COUNT(*) when you need a true total.`,
       inputSchema: z.object({
-        sql: z.string().min(1).max(2000).describe("A single SELECT or WITH statement."),
+        sql: z.string().min(1).max(2000).describe("A single SELECT or WITH statement, with no semicolon."),
       }),
       execute: async ({ sql }: { sql: string }) => {
         const verdict = guardSql(sql);
@@ -142,7 +155,10 @@ function buildToolbox(env: DemoEnv, decision: Decision, ids: [string, ...string[
           return { ok: false, error: `${verdict.reason} ${verdict.fix}` };
         }
         try {
-          const { results } = await env.DEMO_DB!.prepare(verdict.sql).all();
+          // verdict.sql is the model's text verbatim inside the guard's frame.
+          // The query the visitor sees recorded is that same string, so the page
+          // shows what ran rather than what was asked for.
+          const { results } = await db.prepare(verdict.sql).all();
           decision.queries.push({ sql: verdict.sql, ok: true, rowCount: results.length });
           return { ok: true, rowCount: results.length, rows: results.slice(0, 20) };
         } catch (e) {
@@ -163,12 +179,17 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
   if (!parsed.success) {
     return json({ error: parsed.error.issues[0]?.message ?? "invalid request body" }, 400);
   }
-  if (!env.DEMO_DB) {
+  // WAREHOUSE_DB is the only database this room may touch, and it is the only
+  // room that may touch it. The generated Env types it as always present; a
+  // visitor running `wrangler dev` without --remote finds out otherwise, so the
+  // check stays and says which binding is missing.
+  if (!env.WAREHOUSE_DB) {
     return json(
-      { error: "DEMO_DB is not bound - this is local dev without --remote, so there is no warehouse to audit." },
+      { error: "WAREHOUSE_DB is not bound, so this is local dev without --remote and there is no warehouse to audit." },
       503
     );
   }
+  const db = env.WAREHOUSE_DB;
   const key = env.DEEPSEEK_API_KEY;
   if (!key) {
     return json({ error: "DEEPSEEK_API_KEY is not configured, so no model call can be made." }, 503);
@@ -195,7 +216,7 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
   // computed before the model's answers are even inspected.
   const verification = Promise.all(
     questions.map(async (q) => {
-      const row = await env.DEMO_DB!.prepare(q.sql).first<{ n: number }>();
+      const row = await db.prepare(q.sql).first<{ n: number }>();
       return { id: q.id, trueAnswer: row?.n ?? 0 };
     })
   );
@@ -207,7 +228,7 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
       model: deepseek(GUIDE_CHAIN[0]),
       system: buildSystemPrompt(questions, canQuery),
       prompt: "Answer every question listed in the system prompt.",
-      tools: buildToolbox(env, decision, ids, canQuery),
+      tools: buildToolbox(db, decision, ids, canQuery),
       stopWhen: stepCountIs(MAX_STEPS),
       temperature: 0.2,
       maxRetries: 1,

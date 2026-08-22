@@ -37,13 +37,31 @@
  * Counting happens BEFORE the check, so a refused request still increments. That
  * over-counts a visitor who is already being refused, which is the safe direction:
  * the alternative is a check-then-increment gap, and that gap is the whole bug.
+ *
+ * THE MIGRATION WAS HALF DONE FOR MONTHS, WHICH IS WORSE THAN NOT DOING IT. This
+ * file was written and two callers were never moved to it. /api/agent kept its own
+ * KV day counter, and the guide reserved here and then incremented a second KV
+ * counter for model calls on the very next line. Both were still the lost update
+ * described above, sitting behind a file whose comments said it had been fixed.
+ * Every counter is now a row in this table, and the KV namespace holds only the
+ * model-discovery list, which is written about once an hour.
  */
 
-export type Pool = "guide" | "demo";
+/**
+ * Two of these count Worker requests. "calls" counts model calls, which is a
+ * different scarce thing measured in the same table.
+ *
+ * A question can spend several model calls, so counting requests alone would let
+ * a handful of clicks drain the day's inference. It was a second KV counter until
+ * it moved here, which made it the last surviving copy of the read-then-write bug
+ * described above - one counter atomic in D1, one still losing updates in KV.
+ * Nothing about "model calls are a separate ceiling" required a separate store.
+ */
+export type Pool = "guide" | "demo" | "calls";
 
 /**
- * Daily request allocations, sized against the real ceiling rather than a round
- * number that felt generous.
+ * Daily allocations, sized against the real ceiling rather than a round number
+ * that felt generous.
  *
  * The binding constraint is D1 writes, not Workers requests. Each reserve costs
  * two rows written (the visitor's counter and the pool's), so these totals imply
@@ -54,19 +72,42 @@ export type Pool = "guide" | "demo";
  * The previous numbers - 12,000 and 20,000 - were written against KV without
  * checking KV's write ceiling, which is 1,000 a day. They implied 64 times the
  * available budget.
+ *
+ * `calls` is 300 because the guide runs on a metered key at roughly 5k tokens a
+ * call. The cache absorbs repeats, so this bounds genuinely distinct questions a
+ * day, and the key's own spending cap is the backstop underneath it.
  */
 const DAILY_LIMIT: Record<Pool, number> = {
   guide: 5_000,
   demo: 10_000,
+  calls: 300,
 };
 
 /** One visitor's share, per pool, per day. */
 const DAILY_PER_IP: Record<Pool, number> = {
   guide: 200,
   demo: 400,
+  // A third of the day's inference is as much as one visitor gets. The KV counter
+  // this replaced had no per-visitor dimension at all, so one loop could take the
+  // whole day's model calls and the guide would tell everyone else it was out.
+  calls: 100,
 };
 
-/** KV keys carry the UTC day so they expire naturally with the platform's reset. */
+/** What a pool is a ceiling ON, for the message a visitor reads. */
+const POOL_LABEL: Record<Pool, string> = {
+  guide: "guide",
+  demo: "demo",
+  calls: "inference",
+};
+
+const POOL_EXHAUSTED: Record<Pool, string> = {
+  guide: "The guide has used today's request budget. It is back at midnight UTC.",
+  demo: "The demos have used today's request budget. They are back at midnight UTC. Everything else on the site still works, which is the point of budgeting them separately.",
+  calls: "The site has used today's inference budget. The guide is back at midnight UTC, and everything written on the page is still here to read.",
+};
+
+/** Every counter row is keyed by UTC day, matching the platform's own reset, so
+ *  yesterday's numbers are never read and a new day starts at nothing. */
 const today = () => new Date().toISOString().slice(0, 10);
 
 export type BudgetRefusal = {
@@ -75,13 +116,15 @@ export type BudgetRefusal = {
   detail: string;
 };
 
-export interface BudgetEnv {
-  DEMO_DB?: D1Database;
-  /** 6 req/60s per IP. Right for the guide and for starting a demo run. */
-  BURST_LIMITER?: { limit: (o: { key: string }) => Promise<{ success: boolean }> };
-  /** 60/60s, for the shards of one already-authorised run. */
-  DEMO_LIMITER?: { limit: (o: { key: string }) => Promise<{ success: boolean }> };
-}
+/**
+ * The bindings, straight from wrangler.jsonc via `wrangler types`.
+ *
+ * This was a hand-written interface listing the three bindings this file happens
+ * to use, and there were four such interfaces across the Worker. They had already
+ * drifted apart, which is what the casts between them existed to paper over.
+ * There is one Env now and a generator maintains it.
+ */
+export type BudgetEnv = Env;
 
 /**
  * Reserves `cost` requests from a pool, or explains why it will not.
@@ -108,7 +151,11 @@ export async function reserve(
   cost = 1,
   burstKey?: string
 ): Promise<BudgetRefusal | null> {
-  if (env.BURST_LIMITER) {
+  // The edge limiter bounds REQUESTS, and "calls" is not one - it is counted
+  // inside a request that has already passed the limiter. Running it again there
+  // would charge one visitor twice against an allowance of six a minute, which is
+  // how the guide quietly became three questions a minute.
+  if (env.BURST_LIMITER && pool !== "calls") {
     const { success } = await env.BURST_LIMITER.limit({ key: burstKey ?? ip });
     if (!success) {
       return {
@@ -159,18 +206,12 @@ export async function reserve(
   if (ipSpent > DAILY_PER_IP[pool]) {
     return {
       reason: "ip-daily-cap",
-      detail: `You have used your share of today's ${pool} budget on this site. It resets at midnight UTC.`,
+      detail: `You have used your share of today's ${POOL_LABEL[pool]} budget on this site. It resets at midnight UTC.`,
     };
   }
 
   if (poolSpent > DAILY_LIMIT[pool]) {
-    return {
-      reason: "pool-exhausted",
-      detail:
-        pool === "demo"
-          ? "The demos have used today's request budget. They are back at midnight UTC. Everything else on the site still works, which is the point of budgeting them separately."
-          : "The guide has used today's request budget. It is back at midnight UTC.",
-    };
+    return { reason: "pool-exhausted", detail: POOL_EXHAUSTED[pool] };
   }
 
   return null;
@@ -206,6 +247,10 @@ export async function budgetStatus(env: BudgetEnv): Promise<Record<string, numbe
     guideLimit: DAILY_LIMIT.guide,
     demoSpent: 0,
     demoLimit: DAILY_LIMIT.demo,
+    // Model calls, now that they are counted here rather than in a KV key nothing
+    // could report on. A ceiling the page cannot show is a ceiling nobody checks.
+    callsSpent: 0,
+    callsLimit: DAILY_LIMIT.calls,
   };
   if (!env.DEMO_DB) return base;
 
@@ -218,6 +263,7 @@ export async function budgetStatus(env: BudgetEnv): Promise<Record<string, numbe
     for (const r of results ?? []) {
       if (r.scope === "guide") base.guideSpent = r.n;
       if (r.scope === "demo") base.demoSpent = r.n;
+      if (r.scope === "calls") base.callsSpent = r.n;
     }
   } catch {
     // A status read that fails is not worth failing a request over; the numbers

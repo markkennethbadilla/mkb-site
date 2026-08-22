@@ -1,0 +1,67 @@
+{
+  // Type checking for scripts/ and tests/, which the root tsconfig does not reach.
+  //
+  // WHY THIS EXISTS. scripts/probe-guide.mjs imported LICENSED_TERMS from
+  // src/lib/public-facts.ts. That export never existed - the real ones are
+  // FACTS_BRIEF, LICENCE and PUBLIC_FACTS - so the script threw at link time before
+  // a single probe ran, and nothing caught it for as long as nobody ran it by hand.
+  // The root tsconfig includes **/*.ts and **/*.tsx, which matches no file in
+  // scripts/, and the gate never ran tsc over them. A renamed export now fails the
+  // build instead.
+  //
+  // It is a second config rather than an edit to the root one because these files
+  // need three settings the app does not want: checkJs, so .mjs is checked at all;
+  // allowImportingTsExtensions, because Node's own TypeScript support resolves
+  // "../src/lib/x.ts" and nothing shorter; and a module setting that matches how
+  // Node loads them rather than how a bundler would.
+  //
+  // strict is OFF and strictNullChecks is ON, and the split is deliberate.
+  //
+  // Full strict reported 55 errors on these untyped .mjs files, all of them
+  // noImplicitAny on parameters that were never going to carry an annotation, and
+  // none of them the bug. What catches the bug is module resolution, which is not a
+  // strictness flag at all: a name that is not exported is TS2305 either way.
+  //
+  // strictNullChecks is back on for one specific reason. TypeScript only narrows a
+  // discriminated union when it is on, so with plain `strict: false` every
+  // `verdict.grounded ? a : b` and `v.ok ? a : b` in these files reported a missing
+  // property on the branch that cannot happen. That is a false alarm on correct
+  // code, which is the fastest way to get a gate switched off.
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "target": "es2023",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "checkJs": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strict": false,
+    "strictNullChecks": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "paths": {
+      "@/*": ["../src/*"]
+    }
+  },
+  "include": [
+    "**/*.mjs",
+    "**/*.ts",
+    "../tests/**/*.mjs",
+    "../tests/**/*.ts",
+    // tests/guide.test.mjs imports worker/cache.ts, so a few Worker modules are
+    // pulled into this program by that import and need the same ambient
+    // declarations the Worker's own program gets. worker-configuration.d.ts is
+    // what `wrangler types` generates from wrangler.jsonc; worker/env.d.ts adds
+    // the secrets, which are not bindings and so never appear in the generated
+    // file. Without the second one, four correct lines in worker/ report a missing
+    // property on Env.
+    //
+    // This does not replace worker/tsconfig.json. That is a separate program with
+    // the Workers lib instead of the DOM one, and `npm run typecheck` runs it too.
+    "../worker-configuration.d.ts",
+    "../worker/env.d.ts"
+  ]
+}

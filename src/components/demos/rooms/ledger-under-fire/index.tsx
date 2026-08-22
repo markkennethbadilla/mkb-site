@@ -26,7 +26,10 @@ function ActPanel({ act, label }: { act: ActResult; label: string }) {
     <div className="flex flex-col gap-4 rounded-xl border border-border p-4">
       <div className="flex items-start justify-between gap-3">
         <h3 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{label}</h3>
-        {act.state && <VerdictBanner state={act.state} />}
+        {/* Always rendered, empty until the state read lands. VerdictBanner is the
+            room's status region, and a region that mounts holding its own text is a
+            region assistive tech never sees change. */}
+        <VerdictBanner state={act.state} />
       </div>
       <BalanceChart rows={act.rows} operatingStartCents={act.operatingStartCents} />
       <LedgerTable rows={act.rows} amountCents={act.amountCents} />
@@ -60,7 +63,14 @@ export default function Room() {
         </p>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {/* role="alert" rather than a live region kept mounted. An alert node is
+          announced when it is inserted carrying its text, which is how a refusal
+          from the budget gate reaches someone who cannot see the button re-enable. */}
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
 
       {unsafeAct && (
         <div className={cn("grid gap-6", safeAct && "lg:grid-cols-2")}>

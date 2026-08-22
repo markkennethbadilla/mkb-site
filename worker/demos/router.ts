@@ -27,22 +27,23 @@
  */
 
 import { ROOMS } from "../../src/lib/demos/registry";
-import { reserve, limitRun, type BudgetEnv } from "../budget";
+import { reserve, limitRun } from "../budget";
+import { json } from "../models";
 import { handle as handleLedger, START_ACTIONS as LEDGER_STARTS } from "./ledger-under-fire";
 import { handle as handleScoreAudit, START_ACTIONS as SCORE_STARTS } from "./score-audit";
 import { handle as handleSplitBrain, START_ACTIONS as SPLIT_STARTS } from "./split-brain";
 
-export interface DemoEnv extends BudgetEnv {
-  DEMO_DB?: D1Database;
-  DEEPSEEK_API_KEY?: string;
-}
+/**
+ * The bindings, generated from wrangler.jsonc by `wrangler types`. The name stays
+ * because a room handler is handed the demo half of the world, but the field list
+ * is no longer typed by hand here - there was one of these in four files and they
+ * had already drifted.
+ */
+export type DemoEnv = Env;
 
-export function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
-  });
-}
+// One json(), re-exported so the rooms keep importing it from their own router.
+// There were three identical copies of this four-line function.
+export { json };
 
 type RoomHandler = {
   starts: readonly string[];
@@ -57,27 +58,27 @@ const HANDLERS: Record<string, RoomHandler> = {
 
 /**
  * A shard has to name the run it belongs to before it can be bounded by it. Read
- * from the query string on a GET and the body on a POST, and the body is consumed
- * here - so the request is re-created with a fresh body for the handler rather than
- * left half-read.
+ * from the query string on a GET and the body on a POST.
+ *
+ * clone() is the platform's answer to "read this body and let someone else read it
+ * too". This used to read the body to text, parse it, and then build a NEW Request
+ * around the text so the handler still had something to read - which dropped the
+ * `cf` property, because a hand-built Request has no Cloudflare metadata. Any
+ * handler reading req.cf would have seen a real object on GET and undefined on
+ * POST. The original request now goes on untouched.
+ *
+ * A body that is not JSON is the handler's problem to report, not the router's to
+ * guess at, so a parse failure just means no runId from the body.
  */
-async function runIdAndRequest(req: Request, url: URL): Promise<{ runId: string | null; req: Request }> {
+async function runIdOf(req: Request, url: URL): Promise<string | null> {
   const fromQuery = url.searchParams.get("runId");
-  if (req.method !== "POST") return { runId: fromQuery, req };
+  if (req.method !== "POST") return fromQuery;
 
-  const text = await req.text();
-  let runId = fromQuery;
-  try {
-    const parsed = JSON.parse(text) as { runId?: unknown };
-    if (typeof parsed?.runId === "string") runId = parsed.runId;
-  } catch {
-    // A body that is not JSON is the handler's problem to report, not the
-    // router's to guess at. It still gets the body verbatim.
-  }
-  return {
-    runId,
-    req: new Request(req.url, { method: req.method, headers: req.headers, body: text }),
-  };
+  const body = (await req
+    .clone()
+    .json()
+    .catch(() => null)) as { runId?: unknown } | null;
+  return typeof body?.runId === "string" ? body.runId : fromQuery;
 }
 
 export async function handleDemos(req: Request, env: DemoEnv): Promise<Response> {
@@ -107,14 +108,14 @@ export async function handleDemos(req: Request, env: DemoEnv): Promise<Response>
       return handler.handle(action, req, env);
     }
 
-    const { runId, req: forwarded } = await runIdAndRequest(req, url);
+    const runId = await runIdOf(req, url);
     if (!runId) {
       return json({ error: "This action needs a runId, and none was given. Start a run first." }, 400);
     }
     const refusal = await limitRun(env, runId);
     if (refusal) return json({ error: refusal.detail, reason: refusal.reason }, 429);
 
-    return handler.handle(action, forwarded, env);
+    return handler.handle(action, req, env);
   };
 
   try {

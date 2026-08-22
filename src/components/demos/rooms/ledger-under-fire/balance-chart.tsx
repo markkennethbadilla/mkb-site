@@ -8,18 +8,24 @@
 
 import { useMemo, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import { dollars } from "./money";
 import type { LedgerRow } from "./types";
 
 const WIDTH = 640;
 const HEIGHT = 180;
 const PAD = { top: 16, right: 16, bottom: 22, left: 4 };
 
-function dollars(cents: number) {
-  const sign = cents < 0 ? "-" : "";
-  return `${sign}$${(Math.abs(cents) / 100).toFixed(2)}`;
-}
-
 type Point = { writeSeq: number; balanceCents: number; index: number };
+
+/** What one point says, in the readout and to a screen reader, from one place. */
+function describe(p: Point): string {
+  // Comma separated rather than dash separated, because a screen reader reads a
+  // dash aloud as "dash" and this string is the only place a keyboard user gets
+  // the balance after each write.
+  return p.index === -1
+    ? `start, ${dollars(p.balanceCents)}`
+    : `attempt ${p.index}, write ${p.writeSeq}, ${dollars(p.balanceCents)}`;
+}
 
 export default function BalanceChart({
   rows,
@@ -84,19 +90,34 @@ export default function BalanceChart({
         />
         <polyline points={path} fill="none" stroke="oklch(0.62 0.15 var(--tint-hue))" strokeWidth={2} strokeLinejoin="round" />
         {points.map((p) => (
+          /* Focusable, because balance_cents after each write appears nowhere else
+             on the page - LedgerTable carries write_seq and the outcome but not the
+             balance - so without a tab stop the whole trajectory is mouse-only.
+             Focus sets the same hover state the pointer does, and the readout below
+             is a live region, so the point announces itself on arrival. */
           <motion.circle
             key={p.index}
             cx={x(p.writeSeq)}
             cy={y(p.balanceCents)}
             r={hover === p.index ? 5 : 3.5}
             fill={p.index === -1 ? "var(--muted-foreground)" : "oklch(0.62 0.15 var(--tint-hue))"}
-            stroke="var(--background)"
-            strokeWidth={1.5}
+            // The active point is marked on the stroke rather than with a CSS
+            // outline. An outline on an SVG shape is inconsistent across browsers,
+            // and a ring utility is a box-shadow, which SVG shapes do not paint at
+            // all. This is the focus indicator as well as the hover one, since both
+            // set the same state.
+            stroke={hover === p.index ? "var(--ring)" : "var(--background)"}
+            strokeWidth={hover === p.index ? 3 : 1.5}
             initial={reduced || p.index === -1 ? false : { scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            tabIndex={0}
+            role="img"
+            aria-label={describe(p)}
             onMouseEnter={() => setHover(p.index)}
             onMouseLeave={() => setHover((h) => (h === p.index ? null : h))}
+            onFocus={() => setHover(p.index)}
+            onBlur={() => setHover((h) => (h === p.index ? null : h))}
             className="cursor-pointer"
           />
         ))}
@@ -107,12 +128,8 @@ export default function BalanceChart({
           seq {maxSeq}
         </text>
       </svg>
-      <div className="h-5 font-mono text-[10px] text-muted-foreground">
-        {hovered
-          ? hovered.index === -1
-            ? `start - ${dollars(hovered.balanceCents)}`
-            : `attempt ${hovered.index} - write_seq ${hovered.writeSeq} - ${dollars(hovered.balanceCents)}`
-          : `${points.length - 1} of ${rows.length} attempts wrote a new balance`}
+      <div aria-live="polite" className="h-5 font-mono text-[10px] text-muted-foreground">
+        {hovered ? describe(hovered) : `${points.length - 1} of ${rows.length} attempts wrote a new balance`}
       </div>
     </div>
   );

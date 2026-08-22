@@ -40,6 +40,13 @@
   ],
   "exclude": [
     "node_modules",
-    "worker"
+    // The Worker is checked, but as its own program: worker/tsconfig.json, run by
+    // `bun run check`. It cannot share this one, because the Workers runtime and
+    // the browser both define Request, Response and fetch with different types.
+    // Excluded here so the site is not checked against a runtime it never sees;
+    // for months this line was the only entry and nothing checked the Worker at
+    // all.
+    "worker",
+    "worker-configuration.d.ts"
   ]
 }

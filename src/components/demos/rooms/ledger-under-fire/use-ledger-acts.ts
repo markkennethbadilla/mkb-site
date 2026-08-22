@@ -9,9 +9,14 @@
  * The state read afterwards is what the verdict and telemetry are built from, not
  * a client-side tally, so the numbers on screen come from the database that just
  * did the work.
+ *
+ * requestCount is incremented once per response actually received, for the same
+ * reason. The telemetry strip prints it, and a request count derived by arithmetic
+ * is a number with the authority of a measurement and the reliability of a comment.
  */
 
 import { useCallback, useState } from "react";
+import { fetchJson } from "@/lib/demos/fetch-json";
 import { roomBySlug } from "@/lib/demos/registry";
 import {
   CONTENDED_ACCOUNT,
@@ -26,16 +31,8 @@ import {
 const room = roomBySlug("ledger-under-fire")!;
 const BASE = `/api/demos/${room.slug}`;
 
-async function postJson<T>(action: string, body: unknown): Promise<T> {
-  const res = await fetch(`${BASE}/${action}`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(data?.error ?? `${action} failed with status ${res.status}`);
-  return data as T;
-}
+const post = <T,>(action: string, body: unknown) =>
+  fetchJson<T>(`${BASE}/${action}`, { method: "POST", body: JSON.stringify(body) });
 
 export function useLedgerActs() {
   const [unsafeAct, setUnsafeAct] = useState<ActResult | null>(null);
@@ -50,7 +47,7 @@ export function useLedgerActs() {
     const startedAll = Date.now();
 
     try {
-      const started = await postJson<StartResponse>("start", { mode });
+      const started = await post<StartResponse>("start", { mode });
       const operatingStartCents =
         started.accounts.find((a) => a.name === CONTENDED_ACCOUNT)?.balanceCents ?? 0;
       const rows: LedgerRow[] = Array.from({ length: started.transferCount }, (_, index) => ({
@@ -66,13 +63,15 @@ export function useLedgerActs() {
         rows,
         state: null,
         wallMs: 0,
+        requestCount: 1,
       });
 
       await Promise.all(
         rows.map(async ({ index }) => {
           let landed: LedgerRow;
+          let answered = true;
           try {
-            const data = await postJson<TransferResponse>("transfer", {
+            const data = await post<TransferResponse>("transfer", {
               runId: started.runId,
               idemKey: `${started.runId}:${index}`,
               mode,
@@ -89,6 +88,7 @@ export function useLedgerActs() {
               ms: data.ms,
             };
           } catch (e) {
+            answered = false;
             landed = {
               index,
               status: "landed",
@@ -99,18 +99,32 @@ export function useLedgerActs() {
           }
           setAct((prev) =>
             prev && prev.runId === started.runId
-              ? { ...prev, rows: prev.rows.map((r) => (r.index === index ? landed : r)) }
+              ? {
+                  ...prev,
+                  rows: prev.rows.map((r) => (r.index === index ? landed : r)),
+                  requestCount: prev.requestCount + (answered ? 1 : 0),
+                }
               : prev
           );
         })
       );
 
-      const stateRes = (await fetch(`${BASE}/state?runId=${encodeURIComponent(started.runId)}`)
-        .then((r) => r.json())
-        .catch(() => null)) as StateResponse | null;
+      // Not swallowed. This read is where the verdict, the invariant and every
+      // telemetry number come from, so a run that loses it has nothing to show and
+      // should say so rather than sit there looking finished.
+      const stateRes = await fetchJson<StateResponse>(
+        `${BASE}/state?runId=${encodeURIComponent(started.runId)}`
+      );
 
       setAct((prev) =>
-        prev && prev.runId === started.runId ? { ...prev, state: stateRes, wallMs: Date.now() - startedAll } : prev
+        prev && prev.runId === started.runId
+          ? {
+              ...prev,
+              state: stateRes,
+              wallMs: Date.now() - startedAll,
+              requestCount: prev.requestCount + 1,
+            }
+          : prev
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

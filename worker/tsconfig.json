@@ -1,0 +1,32 @@
+{
+  // The Worker is a SECOND TypeScript program, not a folder of the site's one.
+  //
+  // It has to be. The browser and the Workers runtime both define `Request`,
+  // `Response`, `fetch` and `WebSocket`, and they are not the same types - a
+  // Workers Request carries `cf`, a DOM Request does not. Checking Worker code
+  // against `lib.dom.d.ts` would type-check it against a runtime it never runs on.
+  // So this project drops DOM entirely and takes its globals from
+  // worker-configuration.d.ts, which `wrangler types` generates from
+  // wrangler.jsonc - bindings included.
+  //
+  // Run it with: npx tsc -p worker --noEmit
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "target": "ES2022",
+    // Nothing here runs under Node, and @types/node would put a second, wrong
+    // `fetch` and `console` in scope.
+    "types": [],
+    "jsx": "preserve",
+    "noEmit": true,
+    "incremental": true,
+    "tsBuildInfoFile": "../.tsbuildinfo.worker",
+    // The Next.js language-service plugin belongs to the site's program.
+    "plugins": []
+  },
+  // `files` rather than `include`, because the generated types live one level up
+  // and an include glob does not reach outside the config's own directory.
+  "files": ["../worker-configuration.d.ts"],
+  "include": ["**/*.ts"],
+  "exclude": []
+}

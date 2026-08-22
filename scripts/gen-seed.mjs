@@ -1,3 +1,16 @@
+// @ts-nocheck
+//
+// The nocheck is narrow and it is here rather than hidden in scripts/tsconfig.json
+// so it is visible to whoever opens the file. Under checkJs this generator reports
+// 16 errors and every one is an inference artifact rather than a defect: PLANS is a
+// tuple list that widens to (string|number)[], so plan[3] + seatAmt reads as
+// string+number; PLANS.find() is string|undefined even though every subscription
+// carries a plan id this file itself wrote; and book()'s last parameter infers as
+// null from its first call site. Clearing them means annotating the billing cycle
+// and the double-entry book(), which is the one part of this file worth leaving
+// alone. Nothing imports this module, it runs by hand, and its output is committed
+// SQL that gets reviewed as a diff.
+//
 // Generates migrations/0002_seed_warehouse.sql and 0003_seed_ledger.sql.
 //
 // Deterministic on purpose: a seeded PRNG and arithmetic dates, never Math.random

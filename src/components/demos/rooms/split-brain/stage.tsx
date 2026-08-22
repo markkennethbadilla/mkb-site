@@ -48,10 +48,11 @@ export function Stage({
           <div className="min-w-[160px] flex-1">
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Lease countdown</span>
             <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary transition-[width] duration-150 ease-linear motion-reduce:transition-none"
-                style={{ width: `${pct}%` }}
-              />
+              {/* No CSS transition. useCountdown already repaints this ten times a
+                  second, so a 150ms tween could never finish before the next value
+                  replaced it, and all it did was hold the bar behind the number
+                  printed underneath it. */}
+              <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
             </div>
             <p className="mt-1 font-mono text-[11px] text-muted-foreground tabular-nums">
               {lease?.holder ? `${(remaining / 1000).toFixed(1)}s left in this term` : "free"}

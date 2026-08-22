@@ -10,7 +10,7 @@
  */
 
 import { useCallback, useState } from "react";
-import { startRun, tickNode, setPartition, fetchState, ApiError } from "./api";
+import { startRun, tickNode, setPartition, fetchState } from "./api";
 import { NODE_IDS, type NodeId, type NodeState, type LeaseState, type EventRow, type WorkRow } from "./types";
 
 export type StepId = "elect" | "isolate" | "wait-round" | "heal" | "prove" | "done";
@@ -58,7 +58,7 @@ export function useSplitBrain() {
     setState((s) => ({ ...s, busy: true, error: null }));
     return fn()
       .catch((e: unknown) => {
-        const detail = e instanceof ApiError || e instanceof Error ? e.message : String(e);
+        const detail = e instanceof Error ? e.message : String(e);
         setState((s) => ({ ...s, error: detail }));
       })
       .finally(() => setState((s) => ({ ...s, busy: false })));

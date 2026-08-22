@@ -102,15 +102,21 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
   }
 }
 
-/** Appends one log line. seq is computed in the same INSERT via a correlated
- *  subquery, so there is no separate read-then-write that a concurrent tick from
- *  another node could land in between. */
+/** Appends one log line.
+ *
+ *  The ordering column is `id INTEGER PRIMARY KEY`, which SQLite fills in itself
+ *  as the row's rowid. It used to be a per-run `seq` computed inside the INSERT by
+ *  a correlated MAX(seq) subquery - correct, but paying a scan per write to
+ *  reproduce a number the database was already assigning for free. Event order is
+ *  internal and no visitor ever sees it, so the free one is enough. The unit
+ *  numbers in split_brain_work are a different matter: those are printed on the
+ *  stage as "unit #N" per run, so they stay per-run and stay computed. */
 async function logEvent(
   db: D1Database, runId: string, node: string, kind: EventKind, token: number, detail: string
 ): Promise<void> {
   await db.prepare(
-    `INSERT INTO split_brain_events (run_id, seq, at_ms, node, kind, token, detail)
-     SELECT ?1, COALESCE((SELECT MAX(seq) FROM split_brain_events WHERE run_id = ?1), 0) + 1, ?2, ?3, ?4, ?5, ?6`
+    `INSERT INTO split_brain_events (run_id, at_ms, node, kind, token, detail)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6)`
   ).bind(runId, Date.now(), node, kind, token, detail).run();
 }
 
@@ -228,7 +234,7 @@ async function tick(db: D1Database, req: Request): Promise<Response> {
     currentExpiresAt = won.expires_at;
   } else {
     const last = await db.prepare(
-      `SELECT token FROM split_brain_events WHERE run_id = ?1 AND node = ?2 AND kind IN ('acquired', 'renewed') ORDER BY seq DESC LIMIT 1`
+      `SELECT token FROM split_brain_events WHERE run_id = ?1 AND node = ?2 AND kind IN ('acquired', 'renewed') ORDER BY id DESC LIMIT 1`
     ).bind(runId, node).first<{ token: number }>();
     presentedToken = last?.token ?? 0;
     const lease = await db.prepare(`SELECT holder, token, expires_at FROM split_brain_leases WHERE run_id = ?1`)
@@ -318,7 +324,9 @@ async function getState(db: D1Database, req: Request): Promise<Response> {
       .bind(runId).all<{ node: string; isolated: number; believesLeader: number }>(),
     db.prepare(`SELECT holder, expires_at AS "expiresAt", token FROM split_brain_leases WHERE run_id = ?1`)
       .bind(runId).first<{ holder: string | null; expiresAt: number; token: number }>(),
-    db.prepare(`SELECT seq, at_ms AS "atMs", node, kind, token, detail FROM split_brain_events WHERE run_id = ?1 ORDER BY seq ASC LIMIT 200`)
+    // `id AS seq` because the browser uses it as a list key and nothing else. The
+    // column is the rowid now; the wire name did not need to change with it.
+    db.prepare(`SELECT id AS "seq", at_ms AS "atMs", node, kind, token, detail FROM split_brain_events WHERE run_id = ?1 ORDER BY id ASC LIMIT 200`)
       .bind(runId).all(),
     db.prepare(`SELECT seq, written_by AS "writtenBy", token, at_ms AS "atMs" FROM split_brain_work WHERE run_id = ?1 ORDER BY seq ASC LIMIT 200`)
       .bind(runId).all(),

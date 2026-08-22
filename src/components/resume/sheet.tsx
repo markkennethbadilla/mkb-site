@@ -32,37 +32,30 @@ import { DATA } from "@/data/resume";
  * exactly - content grows, and a resume that silently becomes two pages is worse
  * than one that looks slightly airy.
  *
+ * The size ranking is load-bearing and it is not decoration. The path a resume
+ * actually travels is print to PDF, then upload, and a PDF has no <h2> left in it.
+ * Heading detection falls back to font size and weight relative to the body text,
+ * so a section heading set smaller than the paragraph beneath it ranks below a job
+ * title. Section headings are therefore the largest thing on the sheet after the
+ * name, and nothing below them may be raised past them.
+ *
+ * NOTHING HERE INFERS WHERE A CLAIM ENDS. Job descriptions arrive pre-split, one
+ * claim per array element, from src/data/resume.tsx, and the summary arrives as its
+ * own sentences. The author states the split. The single string this file shortens
+ * is the project blurb, and that is a page-budget cut with its reason written above
+ * it, not a parser deciding what a sentence is.
+ *
  * Every fact comes from src/data/resume.tsx. Nothing is added here, and in
  * particular no figure is re-introduced that that file deliberately dropped.
  */
 
-/** Strips inline markdown links to their text - the summary carries one. */
-function plain(text: string): string {
-  return text.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
-}
-
-/**
- * Splits a prose description into the discrete claims it was written as.
- *
- * The descriptions in resume.tsx are paragraphs of full sentences, which is right
- * for the web page and wrong for a resume: a recruiter scans bullets and a wall of
- * prose gets skipped. Splitting on a full stop followed by a capital recovers the
- * sentence boundaries without touching "Next.js", which has no space after its dot.
- */
-function bullets(description: string): string[] {
-  return description
-    .split(/(?<=\.)\s+(?=[A-Z])/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mt-[3.2mm]">
-      <h2 className="border-b border-black/25 pb-[0.8mm] text-[8pt] font-bold uppercase tracking-[0.09em]">
+    <section className="mt-[2.8mm]">
+      <h2 className="border-b border-black/25 pb-[0.8mm] text-[10pt] font-bold uppercase tracking-[0.09em]">
         {title}
       </h2>
-      <div className="mt-[1.6mm]">{children}</div>
+      <div className="mt-[1.2mm]">{children}</div>
     </section>
   );
 }
@@ -87,7 +80,7 @@ export default function Sheet() {
         <p className="mt-[1.2mm] text-[9.5pt] font-medium">Full Stack AI Engineer</p>
         {/* Contact is one plain line: text a parser can read, wrapped in anchors a
             harvester can read. Separators are literal characters, not borders. */}
-        <p className="mt-[1.8mm] text-[8pt] leading-[1.5]">
+        <p className="mt-[1.8mm] text-[8.6pt] leading-[1.5]">
           {DATA.location}
           {" | "}
           <a href={`mailto:${email}`} className="underline decoration-black/25">
@@ -109,25 +102,35 @@ export default function Sheet() {
       </header>
 
       <Section title="Summary">
-        <p className="text-[8.4pt] leading-[1.42]">{plain(DATA.resumeSummary)}</p>
+        {/* The mandate sentence is set bold and a shade larger than the body that
+            follows it, so the first line a six-second reader lands on is the one
+            that says what he is hired to do. The rest stays a plain paragraph. */}
+        <p className="text-[9.2pt] font-semibold leading-[1.35]">{DATA.resumeSummary[0]}</p>
+        <p className="mt-[1mm] text-[9pt] leading-[1.35]">
+          {DATA.resumeSummary.slice(1).join(" ")}
+        </p>
       </Section>
 
       <Section title="Experience">
         {DATA.work.map((job) => (
-          <div key={`${job.company}-${job.title}`} className="mt-[2.4mm] first:mt-0">
+          <div key={`${job.company}-${job.title}`} className="mt-[2mm] first:mt-0">
             <div className="flex items-baseline justify-between gap-3">
-              <h3 className="text-[9pt] font-semibold">
+              {/* Title, employer and place on one line. The location used to sit on
+                  its own italic line under this row, which cost three printed lines
+                  across three roles and gave a parser a second thing to attribute. */}
+              <h3 className="text-[9.5pt] font-semibold">
                 {job.title}
                 {", "}
                 {job.company}
+                {", "}
+                {job.location}
               </h3>
-              <span className="shrink-0 text-[8pt] tabular-nums">
+              <span className="shrink-0 text-[8.6pt] tabular-nums">
                 {job.start} - {job.end}
               </span>
             </div>
-            <p className="text-[8pt] italic">{job.location}</p>
-            <ul className="mt-[1mm] list-disc space-y-[0.6mm] pl-[4.2mm] text-[8.4pt] leading-[1.4]">
-              {bullets(job.description).map((line) => (
+            <ul className="mt-[1mm] list-disc space-y-[0.4mm] pl-[4.2mm] text-[9pt] leading-[1.3]">
+              {job.description.map((line) => (
                 <li key={line}>{line}</li>
               ))}
             </ul>
@@ -135,37 +138,31 @@ export default function Sheet() {
         ))}
       </Section>
 
-      <Section title="Education">
-        {DATA.education.map((school) => (
-          <div key={school.school} className="flex items-baseline justify-between gap-3">
-            <h3 className="text-[9pt] font-semibold">
-              {school.degree}
-              {", "}
-              {school.school}
-            </h3>
-            <span className="shrink-0 text-[8pt] tabular-nums">
-              {school.start} - {school.end}
-            </span>
-          </div>
-        ))}
-      </Section>
-
+      {/* Skills sits directly under Experience rather than fourth. Where the dates
+          add up to a short number, the list of tools is the strongest surface on
+          the sheet, and a recruiter who stops reading after two sections should
+          have hit it. */}
       <Section title="Skills">
         {/* Grouped, comma-separated lines. Never a grid of pills - pills are the
             classic ATS trap, because they look like a skills matrix and flatten
-            into an unpunctuated run of words a parser cannot split back apart.
-            The group label is a real text prefix on the same line, so a parser
-            reading straight through gets "Languages TypeScript, JavaScript..."
-            rather than a heading orphaned from the list it introduces. */}
-        {/* Sized tight on purpose. Seven groups is a lot of lines, and adding them
-            took the page from 39mm of headroom to 10mm - close enough that one more
-            skill would have pushed it to a second sheet without anyone noticing. A
-            narrower label column also buys the values more width, which is what
-            actually removes wrapped lines. */}
+            into an unpunctuated run of words a parser cannot split back apart. */}
+        {/* The space between <dt> and <dd> is written out and it is load-bearing.
+            Two adjacent elements with no text node between them concatenate under
+            textContent and under cheerio .text(), which is what an LLM agent or a
+            scraper reads, so "Languages" and "TypeScript" arrived welded as
+            "LanguagesTypeScript" and both tokens were lost. A whitespace-only run
+            in a flex container is not laid out as a flex item, so nothing moves. */}
+        {/* Sized tight on purpose, and tighter than everything around it. Seven
+            groups of 53 names is a lot of lines, and this is the one block that can
+            give room back without costing a fact, so it is where the page budget
+            gets balanced. Measured headroom after the size rework is 6mm - one more
+            group would need a line found somewhere else first. A narrower label
+            column also buys the values more width, which is what actually removes
+            wrapped lines. */}
         <dl className="space-y-[0.4mm]">
           {DATA.resumeSkills.map((g) => (
-            <div key={g.group} className="flex gap-[1.5mm] text-[7.9pt] leading-[1.32]">
-              <dt className="w-[20mm] shrink-0 font-semibold">{g.group}</dt>
+            <div key={g.group} className="flex gap-[1.5mm] text-[8.2pt] leading-[1.32]">
+              <dt className="w-[20mm] shrink-0 font-semibold">{g.group}</dt>{" "}
               {/* Names only. The site's pills carry each item's logo, link and
                   one-line explanation; on paper those are noise at best, and a
                   hyperlink is invisible. An ATS wants the words. */}
@@ -175,28 +172,57 @@ export default function Sheet() {
         </dl>
       </Section>
 
+      <Section title="Education">
+        {DATA.education.map((school) => (
+          <div key={school.school} className="flex items-baseline justify-between gap-3">
+            <h3 className="text-[9.5pt] font-semibold">
+              {school.degree}
+              {", "}
+              {school.school}
+            </h3>
+            <span className="shrink-0 text-[8.6pt] tabular-nums">
+              {school.start} - {school.end}
+            </span>
+          </div>
+        ))}
+      </Section>
+
       <Section title="Projects">
         {DATA.projects.map((p) => (
           <div key={p.title} className="mt-[1.8mm] first:mt-0">
-            <h3 className="text-[8.6pt] font-semibold">
-              {p.title}
-              {/* The URL is written out rather than hidden behind link text. On
-                  paper a hyperlink is invisible, and a parser that only harvests
-                  hrefs still gets one from the anchor. */}
-              <span className="font-normal">
-                {" - "}
-                <a href={p.href} className="underline decoration-black/25">
-                  {p.href.replace(/^https:\/\//, "")}
-                </a>
-              </span>
-            </h3>
-            <p className="text-[8.4pt] leading-[1.4]">{p.description}</p>
+            {/* Same flex row as an Experience heading, for the same reason. A
+                project with no year beside it is a gap a parser has to guess at. */}
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 className="text-[9.5pt] font-semibold">
+                {p.title}
+                {/* The URL is written out rather than hidden behind link text. On
+                    paper a hyperlink is invisible, and a parser that only harvests
+                    hrefs still gets one from the anchor. */}
+                <span className="font-normal">
+                  {" - "}
+                  <a href={p.href} className="underline decoration-black/25">
+                    {p.href.replace(/^https:\/\//, "")}
+                  </a>
+                </span>
+              </h3>
+              <span className="shrink-0 text-[8.6pt] tabular-nums">{p.dates}</span>
+            </div>
+            {/* First sentence only, and this is a page-budget cut rather than any
+                attempt to understand the prose. The site tells the whole story; on
+                paper the rest of this blurb is a five-clause run-on sitting directly
+                above a technologies line that already carries the same keywords, and
+                the sheet has one page to spend. Falls back to the whole string when
+                there is no sentence break to cut at. */}
+            <p className="text-[9pt] leading-[1.4]">
+              {p.description.slice(0, p.description.indexOf(". ") + 1) || p.description}
+            </p>
+            <p className="text-[8.6pt] leading-[1.35]">{p.technologies.join(", ")}</p>
           </div>
         ))}
       </Section>
 
       <Section title="Certifications">
-        <p className="text-[8.4pt] leading-[1.45]">{DATA.certifications.join(", ")}</p>
+        <p className="text-[9pt] leading-[1.45]">{DATA.certifications.join(", ")}</p>
       </Section>
     </article>
   );

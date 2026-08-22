@@ -1,5 +1,13 @@
 /**
- * Free-model discovery and the two spend controls, shared by both demos.
+ * Free-model discovery and the inference ceiling, shared by every route that
+ * talks to a model.
+ *
+ * ONE COPY, and it is worth saying why that is a fix. worker/index.ts carried a
+ * near-identical fork of the discovery code below, down to the same filters and
+ * the same sort - but with its own KV cache key, so the same model list was
+ * fetched, filtered and stored twice and the two copies could disagree about which
+ * models a page was allowed to use. Same code in two files is not duplication you
+ * pay for once. It is two behaviours wearing one name.
  *
  * Models are DISCOVERED, never hardcoded: OpenRouter's free tier churns, and a
  * pinned slug guarantees a dead demo within weeks. Only the final fallback is
@@ -11,19 +19,6 @@
  * text-only models advertise tool support, so the filter costs almost nothing and
  * removes a whole class of runtime failure.
  */
-
-export interface Env {
-  ASSETS: Fetcher;
-  DEMO_KV: KVNamespace;
-  DEMO_DB?: D1Database;
-  OPENROUTER_API_KEY?: string;
-  /** Mark's own DeepSeek key. The guide runs on this; the old harness does not. */
-  DEEPSEEK_API_KEY?: string;
-  /** Cloudflare native rate limiter, 6/60s. Absent in local dev; treated as open. */
-  BURST_LIMITER?: { limit: (o: { key: string }) => Promise<{ success: boolean }> };
-  /** 60/60s, for endpoints a single click legitimately calls in a burst. */
-  DEMO_LIMITER?: { limit: (o: { key: string }) => Promise<{ success: boolean }> };
-}
 
 import { reserve } from "./budget";
 
@@ -37,20 +32,6 @@ export { GUIDE_CHAIN, DEEPSEEK_BASE_URL } from "../src/lib/guide-models";
 
 const CACHE_PREFIX = "openrouter:free-models:v4";
 const CACHE_TTL = 3600;
-
-/**
- * A ceiling on MODEL CALLS, not requests. One guide question can spend several
- * calls, so counting requests would let a single visitor burn the day's budget in
- * a handful of clicks.
- */
-/**
- * Tightened hard when the guide moved from free inference to a paid key. 1500
- * calls a day was a sensible ceiling when a call cost nothing; at roughly 5k
- * tokens a call against a metered balance it is not. The cache absorbs repeats,
- * so this bounds genuinely distinct questions per day, and the key's own spending
- * cap is the backstop underneath it.
- */
-const DAILY_MODEL_CALLS = 300;
 
 type OpenRouterModel = {
   id: string;
@@ -123,33 +104,27 @@ export async function discoverFreeModels(
 }
 
 /**
- * The guide's quota, which is now TWO different ceilings measuring two different
- * scarce things:
+ * The INFERENCE ceiling, which is a different scarce thing from the request
+ * ceiling and runs out for different reasons.
  *
- *   - MODEL CALLS, counted here. This is inference spend. One question can cost
- *     several calls, so counting requests would let a handful of clicks drain the
- *     day's free-tier inference.
- *   - WORKER REQUESTS, counted in budget.ts against a pool reserved for the guide.
- *     This is the platform's 100k/day, shared with every other route on the site.
+ *   - MODEL CALLS are inference spend. One question can cost several, so counting
+ *     requests alone would let a handful of clicks drain the day's budget.
+ *   - WORKER REQUESTS are the platform's 100k a day, shared with every other route
+ *     on the site. The caller reserves those before it gets here.
  *
- * They are separate because they run out for different reasons. Before the pools
- * existed, a demo firing its fan-out could exhaust the shared request quota and
- * silently take the guide down with it; now the guide's allocation is its own and
- * nothing else can spend it.
+ * Two ceilings, ONE STORE. This used to reserve the request pool a second time and
+ * then keep its own KV counter, which double-charged the guide's request budget,
+ * spent two of its six-a-minute edge limiter hits per question, and left the model
+ * counter on the read-then-write pattern budget.ts exists to delete. It is now one
+ * atomic reserve against a third pool in the same table.
  *
- * Both reserve up front rather than incrementing per call: a request that is going
- * to blow a ceiling should be refused before it starts, not halfway through a run
- * the visitor is already watching.
+ * It reserves up front rather than counting per call: a question that is going to
+ * blow the ceiling should be refused before it starts, not halfway through an
+ * answer the visitor is already reading.
  */
 export async function refuseForQuota(env: Env, ip: string, calls = 1): Promise<string | null> {
-  const refused = await reserve(env, "guide", ip, 1);
-  if (refused) return refused.reason === "burst" ? "burst" : "daily-cap";
-
-  const dayKey = `rl:calls:${new Date().toISOString().slice(0, 10)}`;
-  const spent = Number((await env.DEMO_KV.get(dayKey)) ?? 0);
-  if (spent + calls > DAILY_MODEL_CALLS) return "daily-cap";
-  await env.DEMO_KV.put(dayKey, String(spent + calls), { expirationTtl: 90000 });
-  return null;
+  const refused = await reserve(env, "calls", ip, calls);
+  return refused ? "daily-cap" : null;
 }
 
 export function json(body: unknown, status = 200): Response {

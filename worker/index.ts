@@ -9,15 +9,17 @@
  * being made here - the claim is that the thing AROUND the model is engineered:
  *
  *   Provider abstraction, retries, cascade ... Vercel AI SDK v7
- *   Output guardrail ......................... Zod schema via generateObject
+ *   Output guardrail ......................... Zod schema via Output.object()
+ *   Fence-stripping and JSON parsing ......... extractJsonMiddleware, same SDK
  *   Input validation ......................... Zod
  *   Burst rate limiting ...................... Cloudflare rate-limit binding
- *   Spend ceiling ............................ KV day counter (a business rule)
+ *   Spend ceiling ............................ worker/budget.ts, one atomic D1 row
+ *   Expired-arena sweep ...................... scheduled() below, on a cron trigger
  *   Traces, tokens, latency .................. AI SDK telemetry + Workers observability
  *
- * generateObject is the important one. The model is not ASKED to return code; it
- * is constrained to a schema and the SDK re-prompts until the shape validates.
- * A prompt saying "return only code" is a request. A schema is a guarantee.
+ * The schema is the important one. The model is not ASKED to return code; the SDK
+ * parses what came back and validates it against the schema before this file sees
+ * it. A prompt saying "return only code" is a request. A schema is a guarantee.
  *
  * Model selection is DISCOVERED, not hardcoded: OpenRouter's free tier changes
  * constantly, so pinning slugs guarantees a dead demo within weeks. Only the
@@ -26,29 +28,23 @@
 
 // serena-cannot: concurrent workflow agents hold Serena's active project.
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { generateText } from "ai";
+import { extractJsonMiddleware, generateText, Output, wrapLanguageModel } from "ai";
 import { z } from "zod";
 import { handleGuide } from "./guide";
-import { budgetStatus, type BudgetEnv } from "./budget";
-import { handleDemos, type DemoEnv } from "./demos/router";
-import type { Env as GuideEnv } from "./models";
+import { budgetStatus, reserve } from "./budget";
+import { handleDemos } from "./demos/router";
+import { discoverFreeModels, json, FINAL_FALLBACK, MAX_ATTEMPTS } from "./models";
 
-export interface Env {
-  ASSETS: Fetcher;
-  DEMO_KV: KVNamespace;
-  OPENROUTER_API_KEY?: string;
-  /** Cloudflare native rate limiter. Absent in local dev; treated as open. */
-  BURST_LIMITER?: { limit: (o: { key: string }) => Promise<{ success: boolean }> };
-}
-
-const FINAL_FALLBACK = "deepseek/deepseek-v4-flash";
-const FREE_ATTEMPTS = 3;
-
-const MODELS_CACHE_KEY = "openrouter:free-models:v3";
-const MODELS_CACHE_TTL = 3600;
-
-const GLOBAL_DAILY_CAP = 800;
 const MAX_INSTRUCTION_CHARS = 400;
+
+/**
+ * One model call, one ceiling on how long a visitor stares at a spinner.
+ *
+ * There was no timeout here at all. A model that accepts the connection and then
+ * stops sending held the request open until the platform killed it, and the
+ * cascade below never advanced, because nothing had failed yet.
+ */
+const MODEL_TIMEOUT_MS = 20_000;
 
 // serena-cannot: concurrent workflow agents hold Serena's active project.
 /**
@@ -71,94 +67,6 @@ const AgentRequest = z.object({
   gateFeedback: z.string().max(4000).optional(),
 });
 
-type OpenRouterModel = {
-  id: string;
-  context_length?: number;
-  pricing?: { prompt?: string; completion?: string };
-  architecture?: { modality?: string; input_modalities?: string[]; output_modalities?: string[] };
-};
-
-/**
- * The free tier is not all chat models - it includes image and audio generation.
- * Sorting purely by context length picked Google's Lyria music models, which then
- * failed every request.
- *
- * Note the trap: Lyria advertises output_modalities ["text","audio"], so a naive
- * outputs.includes("text") accepts it. A usable chat model emits text and NOTHING
- * else, so the test has to be exclusive, not inclusive.
- */
-const NON_TEXT_OUTPUTS = ["audio", "image", "video"];
-
-function isTextChat(m: OpenRouterModel): boolean {
-  const a = m.architecture;
-  if (!a) return false;
-  const inputs = a.input_modalities ?? [];
-  const outputs = a.output_modalities ?? [];
-  if (outputs.length) {
-    if (!outputs.includes("text")) return false;
-    if (outputs.some((o) => NON_TEXT_OUTPUTS.includes(o))) return false;
-    return inputs.length === 0 || inputs.includes("text");
-  }
-  return typeof a.modality === "string" && a.modality.endsWith("->text");
-}
-
-function isFree(m: OpenRouterModel): boolean {
-  const p = Number(m.pricing?.prompt ?? "1");
-  const c = Number(m.pricing?.completion ?? "1");
-  return Number.isFinite(p) && Number.isFinite(c) && p === 0 && c === 0;
-}
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
-  });
-}
-
-async function discoverFreeModels(env: Env): Promise<string[]> {
-  const cached = await env.DEMO_KV.get(MODELS_CACHE_KEY, "json");
-  if (Array.isArray(cached) && cached.length) return cached as string[];
-  try {
-    const res = await fetch("https://openrouter.ai/api/v1/models", {
-      headers: { accept: "application/json" },
-    });
-    if (!res.ok) return [];
-    const body = (await res.json()) as { data?: OpenRouterModel[] };
-    const ids = (body.data ?? [])
-      .filter(isFree)
-      .filter(isTextChat)
-      .sort((a, b) => (b.context_length ?? 0) - (a.context_length ?? 0))
-      .map((m) => m.id)
-      .slice(0, 8);
-    if (ids.length) {
-      await env.DEMO_KV.put(MODELS_CACHE_KEY, JSON.stringify(ids), {
-        expirationTtl: MODELS_CACHE_TTL,
-      });
-    }
-    return ids;
-  } catch {
-    return [];
-  }
-}
-
-/**
- * Two independent controls. Burst is the PLATFORM's rate limiter, enforced at the
- * edge before the Worker does any work - not a counter written here. The daily
- * cap is a spend ceiling, which is a business rule rather than a rate limit, so
- * it lives in KV.
- */
-async function refuseForQuota(env: Env, ip: string): Promise<string | null> {
-  if (env.BURST_LIMITER) {
-    const { success } = await env.BURST_LIMITER.limit({ key: ip });
-    if (!success) return "burst";
-  }
-  const dayKey = `rl:global:${new Date().toISOString().slice(0, 10)}`;
-  const dayCount = Number((await env.DEMO_KV.get(dayKey)) ?? 0);
-  if (dayCount >= GLOBAL_DAILY_CAP) return "daily-cap";
-  await env.DEMO_KV.put(dayKey, String(dayCount + 1), { expirationTtl: 90000 });
-  return null;
-}
-
 // serena-cannot: concurrent workflow agents hold Serena's active project.
 //
 // "Do not explore" earns its place: weak free models answer a change request by
@@ -173,46 +81,13 @@ If you are given gate feedback from a previous attempt, rewrite the code so it s
 If the request cannot be done safely at all, produce the safe equivalent instead.`;
 
 // serena-cannot: concurrent workflow agents hold Serena's active project.
+//
+// The field names still have to be said out loud. With supportsStructuredOutputs
+// off the schema is never sent to the provider - the request asks for JSON mode
+// and nothing more - so this text is the only thing telling the model what shape
+// to produce. The schema is still what DECIDES whether the answer is accepted.
 const JSON_INSTRUCTION = `Reply with ONE JSON object and nothing else, matching exactly:
-{"code": "<the code, as a JSON string>", "language": "<e.g. typescript>", "summary": "<one sentence>"}
-No markdown fences. No commentary before or after the JSON.`;
-
-/**
- * Models wrap JSON in fences or prose no matter how firmly they are told not to.
- * Pull out the first balanced object rather than trusting the whole response to
- * parse - and return null so the caller can reject it, never a half-guess.
- */
-function extractJson(text: string): unknown {
-  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const body = (fenced ? fenced[1] : text).trim();
-  const start = body.indexOf("{");
-  if (start === -1) return null;
-  let depth = 0;
-  let inStr = false;
-  let esc = false;
-  for (let i = start; i < body.length; i++) {
-    const ch = body[i];
-    if (inStr) {
-      if (esc) esc = false;
-      else if (ch === "\\") esc = true;
-      else if (ch === '"') inStr = false;
-      continue;
-    }
-    if (ch === '"') inStr = true;
-    else if (ch === "{") depth++;
-    else if (ch === "}") {
-      depth--;
-      if (depth === 0) {
-        try {
-          return JSON.parse(body.slice(start, i + 1));
-        } catch {
-          return null;
-        }
-      }
-    }
-  }
-  return null;
-}
+{"code": "<the code, as a JSON string>", "language": "<e.g. typescript>", "summary": "<one sentence>"}`;
 
 async function handleAgent(req: Request, env: Env): Promise<Response> {
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
@@ -220,9 +95,19 @@ async function handleAgent(req: Request, env: Env): Promise<Response> {
   const key = env.OPENROUTER_API_KEY;
   if (!key) return json({ degraded: true, reason: "no-key", cascade: [] });
 
+  // The same atomic counter every other route uses. This endpoint kept its own
+  // daily counter in KV - read it, add one, write it back - which is two separate
+  // bugs. Workers KV Free allows 1,000 writes a day and this wrote once per
+  // request against a declared cap of 800, so the counter froze and the ceiling
+  // stopped being a ceiling. And read-then-write from concurrent isolates loses
+  // updates, so a burst of ten could count as one. That is the exact defect the
+  // ledger demo on this site exists to exhibit, and it was in the code guarding
+  // the site.
   const ip = req.headers.get("cf-connecting-ip") ?? "unknown";
-  const refused = await refuseForQuota(env, ip);
-  if (refused) return json({ degraded: true, reason: `rate-limited:${refused}`, cascade: [] });
+  const refused = await reserve(env, "demo", ip, 1);
+  if (refused) {
+    return json({ degraded: true, reason: `rate-limited:${refused.reason}`, detail: refused.detail, cascade: [] });
+  }
 
   const parsed = AgentRequest.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -254,7 +139,7 @@ async function handleAgent(req: Request, env: Env): Promise<Response> {
       : instruction;
 
   const discovered = await discoverFreeModels(env);
-  const chain = [...discovered.slice(0, FREE_ATTEMPTS), FINAL_FALLBACK];
+  const chain = [...discovered.slice(0, MAX_ATTEMPTS), FINAL_FALLBACK];
   const cascade: { model: string; ok: boolean; ms: number; error?: string }[] = [];
   const startedAll = Date.now();
 
@@ -262,37 +147,46 @@ async function handleAgent(req: Request, env: Env): Promise<Response> {
   //
   // generateObject was tried first and every model in the cascade failed it,
   // including a capable paid one - free OpenRouter models largely do not
-  // implement provider-side structured output, so the SDK could never satisfy
-  // the schema. generateText plus an explicit Zod parse keeps the guarantee that
-  // matters (nothing non-conforming is ever returned) while working on models
-  // that only speak plain text. A schema no model can satisfy is not a guardrail,
-  // it is an outage.
+  // implement provider-side structured output, so the SDK could never satisfy the
+  // schema. So the model is asked for JSON in plain text, and the SDK does the
+  // rest: extractJsonMiddleware strips the markdown fences models wrap it in, and
+  // Output.object parses what is left and validates it against the Zod schema
+  // before this code sees it. Nothing non-conforming can be returned.
+  //
+  // That was 40 lines here until recently - a fenced-block regex, a balanced-brace
+  // scanner tracking string and escape state, and a manual safeParse - all of it
+  // re-implementing a middleware the installed SDK documents as being for exactly
+  // this: "extracts JSON from text content by stripping markdown code fences...
+  // useful when using Output.object() with models that wrap JSON responses in
+  // markdown code blocks".
   for (const model of chain) {
     const startedAt = Date.now();
     try {
       const result = await generateText({
-        model: openrouter(model),
+        model: wrapLanguageModel({
+          model: openrouter(model),
+          middleware: extractJsonMiddleware(),
+        }),
+        output: Output.object({ schema: AgentOutput }),
         system: SYSTEM_PROMPT + "\n" + JSON_INSTRUCTION,
         prompt,
         temperature: 0.2,
         maxRetries: 1,
+        timeout: { totalMs: MODEL_TIMEOUT_MS },
         experimental_telemetry: { isEnabled: true, functionId: "agent-harness" },
       });
 
-      const candidate = extractJson(result.text);
-      const validated = AgentOutput.safeParse(candidate);
-      if (!validated.success) {
-        throw new Error(
-          "schema rejected: " + (validated.error.issues[0]?.message ?? "unknown shape")
-        );
-      }
+      // Reading `output` is where the schema is enforced. It throws if the model
+      // produced nothing parseable or nothing that validates, and that throw is
+      // caught below as this model failing, which advances the cascade.
+      const validated = result.output;
 
       cascade.push({ model, ok: true, ms: Date.now() - startedAt });
       return json({
         degraded: false,
         model,
         cascade,
-        ...validated.data,
+        ...validated,
         stats: {
           latencyMs: Date.now() - startedAt,
           totalElapsedMs: Date.now() - startedAll,
@@ -319,9 +213,9 @@ async function handleModels(env: Env): Promise<Response> {
   // Budget is reported here rather than hidden: the site's argument is that limits
   // should be visible, and a reader can see exactly how much of today's free tier
   // is gone and which pool spent it.
-  const budget = await budgetStatus(env as unknown as BudgetEnv);
+  const budget = await budgetStatus(env);
   return json({
-    discoveredFree: free.slice(0, FREE_ATTEMPTS),
+    discoveredFree: free.slice(0, MAX_ATTEMPTS),
     totalFreeSeen: free.length,
     finalFallback: FINAL_FALLBACK,
     hasKey: Boolean(env.OPENROUTER_API_KEY),
@@ -331,65 +225,122 @@ async function handleModels(env: Env): Promise<Response> {
   });
 }
 
-const worker = {
+/**
+ * How many expired arenas one invocation clears, per room, plus the same ceiling
+ * on stale cache rows.
+ *
+ * Bounded because a sweep that deletes everything it finds is a sweep that, after
+ * a quiet fortnight, tries to delete a hundred thousand rows inside one cron
+ * invocation and is killed halfway. Fifty an hour clears far more than this site
+ * creates, and if it ever falls behind it catches up next hour rather than falling
+ * over.
+ */
+const SWEEP_ARENAS_PER_RUN = 50;
+
+/**
+ * Deletes expired demo arenas. Runs hourly on the cron trigger in wrangler.jsonc.
+ *
+ * Every arena table has had an expires_at column and an index on it since the
+ * migration that created it. Migration 0004 and migration 0006 both say arenas
+ * "expire and are swept in bounded batches", src/lib/demos/registry.ts charges
+ * every run for its share of that sweep, and split-brain.ts names it in the
+ * comment above its own TTL. There was no sweep. Four places described a job
+ * nothing did, and the tables grew forever - which is the exact defect this site
+ * is an argument against.
+ *
+ * Nothing is thrown away quietly: a failure here rejects, so the invocation shows
+ * up as failed rather than as an hour that swept nothing.
+ *
+ * Children first, then the arena, because the child tables carry a foreign key to
+ * it. Each delete re-runs the same ORDER BY expires_at subquery, so all of them
+ * name the same batch, and the arena delete comes last so the subquery still has
+ * rows to find.
+ */
+async function sweepExpired(env: Env): Promise<void> {
+  const db = env.DEMO_DB;
+  if (!db) return;
+
+  // Two arena families, two time formats, and mixing them up would delete either
+  // nothing or everything. Ledger arenas store an ISO 8601 string, so they are
+  // compared against another ISO string of the same shape rather than SQLite's
+  // datetime(), whose space separator sorts before the 'T' and would make every
+  // comparison wrong. Split-brain arenas store epoch milliseconds.
+  const nowIso = new Date().toISOString();
+  const nowMs = Date.now();
+
+  const expiredLedger = `SELECT run_id FROM ledger_race_arenas WHERE expires_at < ?1 ORDER BY expires_at LIMIT ?2`;
+  const expiredSplit = `SELECT run_id FROM split_brain_arenas WHERE expires_at < ?1 ORDER BY expires_at LIMIT ?2`;
+
+  const purge = (table: string, expired: string, now: string | number) =>
+    db
+      .prepare(`DELETE FROM ${table} WHERE run_id IN (${expired})`)
+      .bind(now, SWEEP_ARENAS_PER_RUN);
+
+  await db.batch([
+    purge("ledger_race_entries", expiredLedger, nowIso),
+    purge("ledger_race_shards", expiredLedger, nowIso),
+    purge("ledger_race_accounts", expiredLedger, nowIso),
+    purge("ledger_race_arenas", expiredLedger, nowIso),
+    purge("split_brain_events", expiredSplit, nowMs),
+    purge("split_brain_work", expiredSplit, nowMs),
+    purge("split_brain_nodes", expiredSplit, nowMs),
+    purge("split_brain_leases", expiredSplit, nowMs),
+    purge("split_brain_arenas", expiredSplit, nowMs),
+    // The guide's answer cache expires by age rather than by arena. worker/cache.ts
+    // already ignores anything older than seven days when it reads, so this only
+    // stops the table growing forever behind that filter.
+    db
+      .prepare(
+        `DELETE FROM guide_cache WHERE token_key IN (
+           SELECT token_key FROM guide_cache WHERE created_at < datetime('now', '-7 days')
+           ORDER BY created_at LIMIT ?1)`
+      )
+      .bind(SWEEP_ARENAS_PER_RUN),
+  ]);
+}
+
+export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
     if (url.pathname === "/api/agent") return handleAgent(req, env);
     if (url.pathname === "/api/models") return handleModels(env);
-    if (url.pathname === "/api/guide") return handleGuide(req, env as GuideEnv);
+    if (url.pathname === "/api/guide") return handleGuide(req, env);
     // One prefix, one router. Every room endpoint goes through worker/demos/router.ts
     // so the request budget is charged in exactly one place - see the docstring
     // there for why three rooms accounting for themselves is three chances to
     // spend the site guide's allowance by accident.
-    if (url.pathname.startsWith("/api/demos/")) {
-      return handleDemos(req, env as unknown as DemoEnv);
-    }
+    if (url.pathname.startsWith("/api/demos/")) return handleDemos(req, env);
 
     const asset = await env.ASSETS.fetch(req);
     if (asset.status !== 404 || (req.method !== "GET" && req.method !== "HEAD")) return asset;
 
-    // TWO PLACES WHERE `output: "export"` WRITES A FILE UNDER A NAME THE CLIENT
-    // DOES NOT ASK FOR. Both are retried exactly once, both only after a real 404,
-    // and both ask for a specific file the exporter demonstrably wrote rather than
-    // rewriting arbitrary paths. If the retry misses too, the original 404 stands.
+    // ONE PLACE WHERE `output: "export"` WRITES A FILE UNDER A NAME THE CLIENT
+    // DOES NOT ASK FOR. Retried exactly once, only after a real 404, and it asks
+    // for a specific file the exporter demonstrably wrote rather than rewriting
+    // arbitrary paths. If the retry misses too, the original 404 stands.
+    //
+    // Segment prefetch payloads. Next writes them nested -
+    // out/demos/split-brain/__next.demos/split-brain/__PAGE__.txt - and the client
+    // asks for the segments joined with dots -
+    // __next.demos.split-brain.__PAGE__.txt. Every one 404s, seven of them on the
+    // gallery alone.
+    //
+    // Nothing breaks: a missed segment prefetch falls back to the full payload.
+    // What it costs is a console full of red on a site whose whole argument is
+    // that you should open it and check, which is the one place a harmless error
+    // is expensive. The experimental flag that would turn this off does not exist
+    // in this version, so it is fixed here.
     const last = url.pathname.split("/").pop() ?? "";
-    let retryPath: string | null = null;
+    if (!/^__next\..+\.txt$/.test(last)) return asset;
 
-    if (!url.pathname.endsWith("/") && !last.includes(".")) {
-      // A route that is BOTH a page and a parent of other pages. The export writes
-      // such a route as `out/<name>.html` while its children live in
-      // `out/<name>/`, so the name exists as a file AND as a directory; Assets
-      // resolves the directory, finds no index.html inside, and stops.
-      //
-      // Nothing currently hits this. `/demos` did - it was a gallery index above
-      // `/demos/<slug>` - and was deleted for rendering the same content as
-      // `/#projects`. Kept because the shape returns the moment any page gains a
-      // child route, and it costs one extra Assets lookup on a request that was
-      // already going to 404.
-      retryPath = `${url.pathname}.html`;
-    } else if (/^__next\..+\.txt$/.test(last)) {
-      // Segment prefetch payloads. Next writes them nested -
-      // out/demos/split-brain/__next.demos/split-brain/__PAGE__.txt - and the
-      // client asks for the segments joined with dots -
-      // __next.demos.split-brain.__PAGE__.txt. Every one 404s, seven of them on
-      // the gallery alone.
-      //
-      // Nothing breaks: a missed segment prefetch falls back to the full payload.
-      // What it costs is a console full of red on a site whose whole argument is
-      // that you should open it and check, which is the one place a harmless
-      // error is expensive. The experimental flag that would turn this off does
-      // not exist in this version, so it is fixed here.
-      const parts = last.slice("__next.".length, -".txt".length).split(".");
-      const dir = url.pathname.slice(0, -last.length);
-      retryPath = `${dir}__next.${parts.join("/")}.txt`;
-    }
-
-    if (!retryPath) return asset;
+    const parts = last.slice("__next.".length, -".txt".length).split(".");
     const retryUrl = new URL(req.url);
-    retryUrl.pathname = retryPath;
+    retryUrl.pathname = `${url.pathname.slice(0, -last.length)}__next.${parts.join("/")}.txt`;
     const retry = await env.ASSETS.fetch(new Request(retryUrl, req));
     return retry.status === 404 ? asset : retry;
   },
-};
 
-export default worker;
+  async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
+    await sweepExpired(env);
+  },
+} satisfies ExportedHandler<Env>;

@@ -28,8 +28,13 @@ export default function Room() {
         )}
       </div>
 
+      {/* An alert, because the only other sign a run was refused is a button
+          quietly becoming pressable again. */}
       {state.error && (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+        <div
+          role="alert"
+          className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+        >
           {state.error}
         </div>
       )}

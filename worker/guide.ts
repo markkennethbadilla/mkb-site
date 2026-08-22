@@ -23,13 +23,8 @@ const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 import { buildToolbox, type GuideDecision } from "./guide-tools";
 import { lookup, remember } from "./cache";
 import { reserve } from "./budget";
-import {
-  json,
-  refuseForQuota,
-  GUIDE_CHAIN,
-  DEEPSEEK_BASE_URL,
-  type Env,
-} from "./models";
+// Env is global, generated from wrangler.jsonc by `wrangler types`.
+import { json, refuseForQuota, GUIDE_CHAIN, DEEPSEEK_BASE_URL } from "./models";
 
 const MAX_QUESTION_CHARS = 200;
 

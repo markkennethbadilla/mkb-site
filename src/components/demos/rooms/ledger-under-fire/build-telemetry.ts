@@ -6,10 +6,13 @@ export function buildTelemetry(unsafeAct: ActResult | null, safeAct: ActResult |
   const items: { label: string; value: string }[] = [];
   if (acts.length === 0) return items;
 
-  const requestsPerAct = 1 + acts[0].rows.length + 1; // start + transfers + state
+  // Counted by the hook as each response lands, never derived. The arithmetic that
+  // used to sit here (start + transfers + state) reported a request as successful
+  // even when the trailing state read had failed.
+  const requests = acts.reduce((sum, a) => sum + a.requestCount, 0);
   const totalMs = acts.reduce((sum, a) => sum + a.wallMs, 0);
 
-  items.push({ label: "requests", value: `${acts.length * requestsPerAct} of the demo pool` });
+  items.push({ label: "requests", value: `${requests} of the demo pool` });
   items.push({ label: "ms", value: String(totalMs) });
   items.push({ label: "source", value: "live D1 - ledger_race_* tables" });
 

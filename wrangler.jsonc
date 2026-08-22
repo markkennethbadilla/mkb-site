@@ -14,30 +14,62 @@
   "kv_namespaces": [
     { "binding": "DEMO_KV", "id": "3624d59a2e724d34b883ea23181c7ec2" }
   ],
-  // Seeded demo data describing a company that does not exist. Nothing real
-  // lives here.
+  // TWO DATABASES, AND THE SPLIT IS THE SECURITY BOUNDARY.
   //
-  // An earlier version of this comment claimed src/lib/sql-guard.ts stops the
-  // agent writing to this database. That was false: the guard existed but nothing
-  // imported it, because the guide's toolbox has no SQL tool at all. Describing
-  // enforcement that is not wired is the exact defect this site argues against,
-  // so the claim was removed.
+  // This used to be one database holding both the fabricated Tidewater warehouse
+  // and the live per-visitor arena rows the demo rooms write. The ScoreAudit room
+  // hands a language model a real `query_db` tool, so a single database meant one
+  // model-authored SELECT stood between a visitor and every other visitor's live
+  // run. The only thing stopping it was a list of banned table names inside
+  // src/lib/sql-guard.ts, and that list was bypassed by writing the table name in
+  // double quotes. Ten hostile statements were tried and all ten were allowed.
   //
-  // It now has one consumer, and only one: the ScoreAudit room gives a model a
-  // real `query_db` tool, and every statement it writes goes through the guard.
-  // That is the case the guard was written for - untrusted, model-authored SQL.
-  // The other two rooms write their own parameterised statements and are not
-  // guarded by it, because it would refuse them on two independent rules; the
-  // reason THEY are safe is that no model is anywhere near them. The site guide
-  // still cannot write here for the original reason: it has no tool that does.
+  // A name-matching check can always be written around. Two databases cannot,
+  // because a binding reaches one database and nothing else. So the tables the
+  // model must never see are not in the database the model can reach. There is no
+  // rule to bypass, because there is no rule.
+  //
+  //   WAREHOUSE_DB  invented Tidewater data, migrations/warehouse/0001-0003.
+  //                 Read by the ScoreAudit room only. Nothing writes to it after
+  //                 the migrations run, and no visitor data ever lands in it.
+  //   DEMO_DB       everything a visitor's session creates: the ledger and
+  //                 split-brain arenas, the request budget, the guide's answer
+  //                 cache. No model-authored SQL can reach this binding.
+  //
+  // An earlier version of this comment claimed sql-guard.ts stopped the agent
+  // writing to the one database. That was false at the time, because nothing
+  // imported the guard. It is now imported by worker/demos/score-audit.ts, and
+  // what it enforces is written out in that file's header rather than claimed
+  // here.
+  //
+  // The warehouse rows still physically exist in mkb-site-demo, left over from
+  // when there was one database. Nothing reads them there any more. Dropping them
+  // is a separate change that needs a human to say yes first.
   "d1_databases": [
     {
       "binding": "DEMO_DB",
       "database_name": "mkb-site-demo",
       "database_id": "57477ddc-8c63-4628-af5c-aea92014f195",
+      // Default file pattern is `migrations/*.sql`, and minimatch's single `*`
+      // does not cross a `/`. That is what keeps migrations/warehouse/ out of
+      // this database without a glob anyone has to remember to update.
       "migrations_dir": "migrations"
+    },
+    {
+      "binding": "WAREHOUSE_DB",
+      "database_name": "mkb-site-warehouse",
+      "database_id": "8420c14a-7f00-44e4-b8d0-6acb6f6abf6c",
+      "migrations_dir": "migrations/warehouse"
     }
   ],
+  // Hourly sweep of expired arenas, handled by scheduled() in worker/index.ts.
+  //
+  // Every arena table has carried an expires_at column and an index on it since
+  // migration 0004, the migration comments said arenas "expire and are swept in
+  // bounded batches", and src/lib/demos/registry.ts charges each run for its share
+  // of that sweep. No sweep existed. The column was written and read by nothing,
+  // so the arena tables grew forever and three separate places said otherwise.
+  "triggers": { "crons": ["0 * * * *"] },
   // Platform-native rate limiting, enforced at the edge before the Worker runs.
   // Period must be 10 or 60 seconds; this is burst protection, and the daily
   // spend ceiling is handled separately in KV because it is a different concern.

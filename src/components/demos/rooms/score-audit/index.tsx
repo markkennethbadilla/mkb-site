@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useReducedMotion } from "motion/react";
+import { Button } from "@/components/ui/button";
+import { fetchJson } from "@/lib/demos/fetch-json";
 import { roomBySlug } from "@/lib/demos/registry";
 import { TelemetryStrip } from "@/components/demos/shell/telemetry";
 import { GUIDE_CHAIN } from "@/lib/guide-models";
@@ -78,21 +80,15 @@ export default function Room() {
     setStatus("running");
     setErrorMsg(null);
     try {
-      const res = await fetch("/api/demos/score-audit/run", {
+      setData(await fetchJson<RunResponse>("/api/demos/score-audit/run", {
         method: "POST",
-        headers: { "content-type": "application/json" },
         body: JSON.stringify({ preset }),
-      });
-      const body = await res.json();
-      if (!res.ok) {
-        setErrorMsg(body.error ?? `The audit could not run (HTTP ${res.status}).`);
-        setStatus("error");
-        return;
-      }
-      setData(body as RunResponse);
+      }));
       setStatus("done");
     } catch (e) {
-      setErrorMsg(`The request itself failed: ${String(e)}`);
+      // Whatever the Worker said, verbatim. It names the refusal; this does not
+      // improve on it.
+      setErrorMsg(e instanceof Error ? e.message : String(e));
       setStatus("error");
     }
   }
@@ -103,43 +99,73 @@ export default function Room() {
         <h2 className="text-2xl font-bold tracking-tight text-pretty sm:text-3xl">{HOOK_LINE}</h2>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex rounded-lg border border-border p-0.5">
-            {PRESETS.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => setPreset(p.id)}
-                disabled={status === "running"}
-                title={p.note}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                  preset === p.id ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
+          {/* A radio group, not two buttons. Arrow-key navigation and the "this one
+              is selected" announcement both come free from the native control. The
+              pair of <button>s this replaces reported no selected state at all, so a
+              screen reader named two identically shaped controls with no way to tell
+              which run was about to fire. Disabling the fieldset disables both
+              inputs, so a run in flight cannot have its preset changed underneath
+              it. */}
+          <fieldset disabled={status === "running"} className="min-w-0">
+            <legend className="sr-only">What the model may use</legend>
+            <div className="inline-flex rounded-lg border border-border p-0.5">
+              {PRESETS.map((p) => (
+                <label
+                  key={p.id}
+                  className="cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground has-[:checked]:bg-foreground has-[:checked]:text-background has-[:focus-visible]:ring-1 has-[:focus-visible]:ring-ring has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50"
+                >
+                  <input
+                    type="radio"
+                    name="score-audit-preset"
+                    value={p.id}
+                    checked={preset === p.id}
+                    onChange={() => setPreset(p.id)}
+                    className="sr-only"
+                  />
+                  {p.label}
+                  {/* The note used to hang off a title attribute, which a touch
+                      visitor never sees and a keyboard one cannot count on. Here it
+                      is part of the control's own name. */}
+                  <span className="sr-only"> - {p.note}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
-          <button
-            onClick={run}
-            disabled={status === "running"}
-            className="rounded-xl bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-50"
-          >
+          <Button onClick={run} disabled={status === "running"}>
             {status === "running" ? "Auditing..." : room.startLabel}
-          </button>
+          </Button>
         </div>
+
+        {/* aria-hidden because the selected radio already carries this sentence in
+            its accessible name. This copy is for everyone who lost the tooltip. */}
+        <p aria-hidden className="text-xs text-muted-foreground">
+          {PRESETS.find((p) => p.id === preset)!.note}
+        </p>
       </div>
 
       <div className="flex flex-col gap-4">
-        {status === "running" && (
-          <p className="text-sm text-muted-foreground" aria-live="polite">
-            Asking {GUIDE_CHAIN[0]} all {QUESTIONS.length} questions
-            {preset === "grounded" ? " with the query tool in reach" : " with no way to look them up"}, then checking
-            every answer against D1...
-          </p>
-        )}
+        {/* One region, in the DOM from the first render, whose text changes as the
+            run moves through it. The live region this replaces was mounted at the
+            moment its content appeared and unmounted the moment the result landed,
+            so assistive tech had nothing to observe the change against on the way in
+            and no region left to announce the outcome on the way out. Visible while
+            the run is in flight, screen-reader-only either side of that, which is
+            exactly where the page already had something to look at. */}
+        <p aria-live="polite" className={status === "running" ? "text-sm text-muted-foreground" : "sr-only"}>
+          {status === "running"
+            ? `Asking ${GUIDE_CHAIN[0]} all ${QUESTIONS.length} questions${
+                preset === "grounded" ? " with the query tool in reach" : " with no way to look them up"
+              }, then checking every answer against D1...`
+            : status === "done" && data
+              ? `Audit complete. Stated confidence ${data.meanConfidence}%, measured accuracy ${data.accuracyPct}%, a calibration gap of ${data.calibrationGap} points.`
+              : ""}
+        </p>
 
+        {/* The refusal is an alert rather than part of the polite region above, so
+            it is not announced twice and does not wait its turn. */}
         {status === "error" && errorMsg && (
-          <div className="rounded-xl border border-destructive/50 bg-destructive/5 p-4">
+          <div role="alert" className="rounded-xl border border-destructive/50 bg-destructive/5 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-destructive">Refused</p>
             <p className="pt-1 text-sm leading-relaxed text-foreground">{errorMsg}</p>
           </div>

@@ -8,6 +8,11 @@
 
 # testing
 /coverage
+# Playwright's run artefacts: traces kept on failure, and the last-run marker it
+# writes on every run. Both are regenerated and neither means anything on another
+# machine.
+/test-results/
+/playwright-report/
 
 # next.js
 /.next/

@@ -2,14 +2,10 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { dollars } from "./money";
 import type { LedgerRow } from "./types";
 
 const LAND = { type: "spring" as const, stiffness: 400, damping: 30 };
-
-function centsToStr(cents: number) {
-  const sign = cents < 0 ? "-" : "";
-  return `${sign}$${(Math.abs(cents) / 100).toFixed(2)}`;
-}
 
 function Outcome({ row }: { row: LedgerRow }) {
   if (row.status === "pending") return <span>in flight...</span>;
@@ -55,7 +51,7 @@ export default function LedgerTable({ rows, amountCents }: { rows: LedgerRow[]; 
               )}
             >
               <td className="px-2 py-1.5">{String(row.index).padStart(2, "0")}</td>
-              <td className="px-2 py-1.5 text-right">{row.status === "landed" ? centsToStr(amountCents) : "-"}</td>
+              <td className="px-2 py-1.5 text-right">{row.status === "landed" ? dollars(amountCents) : "-"}</td>
               <td className="px-2 py-1.5">
                 <Outcome row={row} />
               </td>

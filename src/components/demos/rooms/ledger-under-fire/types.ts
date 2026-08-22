@@ -72,4 +72,6 @@ export type ActResult = {
   rows: LedgerRow[];
   state: StateResponse | null;
   wallMs: number;
+  /** Responses actually received for this act, counted one at a time as they land. */
+  requestCount: number;
 };

@@ -14,14 +14,19 @@ const KIND_TONE: Record<string, string> = {
   healed: "text-muted-foreground",
 };
 
-function fmtClock(ms: number): string {
-  const d = new Date(ms);
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  const ss = String(d.getSeconds()).padStart(2, "0");
-  const fff = String(ms % 1000).padStart(3, "0");
-  return `${hh}:${mm}:${ss}.${fff}`;
-}
+/**
+ * Milliseconds matter here - two events a few of them apart is the whole reason the
+ * log is readable - and fractionalSecondDigits has covered that since ES2021, so
+ * there is nothing left for a hand-built HH:MM:SS.mmm to do. Hoisted, because the
+ * formatter is built once and every row reuses it.
+ */
+const CLOCK = new Intl.DateTimeFormat("en-GB", {
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  fractionalSecondDigits: 3,
+  hourCycle: "h23",
+});
 
 function letterOf(node: string): string {
   return NODE_LETTER[node as NodeId] ?? node;
@@ -36,7 +41,7 @@ export function EventLog({ events }: { events: EventRow[] }) {
     <div className="flex max-h-72 flex-col gap-1 overflow-y-auto rounded-lg border border-border bg-muted/20 p-2 font-mono text-[11px]">
       {ordered.map((e) => (
         <div key={e.seq} className="flex items-baseline gap-2">
-          <span className="shrink-0 tabular-nums text-muted-foreground/70">{fmtClock(e.atMs)}</span>
+          <span className="shrink-0 tabular-nums text-muted-foreground/70">{CLOCK.format(e.atMs)}</span>
           <span className="w-4 shrink-0 text-center opacity-70">{letterOf(e.node)}</span>
           <span className={cn("w-28 shrink-0 uppercase tracking-wide", KIND_TONE[e.kind] ?? "")}>{e.kind}</span>
           <span className="text-foreground/80">{e.detail}</span>
