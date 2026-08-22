@@ -136,12 +136,24 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "self-hosted-infra",
-    text: "He runs production on three servers across three separate providers, with no open ports on any of them - every path in goes through an authenticated tunnel or a private network. The third server carries no application traffic at all; its only job is to break the tie over which of the other two takes over.",
-    terms: [],
+    // NARROWED 2026-08-22 at Mark's instruction, and the reason is the point of this file.
+    //
+    // This used to describe a three-server, three-provider topology with a tie-breaker
+    // node. He asked for it removed because he is not familiar enough with that setup's
+    // internals to defend it, and a claim you cannot answer follow-up questions about is
+    // worse than no claim. An interviewer who asks "why three providers?" and gets a blank
+    // is a worse outcome than never having said it.
+    //
+    // What is left is what he actually drives and can talk about, in nearly his own
+    // words: "what i can be sure of is i self host. coolify which allows us to host
+    // anything at a flat rate". No topology, no counts, no provider named beside a
+    // claim about whose production it carries - Hetzner lives in the skills list.
+    text: "He self-hosts with Coolify, which lets him run anything at one flat rate instead of paying for a managed service per component.",
+    terms: ["Coolify"],
   },
   {
     id: "failover-drills",
-    text: "He rehearses recovery rather than only diagramming it. Six live outage drills, including killing the main server outright, after which the system was writing again in 66 seconds with nothing lost. A later five-scenario drill day held user-visible impact to eight seconds or less.",
+    text: "He has run six live outage drills, including killing the main server outright, after which the system was writing again in 66 seconds with nothing lost. A later five-scenario drill day held user-visible impact to eight seconds or less.",
     terms: [],
     figures: [{ value: "66", near: ["seconds", "second", "writing", "recovery", "recovered", "back", "again"] }],
   },

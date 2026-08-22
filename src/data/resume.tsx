@@ -62,7 +62,7 @@ export const DATA = {
   // their own claim boundaries. Lengths are deliberately uneven - a list where every item
   // is the same length and shape reads as generated.
   summary:
-    "- I argued for buying or consolidating wherever something adequate existed, and reserved custom work for the one gap nothing covered.\n- I built the internal operations platform (Next.js and PostgreSQL) **in ten weeks**, on additive-only migrations.\n- A six-area permission grid that has no bypass role by design.\n- Its own gate suite is wired into the build, so bad code is uncommittable whether a person or an agent wrote it.\n- It runs on **three self-hosted servers across three separate providers**, with nothing exposed to the public internet.\n- I rehearse recovery rather than diagramming it.\n- Six live outage drills including killing the main server outright, back to writing in **66 seconds** with zero data loss.\n- Every deploy backs up the database, restores it into a scratch database and diffs the row counts before anything migrates.\n- Also built a meeting platform used daily.\n- An unattended LLM extraction pipeline with a ranked plain-language risk worklist on top.\n- Desktop AI agents for non-technical staff.\n- A label audit showed the data could not support an honest predictive model.\n- I killed that path on its own evidence and shipped the explainable rules-based detector instead.",
+    "- I argued for buying or consolidating wherever something adequate existed, and reserved custom work for the one gap nothing covered.\n- I built the internal operations platform (Next.js and PostgreSQL) **in ten weeks**, on additive-only migrations.\n- A six-area permission grid that has no bypass role by design.\n- Its own gate suite is wired into the build, so bad code is uncommittable whether a person or an agent wrote it.\n- I **self-host** with Coolify, which lets us run anything at one flat rate.\n- Six live outage drills including killing the main server outright, back to writing in **66 seconds** with zero data loss.\n- Every deploy backs up the database, restores it into a scratch database and diffs the row counts before anything migrates.\n- Also built a meeting platform used daily.\n- An unattended LLM extraction pipeline with a ranked plain-language risk worklist on top.\n- Desktop AI agents for non-technical staff.\n- A label audit showed the data could not support an honest predictive model.\n- I killed that path on its own evidence and shipped the explainable rules-based detector instead.",
   // The closing line, minus its "Before that," opener - the label carries that now. The
   // degree row beside it is not repeated here: the About section reads it from
   // DATA.education so the two surfaces cannot drift.
@@ -196,6 +196,8 @@ export const DATA = {
         { name: "Docker Compose", icon: "docker", url: "https://docs.docker.com/compose/", blurb: "Defines and runs a whole multi-container stack from one file." },
         { name: "Cloudflare Workers", icon: "cloudflareworkers", url: "https://workers.cloudflare.com", blurb: "Code that runs at the edge, close to the visitor. This site is one." },
         { name: "Cloudflare Tunnels", icon: "cloudflare", url: "https://www.cloudflare.com/products/tunnel/", blurb: "Exposes a service without opening a single port on the machine." },
+        { name: "Coolify", icon: "coolify", url: "https://coolify.io", blurb: "Deploys apps and databases onto a server you own, from one dashboard." },
+        { name: "Hetzner", icon: "hetzner", url: "https://www.hetzner.com", blurb: "Flat-rate servers. One monthly price no matter what you run on them." },
         { name: "Caddy", icon: "caddy", url: "https://caddyserver.com", blurb: "A web server that gets and renews HTTPS certificates on its own." },
         { name: "Tailscale", icon: "tailscale", url: "https://tailscale.com", blurb: "A private network between machines, with no public exposure." },
         { name: "Linux", icon: "linux", url: "https://www.kernel.org", blurb: "The operating system every server here runs." },
@@ -281,8 +283,8 @@ export const DATA = {
         "Access control rebuilt from 55 scattered permissions into a six-area grid with no bypass role by design.",
         "Its own gate suite of 300+ checks wired into the build.",
         "Bad code is uncommittable whether a person or an agent wrote it.",
-        "Run it on three self-hosted servers across three separate providers.",
-        "One 18-step zero-downtime deploy pipeline every app shares, and I rehearse recovery rather than diagramming it.",
+        "Self-hosted with Coolify, so we can run anything at one flat rate.",
+        "One 18-step zero-downtime deploy pipeline every app shares.",
         "Six live outage drills including killing the main server outright, back to writing in 66 seconds.",
         "Every deploy backs up production, restores it into a scratch database and diffs the row counts before anything migrates.",
         "Built an unattended LLM extraction pipeline that turns unstructured meeting transcripts into a structured signals database.",
