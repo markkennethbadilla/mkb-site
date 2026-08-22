@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 
+// `absolute` bypasses the root title template, so Chrome's print-to-PDF names the
+// saved file after the person rather than "Resume _ Mark Kenneth Badilla.pdf" - the
+// pipe in the template is illegal in a Windows filename and gets rewritten.
 export const metadata: Metadata = {
-  title: "Resume",
+  title: { absolute: "Mark Kenneth Badilla - Resume" },
   description:
-    "Mark Kenneth Badilla - Full Stack AI Engineer. One page, printable, and readable by an applicant tracking system.",
+    "Full Stack AI Engineer at WeAssist since March 2026. Previously Software Engineer at Hatchit Solutions. BS Information Technology, Magna Cum Laude.",
 };
 
 /**

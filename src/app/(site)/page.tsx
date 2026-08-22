@@ -9,7 +9,6 @@ import ContactSection from "@/components/section/contact-section";
 import ProjectsSection from "@/components/section/projects-section";
 import SkillGroups from "@/components/section/skill-groups";
 import WorkSection from "@/components/section/work-section";
-import Harness from "@/components/demo/harness";
 import AgentConsole from "@/components/demo/agent-console";
 import { ArrowUpRight } from "lucide-react";
 
@@ -39,6 +38,23 @@ export default function Page() {
                 delay={BLUR_FADE_DELAY}
                 text={DATA.description}
               />
+              {/* The three facts a recruiter opens the page for - where he is,
+                  what he does now, and the one-page version - were all further
+                  down or behind the dock. Every value reads from DATA, so the
+                  role here cannot drift away from the work section. */}
+              <BlurFade delay={BLUR_FADE_DELAY}>
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+                  <span>{DATA.location}</span>
+                  <span aria-hidden className="text-muted-foreground/40">&middot;</span>
+                  <span>
+                    {DATA.work[0].title} at {DATA.work[0].company} since {DATA.work[0].start}
+                  </span>
+                  <span aria-hidden className="text-muted-foreground/40">&middot;</span>
+                  <Link href="/resume" className="underline underline-offset-4 transition-colors hover:text-foreground">
+                    One-page resume
+                  </Link>
+                </p>
+              </BlurFade>
             </div>
             <BlurFade delay={BLUR_FADE_DELAY} className="order-1 md:order-2">
               <Avatar className="size-24 md:size-32 border rounded-full shadow-lg ring-4 ring-muted">
@@ -61,10 +77,10 @@ export default function Page() {
       <section id="about">
         <div className="flex min-h-0 flex-col gap-y-4">
           <BlurFade delay={BLUR_FADE_DELAY * 3}>
-            <h2 className="text-xl font-bold">About</h2>
+            <h2 className="text-2xl font-bold tracking-tight">About</h2>
           </BlurFade>
           <BlurFade delay={BLUR_FADE_DELAY * 4}>
-            <div className="prose max-w-none text-pretty font-sans leading-relaxed text-muted-foreground dark:prose-invert">
+            <div className="prose max-w-none text-pretty font-sans leading-relaxed text-muted-foreground dark:prose-invert prose-strong:text-foreground">
               <Markdown>
                 {DATA.summary}
               </Markdown>
@@ -75,23 +91,35 @@ export default function Page() {
       <section id="work">
         <div className="flex min-h-0 flex-col gap-y-6">
           <BlurFade delay={BLUR_FADE_DELAY * 5}>
-            <h2 className="text-xl font-bold">Work Experience</h2>
+            <h2 className="text-2xl font-bold tracking-tight">Work Experience</h2>
           </BlurFade>
           <BlurFade delay={BLUR_FADE_DELAY * 6}>
             <WorkSection />
           </BlurFade>
         </div>
       </section>
+      {/* ProjectsSection renders its own <section id="projects">, so it is NOT
+          wrapped in another one here - two elements sharing an id is invalid, and
+          the guide's getElementById would silently target whichever came first. */}
+      <ProjectsSection />
+      <section id="skills">
+        <div className="flex min-h-0 flex-col gap-y-4">
+          <BlurFade delay={BLUR_FADE_DELAY * 7}>
+            <h2 className="text-2xl font-bold tracking-tight">Skills</h2>
+          </BlurFade>
+          <SkillGroups delayStart={BLUR_FADE_DELAY * 8} />
+        </div>
+      </section>
       <section id="education">
         <div className="flex min-h-0 flex-col gap-y-6">
-          <BlurFade delay={BLUR_FADE_DELAY * 7}>
-            <h2 className="text-xl font-bold">Education</h2>
+          <BlurFade delay={BLUR_FADE_DELAY * 9}>
+            <h2 className="text-2xl font-bold tracking-tight">Education</h2>
           </BlurFade>
           <div className="flex flex-col gap-8">
             {DATA.education.map((education, index) => (
               <BlurFade
                 key={education.school}
-                delay={BLUR_FADE_DELAY * 8 + index * 0.05}
+                delay={BLUR_FADE_DELAY * 10 + index * 0.05}
               >
                 <Link
                   href={education.href}
@@ -130,18 +158,6 @@ export default function Page() {
           </div>
         </div>
       </section>
-      <section id="skills">
-        <div className="flex min-h-0 flex-col gap-y-4">
-          <BlurFade delay={BLUR_FADE_DELAY * 9}>
-            <h2 className="text-xl font-bold">Skills</h2>
-          </BlurFade>
-          <SkillGroups delayStart={BLUR_FADE_DELAY * 10} />
-        </div>
-      </section>
-      {/* ProjectsSection renders its own <section id="projects">, so it is NOT
-          wrapped in another one here - two elements sharing an id is invalid, and
-          the guide's getElementById would silently target whichever came first. */}
-      <ProjectsSection />
       <section id="contact">
         <BlurFade delay={BLUR_FADE_DELAY * 16}>
           <ContactSection />

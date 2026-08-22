@@ -54,6 +54,63 @@ export const metadata: Metadata = {
   },
 };
 
+// Anchored on day 15 so converting to UTC cannot roll the month backwards.
+const isoMonth = (monthAndYear: string) =>
+  new Date(`15 ${monthAndYear}`).toISOString().slice(0, 7);
+
+const PERSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "@id": `${DATA.url}/#person`,
+  name: DATA.name,
+  url: DATA.url,
+  image: `${DATA.url}${DATA.avatarUrl}`,
+  email: `mailto:${DATA.contact.email}`,
+  jobTitle: "Full Stack AI Engineer",
+  description: DATA.description,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Cebu City",
+    addressCountry: "PH",
+  },
+  sameAs: [DATA.contact.social.GitHub.url, DATA.contact.social.LinkedIn.url],
+  worksFor: {
+    "@type": "Organization",
+    name: DATA.work[0].company,
+    url: DATA.work[0].href,
+  },
+  hasOccupation: [
+    { "@type": "Occupation", name: DATA.work[0].title },
+    ...DATA.work.map((job) => ({
+      "@type": "Role",
+      startDate: isoMonth(job.start),
+      ...(job.end === "Present" ? {} : { endDate: isoMonth(job.end) }),
+      hasOccupation: { "@type": "Occupation", name: job.title },
+    })),
+  ],
+  alumniOf: {
+    "@type": "CollegeOrUniversity",
+    name: DATA.education[0].school,
+    url: DATA.education[0].href,
+  },
+  award: "Magna Cum Laude",
+  hasCredential: [
+    {
+      "@type": "EducationalOccupationalCredential",
+      name: "BS Information Technology",
+      credentialCategory: "degree",
+      educationalLevel: "Bachelor",
+      recognizedBy: { "@type": "CollegeOrUniversity", name: DATA.education[0].school },
+    },
+    ...DATA.certifications.map((c) => ({
+      "@type": "EducationalOccupationalCredential",
+      name: c,
+      credentialCategory: "certificate",
+    })),
+  ],
+  knowsAbout: DATA.resumeSkills.flatMap((g) => g.items.map((i) => i.name)),
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -80,6 +137,26 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){var sweep=function(){document.querySelectorAll("style.darkreader--fallback").forEach(function(el){el.remove()})};sweep();new MutationObserver(sweep).observe(document.head,{childList:true})})();`,
+          }}
+        />
+        {/* One schema.org Person node, and every value in it is read off DATA, so
+            the JSON-LD cannot become a fifth surface that drifts from the page, the
+            sheet, the metadata and the guide corpus.
+
+            `educationalLevel: "Bachelor"` is here rather than on the page because
+            the visible degree string is locked to the About paragraph and reads
+            "BS Information Technology" - Workday and Taleo taxonomies key on the
+            word Bachelor, and this is the one place it can be stated without
+            editing prose that has an off-machine source.
+
+            The bare Occupation entry is the range-clean current title. The Role
+            entries carry the dates, and nothing here states a tenure total; a
+            reader that wants one computes it from the dates, exactly as it would
+            from the resume. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(PERSON_LD).replace(/</g, "\\u003c"),
           }}
         />
       </head>

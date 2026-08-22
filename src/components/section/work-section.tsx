@@ -35,8 +35,21 @@ function LogoImage({ src }: { src: string }) {
 }
 
 export default function WorkSection() {
+  // The current role is open at rest. With everything collapsed, a scrolling
+  // visitor saw three company names and three date ranges, so the section read
+  // as tenure and nothing else - which is the one thing the work here is not
+  // selling. A row that shows a date and no evidence is a row that argues
+  // against him.
+  const current = DATA.work[0];
+  const openByDefault = `${current.company}-${current.title}-${current.start}`;
+
   return (
-    <Accordion type="single" collapsible className="w-full grid gap-6">
+    <Accordion
+      type="single"
+      collapsible
+      defaultValue={openByDefault}
+      className="w-full grid gap-6"
+    >
       {DATA.work.map((work) => {
         // Keyed on the ROLE, not the company. Both Hatchit Solutions rows took
         // value="Hatchit Solutions", and Radix matches items by value, so
@@ -91,8 +104,12 @@ export default function WorkSection() {
                 </div>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="p-0 ml-13 text-xs sm:text-sm text-muted-foreground">
-              {work.description}
+            <AccordionContent className="p-0 ml-13 text-sm text-muted-foreground">
+              <ul className="list-disc space-y-1.5 pl-4 marker:text-muted-foreground/50">
+                {work.description.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
             </AccordionContent>
           </AccordionItem>
         );

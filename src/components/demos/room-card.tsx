@@ -9,9 +9,13 @@ import { cn } from "@/lib/utils";
  * One exhibit, in the gallery.
  *
  * Fixed slots, same order on every card, because the point of a gallery is that
- * two things can be compared. Name, then the PROMISE (what you will watch happen,
- * present tense, second person), then the CAPABILITY (one clause a recruiter can
- * repeat to someone else), then the cost.
+ * two things can be compared. Name, then the CAPABILITY (one clause a recruiter
+ * can repeat to someone else), then the PROMISE (what you will watch happen,
+ * present tense, second person), then the cost.
+ *
+ * Capability and promise were the other way round until the eight-second scan
+ * put them in this order - a reader who leaves after one line should leave with
+ * the clause they can repeat, not with two sentences about a button.
  *
  * The promise may quantify its inputs and never its outcome. "Fire twelve payments"
  * is an input and is honest. "See the two that got refused" would be an outcome
@@ -66,10 +70,10 @@ export default function RoomCard({ room, featured }: { room: DemoRoom; featured?
           featured ? "max-w-prose text-[15px]" : "text-[13px]"
         )}
       >
-        {room.promise}
+        {room.capability}
       </p>
 
-      <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{room.capability}</p>
+      <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{room.promise}</p>
 
       <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-4 font-mono text-[10px] text-muted-foreground/75">
         <span>

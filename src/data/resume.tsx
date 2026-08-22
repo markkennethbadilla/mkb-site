@@ -1,12 +1,5 @@
 import { Icons } from "@/components/icons";
 import { FileTextIcon, HomeIcon } from "lucide-react";
-import { ReactLight } from "@/components/ui/svgs/reactLight";
-import { NextjsIconDark } from "@/components/ui/svgs/nextjsIconDark";
-import { Typescript } from "@/components/ui/svgs/typescript";
-import { Nodejs } from "@/components/ui/svgs/nodejs";
-import { Python } from "@/components/ui/svgs/python";
-import { Postgresql } from "@/components/ui/svgs/postgresql";
-import { Docker } from "@/components/ui/svgs/docker";
 
 export const DATA = {
   name: "Mark Kenneth Badilla",
@@ -42,18 +35,16 @@ export const DATA = {
   // Summary blocks 1 to 4 from driftwood/profiles-master.md, verbatim, joined into the
   // running paragraph this surface wants. Same sentences LinkedIn, Bossjob and Y Combinator
   // carry; only the block COUNT differs per surface, never the wording.
+  //
+  // The About surface renders blocks 2 to 4 as a lede, a bullet list and a closing line.
+  // Block 1 is dropped here because the hero already renders it as DATA.description, 200px
+  // higher up the same page, and a reader who meets the identical sentence twice in one
+  // screen reads the second one as padding. It stays one double-quoted string with literal
+  // \n escapes, because scripts/check-guide.mjs only scans double-quoted literals for
+  // employer-confidential words and a template literal would silently leave the scan.
   summary:
-    "Hand me a goal instead of a spec and I come back with the diagnosis, the recommendation and the system. At WeAssist I own AI and data automation end to end. The work arrived as a goal rather than a backlog, so the first thing I built was the picture: how work really moved between departments and the tools they already had, written up with a buy-versus-build recommendation. I argued for buying or consolidating wherever something adequate existed, and reserved custom work for the one gap nothing covered. I built the internal operations platform (Next.js and PostgreSQL) in ten weeks on additive-only migrations, with a six-area permission grid that has no bypass role by design and its own gate suite wired into the build, so bad code is uncommittable whether a person or an agent wrote it. It runs on three self-hosted servers across three separate providers with nothing exposed to the public internet, and I rehearse recovery rather than diagramming it: six live outage drills including killing the main server outright, back to writing in 66 seconds with zero data loss. Every deploy backs up the database, restores it into a scratch database and diffs the row counts before anything migrates. Also built: a meeting platform used daily, an unattended LLM extraction pipeline with a ranked plain-language risk worklist on top, and desktop AI agents for non-technical staff. When a label audit showed the data could not support an honest predictive model, I killed that path on its own evidence and shipped the explainable rules-based detector instead. Before that, core systems for a multi-tenant ERP platform at Hatchit Solutions, where one bug is every client's bug at once. [BS Information Technology, Magna Cum Laude](/#education).",
+    "At WeAssist I own AI and data automation end to end. The work arrived as a goal rather than a backlog, so the first thing I built was the picture of how work really moved between departments and the tools they already had, written up with a buy-versus-build recommendation.\n\n- I argued for buying or consolidating wherever something adequate existed, and reserved custom work for the one gap nothing covered.\n- I built the internal operations platform (Next.js and PostgreSQL) **in ten weeks** on additive-only migrations, with a six-area permission grid that has no bypass role by design and its own gate suite wired into the build, so bad code is uncommittable whether a person or an agent wrote it.\n- It runs on **three self-hosted servers across three separate providers** with nothing exposed to the public internet, and I rehearse recovery rather than diagramming it - six live outage drills including killing the main server outright, back to writing in **66 seconds** with zero data loss.\n- Every deploy backs up the database, restores it into a scratch database and diffs the row counts before anything migrates.\n- Also built a meeting platform used daily, an unattended LLM extraction pipeline with a ranked plain-language risk worklist on top, and desktop AI agents for non-technical staff.\n- When a label audit showed the data could not support an honest predictive model, I killed that path on its own evidence and shipped the explainable rules-based detector instead.\n\nBefore that, core systems for a multi-tenant ERP platform at Hatchit Solutions, where one bug is every client's bug at once. [BS Information Technology, Magna Cum Laude](/#education).",
   avatarUrl: "/me.png",
-  skills: [
-    { name: "Typescript", icon: Typescript },
-    { name: "Next.js", icon: NextjsIconDark },
-    { name: "React", icon: ReactLight },
-    { name: "Node.js", icon: Nodejs },
-    { name: "Python", icon: Python },
-    { name: "Postgres", icon: Postgresql },
-    { name: "Docker", icon: Docker },
-  ],
   // The summary the printable resume opens with.
   //
   // Deliberately NOT `summary` above. That one is the About paragraph and it ends
@@ -66,8 +57,16 @@ export const DATA = {
   // Same graded material, nothing new asserted.
   // serena-cannot: Serena holds driftwood as its active root, so this path is outside it
   // Summary block 1 verbatim, plus the one-line short form, both from profiles-master.md.
-  resumeSummary:
-    "Full Stack AI Engineer. Hand me a goal instead of a spec and I come back with the diagnosis, the recommendation and the system. I work out how the job actually gets done today, decide what to buy and what to build, then build and run the result: interface, services, schema, infrastructure, and the AI on top. Gated codebases and deterministic verification, so an agent can ship production code without breaking things.",
+  //
+  // Split into sentences by the author rather than by a regex at render time. Element 0 is
+  // the sheet's bold lede, elements 1 and 2 are the body paragraph under it. The leading
+  // "Full Stack AI Engineer." fragment is gone because the sheet already prints that as its
+  // own title line 4mm above this block.
+  resumeSummary: [
+    "Hand me a goal instead of a spec and I come back with the diagnosis, the recommendation and the system.",
+    "I work out how the job actually gets done today, decide what to buy and what to build, then build and run the result - interface, services, schema, infrastructure, and the AI on top.",
+    "Gated codebases and deterministic verification, so an agent can ship production code without breaking things.",
+  ],
 
   // The real stack, grouped, and every entry carries three things beyond its name.
   //
@@ -221,6 +220,11 @@ export const DATA = {
     },
   },
 
+  // Every description is a list of claims, one claim per element, split here rather than
+  // guessed from punctuation at render time. Both surfaces used to run the same sentence
+  // splitter over one long string, which meant "Next.js and PostgreSQL" and every other
+  // dotted name was a coin flip. Order carries meaning - element 0 is what he owns, the
+  // last element is the judgement call, and the figures sit between them.
   work: [
     {
       company: "WeAssist",
@@ -231,8 +235,19 @@ export const DATA = {
       logoUrl: "/weassist.png",
       start: "March 2026",
       end: "Present",
-      description:
-        "Own AI and data automation end to end. Built the internal operations platform (Next.js and PostgreSQL) in ten weeks, with a six-area permission grid that has no bypass role by design and its own gate suite wired into the build, so bad code is uncommittable whether a person or an agent wrote it. Run it on three self-hosted servers across three separate providers with zero-downtime deploys, and rehearse recovery rather than diagramming it. Six live outage drills including killing the main server outright, back to writing in 66 seconds. Every deploy backs up production, restores it into a scratch database and diffs the row counts before anything migrates. Built an unattended LLM extraction pipeline that turns unstructured meeting transcripts into a structured signals database, then shipped a rules-based, explainable scorer that ranks records by risk with the reason written out. Killed my own flagship predictive-model project when a label audit showed the data could not support an honest model, and shipped an explainable rules-based detector instead.",
+      // The three figures folded in here - 55 scattered permissions, 300+ gate checks, the
+      // 18-step deploy pipeline - are already published on this site in
+      // src/lib/public-facts.ts. Scope and figures are the honest answer to a short tenure.
+      // There is no years line anywhere in this file, on purpose.
+      description: [
+        "Own AI and data automation end to end.",
+        "Built the internal operations platform (Next.js and PostgreSQL) in ten weeks, with access control rebuilt from 55 scattered permissions into a six-area grid that has no bypass role by design, and its own gate suite of 300+ checks wired into the build, so bad code is uncommittable whether a person or an agent wrote it.",
+        "Run it on three self-hosted servers across three separate providers on one 18-step zero-downtime deploy pipeline every app shares, and rehearse recovery rather than diagramming it.",
+        "Six live outage drills including killing the main server outright, back to writing in 66 seconds.",
+        "Every deploy backs up production, restores it into a scratch database and diffs the row counts before anything migrates.",
+        "Built an unattended LLM extraction pipeline that turns unstructured meeting transcripts into a structured signals database, then shipped a rules-based, explainable scorer that ranks records by risk with the reason written out.",
+        "Killed my own flagship predictive-model project when a label audit showed the data could not support an honest model, and shipped an explainable rules-based detector instead.",
+      ],
     },
     {
       // No trailing roman-numeral level on this title, ever. It reads as a fresh
@@ -246,8 +261,16 @@ export const DATA = {
       logoUrl: "/hatchit.png",
       start: "June 2025",
       end: "April 2026",
-      description:
-        "Core systems for a multi-tenant ERP platform, covering atomic inventory operations, query performance work through composite indexing, high-volume background job processing on BullMQ and Redis, multi-level approval workflows across many document types, and financial reconciliation.",
+      // Split at its own commas. Same words, no new facts. This is the longest tenure on
+      // the resume and it was arriving as one 35-word comma chain in a single bullet.
+      description: [
+        "Core systems for a multi-tenant ERP platform.",
+        "Atomic inventory operations.",
+        "Query performance work through composite indexing.",
+        "High-volume background job processing on BullMQ and Redis.",
+        "Multi-level approval workflows across many document types.",
+        "Financial reconciliation.",
+      ],
     },
     {
       company: "Hatchit Solutions",
@@ -258,8 +281,11 @@ export const DATA = {
       logoUrl: "/hatchit.png",
       start: "January 2025",
       end: "May 2025",
-      description:
+      // Keep this role and its dates. It is what makes an automated tenure calculation
+      // start in January 2025 rather than June 2025.
+      description: [
         "Full project lifecycle across design, development, testing and deployment.",
+      ],
     },
   ],
   education: [
