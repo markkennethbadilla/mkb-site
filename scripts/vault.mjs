@@ -1,58 +1,47 @@
-// One credential, read out of the vault at the point of use and never written
-// down.
+// One credential, read out of the KeePassXC vault at the point of use and never
+// written down (operating rule 16: the CSV vaults are gone).
 //
-// Three scripts need this - cf.mjs, probe-guide.mjs, bench-guide.mjs - and until
-// now all three carried their own copy of a hand-written RFC 4180 reader. Quoting,
-// doubled quotes, CRLF line endings and newlines inside a quoted field are the
-// classic places a small CSV reader goes wrong, and having three of them meant
-// three places to get it wrong differently. csv-parse is the maintained parser and
-// this file is the only caller of it.
+// Three scripts need this - cf.mjs, probe-guide.mjs, bench-guide.mjs. The master
+// password sits in Windows Credential Manager under
+// keepassxc/personal-credential-vault (user "master"); it is read with the
+// Python keyring package and fed to keepassxc-cli on stdin, never on argv.
 //
 // The value is returned to the caller and held in memory for as long as that
 // process runs. It is never echoed, never passed as an argv, and never written to
 // .env, .dev.vars or any config file.
 
-import { readFileSync } from "node:fs";
-import { parse } from "csv-parse/sync";
+import { execFileSync } from "node:child_process";
 
-const VAULT = process.env.MKB_VAULT_CSV ?? "A:\\credentials\\personal-credential-vault.csv";
+const VAULT = process.env.MKB_VAULT_KDBX ?? "G:/My Drive/credentials/personal-credential-vault.kdbx";
+const KEYRING = ["-c", "import keyring;print(keyring.get_password('keepassxc/personal-credential-vault','master'),end='')"];
 
 /**
- * The vault row for one credential slug.
+ * The vault entry for one credential slug, shaped like the old CSV row so the
+ * callers did not change: `secret_value` is the entry password and
+ * `username_or_client_id` its user name.
  *
- * Exits the process with a message naming the vault path rather than throwing,
+ * Exits the process with a message naming the vault rather than throwing,
  * because every caller is a command-line script and all three want the same
- * behaviour: say which file and which slug, then stop.
+ * behaviour: say which vault and which slug, then stop.
  *
- * @param {string} slug value of the credential_slug column, e.g. "cloudflare/global-api-key"
- * @returns {Record<string, string>} the whole row, keyed by the CSV header
+ * @param {string} slug entry title under the `credentials` group, e.g. "cloudflare/global-api-key"
+ * @returns {{ secret_value: string, username_or_client_id: string }}
  */
 export function vaultRow(slug) {
-  /** @type {Record<string, string>[]} */
-  let rows;
+  const run = (file, args, input) => execFileSync(file, args, { input, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] });
+  let out;
   try {
-    // csv-parse types the return as unknown[] until it is told what a row looks
-    // like, and `columns: true` is what makes a row an object keyed by the header.
-    rows = /** @type {Record<string, string>[]} */ (
-      parse(readFileSync(VAULT, "utf8"), {
-        columns: true,
-        skip_empty_lines: true,
-        // A trailing comma or a short final row should not abort the read. The row
-        // being looked for either has a secret_value or it does not, and the check
-        // below is what decides that.
-        relax_column_count: true,
-        bom: true,
-      })
-    );
+    const pw = run("python", KEYRING);
+    if (!pw) throw new Error("no master password in the keyring");
+    out = run("keepassxc-cli", ["show", "-q", "-s", "-a", "UserName", "-a", "Password", VAULT, `credentials/${slug}`], pw + "\n");
   } catch (e) {
-    console.error(`Cannot read the credential vault at ${VAULT}: ${e.message}`);
+    console.error(`Cannot read "${slug}" from the vault at ${VAULT}: ${e.stderr?.trim() || e.message}`);
     process.exit(1);
   }
-
-  const row = rows.find((r) => r.credential_slug === slug);
-  if (!row?.secret_value) {
+  const [username_or_client_id = "", secret_value = ""] = out.split(/\r?\n/);
+  if (!secret_value) {
     console.error(`Vault has no usable secret for slug "${slug}" (looked in ${VAULT}).`);
     process.exit(1);
   }
-  return row;
+  return { secret_value, username_or_client_id };
 }
