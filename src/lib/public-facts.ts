@@ -152,12 +152,6 @@ export const PUBLIC_FACTS: PublicFact[] = [
     terms: ["Coolify"],
   },
   {
-    id: "failover-drills",
-    text: "He has run six live outage drills, including killing the main server outright, after which the system was writing again in 66 seconds with nothing lost. A later five-scenario drill day held user-visible impact to eight seconds or less.",
-    terms: [],
-    figures: [{ value: "66", near: ["seconds", "second", "writing", "recovery", "recovered", "back", "again"] }],
-  },
-  {
     id: "rbac",
     text: "He rebuilt an access-control model from a sprawl of 55 separate permissions nobody could audit into a single six-area grid, and removed the super-user role entirely - so there is no account that silently passes every check, and a permission bug turns up in testing instead of being masked by the account that runs the place.",
     terms: [],

@@ -62,7 +62,7 @@ export const DATA = {
   // their own claim boundaries. Lengths are deliberately uneven - a list where every item
   // is the same length and shape reads as generated.
   summary:
-    "- I argued for buying or consolidating wherever something adequate existed, and reserved custom work for the one gap nothing covered.\n- I built the internal operations platform (Next.js and PostgreSQL) **in ten weeks**, on additive-only migrations.\n- A six-area permission grid that has no bypass role by design.\n- Its own gate suite is wired into the build, so bad code is uncommittable whether a person or an agent wrote it.\n- I **self-host** with Coolify, which lets us run anything at one flat rate.\n- Six live outage drills including killing the main server outright, back to writing in **66 seconds** with zero data loss.\n- Every deploy backs up the database, restores it into a scratch database and diffs the row counts before anything migrates.\n- Also built a meeting platform used daily.\n- An unattended LLM extraction pipeline with a ranked plain-language risk worklist on top.\n- Desktop AI agents for non-technical staff.\n- A label audit showed the data could not support an honest predictive model.\n- I killed that path on its own evidence and shipped the explainable rules-based detector instead.",
+    "- I argued for buying or consolidating wherever something adequate existed, and reserved custom work for the one gap nothing covered.\n- I built the internal operations platform (Next.js and PostgreSQL) **in ten weeks**, on additive-only migrations.\n- A six-area permission grid that has no bypass role by design.\n- Its own gate suite is wired into the build, so bad code is uncommittable whether a person or an agent wrote it.\n- I **self-host** with Coolify, which lets us run anything at one flat rate.\n- Every deploy backs up the database, restores it into a scratch database and diffs the row counts before anything migrates.\n- Also built a meeting platform used daily.\n- An unattended LLM extraction pipeline with a ranked plain-language risk worklist on top.\n- Desktop AI agents for non-technical staff.\n- A label audit showed the data could not support an honest predictive model.\n- I killed that path on its own evidence and shipped the explainable rules-based detector instead.",
   // The closing line, minus its "Before that," opener - the label carries that now. The
   // degree row beside it is not repeated here: the About section reads it from
   // DATA.education so the two surfaces cannot drift.
@@ -285,7 +285,6 @@ export const DATA = {
         "Bad code is uncommittable whether a person or an agent wrote it.",
         "Self-hosted with Coolify, so we can run anything at one flat rate.",
         "One 18-step zero-downtime deploy pipeline every app shares.",
-        "Six live outage drills including killing the main server outright, back to writing in 66 seconds.",
         "Every deploy backs up production, restores it into a scratch database and diffs the row counts before anything migrates.",
         "Built an unattended LLM extraction pipeline that turns unstructured meeting transcripts into a structured signals database.",
         "Then shipped a rules-based, explainable scorer that ranks records by risk with the reason written out.",

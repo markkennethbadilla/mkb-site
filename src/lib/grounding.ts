@@ -236,9 +236,9 @@ export const GROUNDING_CASES: { answer: string; grounded: boolean; why: string }
     why: "18 is the number of steps in the deploy pipeline.",
   },
   {
-    answer: "After the main server was killed the system was writing again in 66 seconds.",
+    answer: "Every deploy runs through one canonical 18-step zero-downtime pipeline.",
     grounded: true,
-    why: "66 standing beside the words the fact that licenses it uses. This is the sentence the check has to keep letting through.",
+    why: "18 standing beside the words the fact that licenses it uses. This is the sentence the check has to keep letting through.",
   },
   {
     answer: "He has written more than 300 static checks and wired them into the build.",
