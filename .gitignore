@@ -50,3 +50,4 @@ next-env.d.ts
 # Worker secrets for local dev. Secrets live in the vault and are read by slug at
 # the point of use - see scripts/cf.mjs - so this file should never exist here.
 .dev.vars
+.lighthouseci

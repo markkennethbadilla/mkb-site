@@ -286,3 +286,11 @@ deterministic gates so it physically cannot ship a dangerous change.
 - A global daily request ceiling in KV, independent of the burst limiter.
 - Input validated by Zod with a hard length cap before any model is called.
 - Output validated by Zod; non-conforming responses advance the cascade.
+
+## Lighthouse gate
+
+Every push runs Lighthouse CI (`.github/workflows/lighthouse.yml`,
+`@lhci/cli@0.15.1`) on `/` and `/resume/`, mobile and desktop, median of 3.
+Floors: accessibility, best practices and SEO at least 95; performance at least
+80 mobile and 95 desktop (baseline 2026-10-02: 82/97 mobile, 99/100 desktop).
+Raise a floor when a score rises; never lower it (agentops rule 73).
