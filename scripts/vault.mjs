@@ -12,7 +12,7 @@
 
 import { execFileSync } from "node:child_process";
 
-const VAULT = process.env.MKB_VAULT_KDBX ?? "G:/My Drive/credentials/personal-credential-vault.kdbx";
+const VAULT = process.env.MKB_VAULT_KDBX ?? `${process.env.OneDriveConsumer}/credentials/personal-credential-vault.kdbx`;
 const KEYRING = ["-c", "import keyring;print(keyring.get_password('keepassxc/personal-credential-vault','master'),end='')"];
 
 /**
