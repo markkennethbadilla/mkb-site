@@ -102,8 +102,8 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "certifications",
-    text: "He holds TOPCIT Level 3 and PhilNITS FE certifications.",
-    terms: ["TOPCIT", "Level", "PhilNITS", "FE"],
+    text: "He holds the AWS Certified AI Practitioner certification, TOPCIT Level 3 and PhilNITS FE.",
+    terms: ["AWS", "Practitioner", "TOPCIT", "Level", "PhilNITS", "FE"],
   },
   {
     id: "stack",
