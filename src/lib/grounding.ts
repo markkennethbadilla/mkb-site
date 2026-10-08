@@ -204,6 +204,11 @@ export const GROUNDING_CASES: { answer: string; grounded: boolean; why: string }
     why: "Licensed by the stack fact.",
   },
   {
+    answer: "He maintains a self-hosted server with Coolify, with every service behind Cloudflare Tunnel.",
+    grounded: true,
+    why: "Licensed by the self-hosted-infra fact.",
+  },
+  {
     answer: "Here is where he studied - the school, the degree and the years are all on the card.",
     grounded: true,
     why: "Points at the page and asserts nothing checkable.",

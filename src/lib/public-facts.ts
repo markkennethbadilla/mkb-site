@@ -148,8 +148,10 @@ export const PUBLIC_FACTS: PublicFact[] = [
     // words: "what i can be sure of is i self host. coolify which allows us to host
     // anything at a flat rate". No topology, no counts, no provider named beside a
     // claim about whose production it carries - Hetzner lives in the skills list.
-    text: "He self-hosts with Coolify, which lets him run anything at one flat rate instead of paying for a managed service per component.",
-    terms: ["Coolify"],
+    // 2026-10-08, Mark: he maintains one self-hosted server, and every service on it
+    // sits behind Cloudflare Tunnel.
+    text: "He maintains a self-hosted server with Coolify, with every service behind Cloudflare Tunnel, which lets him run anything at one flat rate instead of paying for a managed service per component.",
+    terms: ["Coolify", "Cloudflare", "Tunnel"],
   },
   {
     id: "rbac",
