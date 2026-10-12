@@ -24,7 +24,7 @@
     "bench:guide": "node scripts/bench-guide.mjs",
     "seed": "node scripts/gen-seed.mjs",
     "cf": "node scripts/cf.mjs",
-    "deploy": "bun run build && node scripts/cf.mjs deploy",
+    "deploy": "bun run build && node scripts/cf.mjs d1 migrations apply mkb-site-demo --remote && node scripts/cf.mjs d1 migrations apply mkb-site-warehouse --remote && node scripts/cf.mjs deploy",
     "icons": "node scripts/gen-skill-icons.mjs"
   },
   "dependencies": {

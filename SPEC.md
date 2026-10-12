@@ -287,6 +287,14 @@ deterministic gates so it physically cannot ship a dangerous change.
 - Input validated by Zod with a hard length cap before any model is called.
 - Output validated by Zod; non-conforming responses advance the cascade.
 
+## Deploy
+
+`npm run deploy` builds, applies any pending D1 migrations to `mkb-site-demo` and
+`mkb-site-warehouse` (remote), then deploys the Worker. Migrations go first so the
+code never runs against a schema it does not expect: on 2026-08-22 the Worker
+shipped reading `split_brain_events.id` while migration 0007 sat unapplied, and
+the Split-Brain Sandbox returned 500 on every run until 2026-10-12.
+
 ## Lighthouse gate
 
 Every push runs Lighthouse CI (`.github/workflows/lighthouse.yml`,
