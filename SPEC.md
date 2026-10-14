@@ -311,6 +311,13 @@ the Split-Brain Sandbox returned 500 on every run until 2026-10-12.
 
 Every push runs Lighthouse CI (`.github/workflows/lighthouse.yml`,
 `@lhci/cli@0.15.1`) on `/` and `/resume/`, mobile and desktop, median of 3.
+Desktop takes 1 run on a pull request (agentops spec 097); mobile keeps 3,
+because its baseline of 82 sits 2 points over the floor and 1 run went red.
+One build job uploads `out/`; the mobile and desktop audits run as two parallel
+jobs from it. Changes
+to Markdown, `specs/` or `docs/` only skip it (they do not reach a shipped page).
+Budgets (job `timeout-minutes`, measured 2026-10-14, worst of 8 runs: one serial
+job of 260 s): build 2, mobile 4, desktop 3; records-first check 2.
 Floors: accessibility, best practices and SEO at least 95; performance at least
 80 mobile and 95 desktop (baseline 2026-10-02: 82/97 mobile, 99/100 desktop).
 Raise a floor when a score rises; never lower it (agentops rule 73).
