@@ -287,6 +287,18 @@ deterministic gates so it physically cannot ship a dangerous change.
 - Input validated by Zod with a hard length cap before any model is called.
 - Output validated by Zod; non-conforming responses advance the cascade.
 
+## Records first (rule 43)
+
+Every POST to `/api/*` (the guide, the agent, the demo rooms) is written whole to
+the D1 table `inbound_requests` (`mkb-site-demo`, migration 0008: time, path, IP,
+country, user agent, raw body) before any handler runs. A question that is
+malformed, over budget, cached or answered with no key is still a row. No header
+that can carry a secret is stored, and nothing deletes from the table. The
+self-check is `worker/records-first.test.ts` (vitest in workerd against real local
+D1), run by `.github/workflows/records-first.yml`: a malformed guide question and a
+refused agent call both land whole, and the record sits above the first route in
+the fetch handler.
+
 ## Deploy
 
 `npm run deploy` builds, applies any pending D1 migrations to `mkb-site-demo` and

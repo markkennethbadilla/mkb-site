@@ -299,9 +299,28 @@ async function sweepExpired(env: Env): Promise<void> {
   ]);
 }
 
+/** Rule 43: a POST to /api/* is stored whole before any handler can refuse it.
+ *  The handlers read their own copy of the body. No header that could carry a
+ *  secret is kept. */
+export async function recordInbound(req: Request, env: Env, path: string): Promise<void> {
+  const body = await req.clone().text().catch(() => "");
+  await env.DEMO_DB.prepare(
+    "INSERT INTO inbound_requests (path, ip, country, user_agent, body) VALUES (?1, ?2, ?3, ?4, ?5)"
+  )
+    .bind(
+      path,
+      req.headers.get("cf-connecting-ip") ?? "unknown",
+      req.headers.get("cf-ipcountry"),
+      req.headers.get("user-agent"),
+      body
+    )
+    .run();
+}
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
+    if (req.method === "POST" && url.pathname.startsWith("/api/")) await recordInbound(req, env, url.pathname);
     if (url.pathname === "/api/agent") return handleAgent(req, env);
     if (url.pathname === "/api/models") return handleModels(env);
     if (url.pathname === "/api/guide") return handleGuide(req, env);
