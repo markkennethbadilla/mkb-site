@@ -1,13 +1,22 @@
-# Lighthouse CI gate (agentops rule 73): build the static export and audit
-# / and /resume/, mobile and desktop. Floors live in lighthouserc*.json.
 name: Lighthouse
+# Spec 097 fast CI: build once, then mobile and desktop audit in parallel from the
+# built out/ (lhci staticDistDir needs no node_modules). Pull requests take 1 run
+# per URL; main keeps the median of 3 as the gate. Thresholds live in lighthouserc*.json, unchanged.
 on:
   push:
     branches: [main]
+    paths-ignore: ['**.md', 'specs/**', 'docs/**']
   pull_request:
+    paths-ignore: ['**.md', 'specs/**', 'docs/**']
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
-  lighthouse:
+  build:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
@@ -15,14 +24,44 @@ jobs:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
       - run: bun run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: out
+          path: out/
+          retention-days: 1
+  mobile:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: out
+          path: out
       - name: Lighthouse mobile
-        run: npx -y @lhci/cli@0.15.1 autorun --config=lighthouserc.json
-      - name: Lighthouse desktop
-        if: always()
-        run: npx -y @lhci/cli@0.15.1 autorun --config=lighthouserc.desktop.json
+        run: npx -y @lhci/cli@0.15.1 autorun --config=lighthouserc.json ${{ github.event_name == 'pull_request' && '--collect.numberOfRuns=1' || '' }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: lighthouse-reports
+          name: lighthouse-mobile
+          path: .lighthouseci/
+          retention-days: 14
+  desktop:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: out
+          path: out
+      - name: Lighthouse desktop
+        run: npx -y @lhci/cli@0.15.1 autorun --config=lighthouserc.desktop.json ${{ github.event_name == 'pull_request' && '--collect.numberOfRuns=1' || '' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-desktop
           path: .lighthouseci/
           retention-days: 14
