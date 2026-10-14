@@ -1,7 +1,8 @@
 name: Lighthouse
 # Spec 097 fast CI: build once, then mobile and desktop audit in parallel from the
 # built out/ (lhci staticDistDir needs no node_modules). Pull requests take 1 run
-# per URL; main keeps the median of 3 as the gate. Thresholds live in lighthouserc*.json, unchanged.
+# per URL; main keeps the median of 3 as the gate. Mobile keeps 3 runs on PRs too: its baseline (82)
+# sits 2 points over the floor, so 1 run flipped red on PR 2. Thresholds live in lighthouserc*.json, unchanged.
 on:
   push:
     branches: [main]
@@ -40,7 +41,7 @@ jobs:
           name: out
           path: out
       - name: Lighthouse mobile
-        run: npx -y @lhci/cli@0.15.1 autorun --config=lighthouserc.json ${{ github.event_name == 'pull_request' && '--collect.numberOfRuns=1' || '' }}
+        run: npx -y @lhci/cli@0.15.1 autorun --config=lighthouserc.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
