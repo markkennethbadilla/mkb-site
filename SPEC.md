@@ -133,9 +133,11 @@ deterministic gates so it physically cannot ship a dangerous change.
     catches the discrepancy immediately.
 15. **Anything positioned against the entity is MEASURED, not computed.** It moves
     under a shared layout animation, so motion renders it with a transform and its
-    real centre is not the value passed to `left`. The speech-bubble tail derived
-    its position arithmetically and sat 138px off; it now reads the element's rect
-    on the same rAF tick as the section rect.
+    real centre is not the value passed to `left`. The speech bubble, its tail and
+    the minimised pill are anchored to the entity element with Floating UI
+    (`@floating-ui/react-dom`: `top`/`top-end`, `flip`, `shift` 16px, `arrow`,
+    `autoUpdate` per animation frame). The bubble opens ABOVE the entity; it used
+    to hang below and ran off the viewport when the guide perched on Contact.
 
 16. **Demo slugs are permanent.** These URLs go into job applications and will
     outlive several redesigns of this site. A retired room keeps its route and

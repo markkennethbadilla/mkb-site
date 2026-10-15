@@ -2,6 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import {
+  arrow,
+  autoUpdate,
+  flip,
+  offset,
+  shift,
+  useFloating,
+} from "@floating-ui/react-dom";
 import { motion, useReducedMotion } from "motion/react";
 import Entity from "@/components/demo/entity";
 import { TRAVEL_MS } from "@/lib/smooth-scroll";
@@ -47,8 +55,6 @@ export default function EntityOverlay({
   const arrived = stage === "perched";
   const reduced = useReducedMotion();
   const [rect, setRect] = useState<Rect>(() => readRect(target));
-  const entityRef = useRef<HTMLDivElement>(null);
-  const [entityBox, setEntityBox] = useState<Rect | null>(null);
 
   // MINIMISED IS NOT DISMISSED, and keeping those two apart is the whole point of
   // this state. The bubble is the widest thing on screen and it sits directly over
@@ -77,16 +83,6 @@ export default function EntityOverlay({
           Math.abs(prev.height - next.height) < 0.5;
         return same ? prev : next;
       });
-      // The entity is measured on the same tick. It moves under a spring, so its
-      // position is only knowable by asking the DOM.
-      if (entityRef.current) {
-        const next = readRect(entityRef.current);
-        setEntityBox((prev) =>
-          prev && Math.abs(prev.left - next.left) < 0.5 && Math.abs(prev.width - next.width) < 0.5
-            ? prev
-            : next
-        );
-      }
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -118,26 +114,49 @@ export default function EntityOverlay({
     : clampX(rect.left + rect.width + 16, ENTITY_SIZE);
   const perchTop = narrow ? rect.top + rect.height + 8 : rect.top + 4;
 
-  const bubbleLeft = clampX(narrow ? rect.left : perchLeft - BUBBLE_W + ENTITY_SIZE, BUBBLE_W);
-  const bubbleTop = perchTop + ENTITY_SIZE + 10;
-
-  // Where the tail meets the bubble: under the entity's ACTUAL centre.
-  //
-  // The first version derived this from perchLeft, the value we hand to `left`.
-  // It sat 138px off, because the entity is a motion.div driven by a shared layout
-  // animation - motion positions it with a transform, so its rendered centre is
-  // not the number we set. Anything computed from perchLeft describes where we
-  // asked it to be, not where it is. So the element is measured, like the section
-  // rect above it.
-  //
-  // Falls back to the geometric estimate for the single frame before the ref
-  // attaches, which is invisible because the bubble has not faded in yet.
+  // The bubble opens ABOVE the entity. It used to hang below it, and when the
+  // guide perched on the last section (Contact) the bubble ran off the bottom of
+  // the viewport. Placement, flipping and edge-clamping are Floating UI's job, not
+  // ours: `top-end` on desktop (entity sits right of the section), `top` on narrow
+  // screens, `flip` drops it below only when there is no room above, `shift`
+  // keeps it 16px inside the viewport, and `arrow` puts the tail under the
+  // entity's real (transformed) centre. autoUpdate on animationFrame because the
+  // entity moves under a spring and the page is still smooth-scrolling.
+  // transform:false so motion keeps sole ownership of the bubble's transform.
   const TAIL = 11;
-  const entityCentre = entityBox ? entityBox.left + entityBox.width / 2 : perchLeft + ENTITY_SIZE / 2;
-  const tailLeft = Math.min(
-    Math.max(entityCentre - bubbleLeft - TAIL, 18),
-    BUBBLE_W - 18 - TAIL * 2
-  );
+  // Elements are held in state and passed via `elements` rather than through
+  // `refs`, because the React Compiler lint rule (react-hooks/refs) rejects
+  // reading floatingStyles from a hook that also returns refs during render.
+  const [entityEl, setEntityEl] = useState<HTMLDivElement | null>(null);
+  const [bubbleEl, setBubbleEl] = useState<HTMLDivElement | null>(null);
+  const [pillEl, setPillEl] = useState<HTMLButtonElement | null>(null);
+  const [tailEl, setTailEl] = useState<HTMLSpanElement | null>(null);
+  const bubble = useFloating({
+    strategy: "fixed",
+    placement: narrow ? "top" : "top-end",
+    transform: false,
+    elements: { reference: entityEl, floating: bubbleEl },
+    whileElementsMounted: (ref, floating, update) =>
+      autoUpdate(ref, floating, update, { animationFrame: true }),
+    middleware: [
+      offset(12),
+      flip({ padding: 16 }),
+      shift({ padding: 16 }),
+      arrow({ element: tailEl, padding: 18 }),
+    ],
+  });
+  const pill = useFloating({
+    strategy: "fixed",
+    placement: "top",
+    transform: false,
+    elements: { reference: entityEl, floating: pillEl },
+    whileElementsMounted: (ref, floating, update) =>
+      autoUpdate(ref, floating, update, { animationFrame: true }),
+    middleware: [offset(10), flip({ padding: 16 }), shift({ padding: 16 })],
+  });
+  const bubbleBelow = bubble.placement.startsWith("bottom");
+  const pillBelow = pill.placement.startsWith("bottom");
+  const tailLeft = bubble.middlewareData.arrow?.x;
 
   return createPortal(
     <div className="fixed inset-0 z-50 pointer-events-none">
@@ -181,7 +200,7 @@ export default function EntityOverlay({
       {/* The entity itself. layoutId is shared with the parked console, so motion
           interpolates the flight instead of us hand-animating a path. */}
       <motion.div
-        ref={entityRef}
+        ref={setEntityEl}
         layoutId="site-guide-entity"
         className="absolute pointer-events-auto"
         style={{ top: perchTop, left: perchLeft }}
@@ -208,20 +227,23 @@ export default function EntityOverlay({
           arrived && minimised ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }
         }
         transition={{ duration: reduced ? 0 : 0.2, ease: "easeOut" }}
+        ref={setPillEl}
         style={{
-          top: bubbleTop,
-          left: clampX(entityCentre - 22, 44),
+          ...pill.floatingStyles,
           pointerEvents: arrived && minimised ? "auto" : "none",
         }}
         className={cn(
-          "absolute flex h-11 w-11 items-center justify-center rounded-full",
+          "flex h-11 w-11 items-center justify-center rounded-full",
           "border border-border bg-popover/95 backdrop-blur-sm shadow-lg",
           "transition-colors hover:bg-accent"
         )}
       >
         <span
           aria-hidden
-          className="absolute -top-[5px] left-1/2 size-[11px] -translate-x-1/2 rotate-45 rounded-[2px] border-l border-t border-border bg-popover/95"
+          className={cn(
+            "absolute left-1/2 size-[11px] -translate-x-1/2 rotate-45 rounded-[2px] border-border bg-popover/95",
+            pillBelow ? "-top-[5px] border-l border-t" : "-bottom-[5px] border-r border-b"
+          )}
         />
         {/* Three dots rather than an icon set: it reads as "there is more to say"
             in any locale and needs no icon font on the critical path. */}
@@ -231,16 +253,16 @@ export default function EntityOverlay({
       </motion.button>
 
       <motion.div
-        initial={{ opacity: 0, y: 10, scale: 0.94 }}
+        initial={{ opacity: 0, y: bubbleBelow ? 10 : -10, scale: 0.94 }}
         animate={
           arrived && !minimised
             ? { opacity: 1, y: 0, scale: 1 }
-            : { opacity: 0, y: 10, scale: 0.94 }
+            : { opacity: 0, y: bubbleBelow ? 10 : -10, scale: 0.94 }
         }
+        ref={setBubbleEl}
         style={{
-          top: bubbleTop,
-          left: bubbleLeft,
-          width: BUBBLE_W,
+          ...bubble.floatingStyles,
+          width: Math.min(BUBBLE_W, viewportW - 32),
           pointerEvents: arrived && !minimised ? "auto" : "none",
         }}
         transition={{ delay: reduced || !arrived ? 0 : 0.14, duration: reduced ? 0 : 0.34, ease: "easeOut" }}
@@ -249,7 +271,7 @@ export default function EntityOverlay({
         // allowed to be soft, and matching the card radius made it read as a
         // tooltip rather than something talking.
         className={cn(
-          "absolute rounded-[1.25rem] border border-border",
+          "rounded-[1.25rem] border border-border",
           "bg-popover/95 backdrop-blur-sm px-4 py-3.5 shadow-xl flex flex-col gap-2.5"
         )}
         role="status"
@@ -260,8 +282,12 @@ export default function EntityOverlay({
             own, so it cannot carry the outline the rest of the bubble has. */}
         <span
           aria-hidden
-          className="absolute size-[22px] rotate-45 rounded-[4px] border-l border-t border-border bg-popover/95"
-          style={{ top: -11, left: tailLeft }}
+          ref={setTailEl}
+          className={cn(
+            "absolute size-[22px] rotate-45 rounded-[4px] border-border bg-popover/95",
+            bubbleBelow ? "border-l border-t" : "border-r border-b"
+          )}
+          style={bubbleBelow ? { top: -TAIL, left: tailLeft } : { bottom: -TAIL, left: tailLeft }}
         />
         <div className="relative flex items-start justify-between gap-2">
           <span className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</span>
