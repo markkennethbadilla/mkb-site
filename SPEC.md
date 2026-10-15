@@ -40,7 +40,7 @@ deterministic gates so it physically cannot ship a dangerous change.
 | Route | Type | Purpose |
 |---|---|---|
 | `/` | static | The resume surface and the guide. Single page. |
-| `/resume` | static | One A4 page, ATS-parseable, print-to-PDF. Outside the site chrome. |
+| `/resume` | static | One A4 page, ATS-parseable, print-to-PDF. Outside the site chrome. Sections: Summary, Certifications (AWS first, semibold), Experience, Skills, Education, Projects. |
 | `/demos/ledger-under-fire` | static | Room 1. |
 | `/demos/score-audit` | static | Room 2. |
 | `/demos/split-brain` | static | Room 3. |

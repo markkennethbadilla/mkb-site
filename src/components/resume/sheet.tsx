@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
  *     invisible to a parser, so a bullet drawn that way is a bullet that does not
  *     exist. The lists below are real <ul><li>.
  *   - The section headings are real <h2> and are spelled the ordinary way -
- *     Experience, Education, Skills, Projects, Certifications. A parser matches
+ *     Certifications, Experience, Skills, Education, Projects. A parser matches
  *     against a vocabulary; "What I have been up to" matches nothing.
  *   - Contact details are plain text AND real mailto:/https: anchors, so they
  *     survive both a parser that reads text and one that harvests hrefs.
@@ -129,6 +129,16 @@ export default function Sheet() {
             <li key={claim}>{claim}</li>
           ))}
         </ul>
+      </Section>
+
+      {/* Certifications sits directly under the Summary, above Experience, and the
+          AWS certification leads it in semibold: it is the credential the sheet
+          is meant to put in front of a six-second reader (Mark 2026-10-16). */}
+      <Section title="Certifications">
+        <p className="text-[9pt] leading-[1.45]">
+          <span className="font-semibold">{DATA.certifications[0]}</span>
+          {DATA.certifications.length > 1 ? `, ${DATA.certifications.slice(1).join(", ")}` : ""}
+        </p>
       </Section>
 
       <Section title="Experience">
@@ -256,9 +266,6 @@ export default function Sheet() {
         ))}
       </Section>
 
-      <Section title="Certifications">
-        <p className="text-[9pt] leading-[1.45]">{DATA.certifications.join(", ")}</p>
-      </Section>
     </article>
   );
 }

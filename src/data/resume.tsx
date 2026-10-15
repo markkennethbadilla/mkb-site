@@ -216,7 +216,7 @@ export const DATA = {
     },
   ],
 
-  certifications: ["AWS Certified AI Practitioner (2026)", "TOPCIT Level 3", "PhilNITS Fundamental Engineer (FE)"],
+  certifications: ["AWS Certified AI Practitioner (AIF-C01), 2026, Credential ID AWS06249557", "TOPCIT Level 3", "PhilNITS Fundamental Engineer (FE)"],
 
   // Blog is deliberately not linked: an empty blog reads worse than no blog.
   // Re-add the entry once there is real writing in content/.
