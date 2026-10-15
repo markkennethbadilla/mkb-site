@@ -114,14 +114,15 @@ export default function EntityOverlay({
     : clampX(rect.left + rect.width + 16, ENTITY_SIZE);
   const perchTop = narrow ? rect.top + rect.height + 8 : rect.top + 4;
 
-  // The bubble opens ABOVE the entity. It used to hang below it, and when the
-  // guide perched on the last section (Contact) the bubble ran off the bottom of
-  // the viewport. Placement, flipping and edge-clamping are Floating UI's job, not
-  // ours: `top-end` on desktop (entity sits right of the section), `top` on narrow
-  // screens, `flip` drops it below only when there is no room above, `shift`
-  // keeps it 16px inside the viewport, and `arrow` puts the tail under the
-  // entity's real (transformed) centre. autoUpdate on animationFrame because the
-  // entity moves under a spring and the page is still smooth-scrolling.
+  // The bubble opens ABOVE the highlighted section, outside its spotlight, the
+  // same way for every answer. It used to hang below the entity, ran off the
+  // bottom of the viewport on Contact, and covered the section it was describing.
+  // Placement, flipping and edge-clamping are Floating UI's job, not ours: anchor
+  // = the section, `top-end`, offset clears the spotlight ring, `flip` drops it
+  // below the section only when there is no room above, and `shift` (both axes)
+  // keeps it 16px inside the viewport, so when neither side fits it overlaps the
+  // section rather than leave the screen: always visible beats never-covering.
+  // autoUpdate on animationFrame because the page is still smooth-scrolling.
   // transform:false so motion keeps sole ownership of the bubble's transform.
   const TAIL = 11;
   // Elements are held in state and passed via `elements` rather than through
@@ -133,15 +134,15 @@ export default function EntityOverlay({
   const [tailEl, setTailEl] = useState<HTMLSpanElement | null>(null);
   const bubble = useFloating({
     strategy: "fixed",
-    placement: narrow ? "top" : "top-end",
+    placement: "top-end",
     transform: false,
-    elements: { reference: entityEl, floating: bubbleEl },
+    elements: { reference: target, floating: bubbleEl },
     whileElementsMounted: (ref, floating, update) =>
       autoUpdate(ref, floating, update, { animationFrame: true }),
     middleware: [
-      offset(12),
-      flip({ padding: 16 }),
-      shift({ padding: 16 }),
+      offset(24),
+      flip({ padding: 16, fallbackPlacements: ["bottom-end"] }),
+      shift({ padding: 16, crossAxis: true }),
       arrow({ element: tailEl, padding: 18 }),
     ],
   });
