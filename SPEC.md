@@ -300,29 +300,50 @@ country, user agent, raw body) before any handler runs. A question that is
 malformed, over budget, cached or answered with no key is still a row. No header
 that can carry a secret is stored, and nothing deletes from the table. The
 self-check is `worker/records-first.test.ts` (vitest in workerd against real local
-D1), run by `.github/workflows/records-first.yml`: a malformed guide question and a
+D1), run by the pre-push gate and before every deploy (Checks below): a malformed guide question and a
 refused agent call both land whole, and the record sits above the first route in
 the fetch handler.
 
 ## Deploy
 
-`npm run deploy` builds, applies any pending D1 migrations to `mkb-site-demo` and
-`mkb-site-warehouse` (remote), then deploys the Worker. Migrations go first so the
+`npm run deploy` runs `scripts/gate.mjs --deploy` (records-first test, build,
+Lighthouse mobile and desktop; Checks below), applies any pending D1 migrations to `mkb-site-demo` and
+`mkb-site-warehouse` (remote), then deploys the Worker. A failing check stops the
+deploy before anything reaches Cloudflare. The host is a Cloudflare Worker
+(`mkb-site`, static `out/` through the ASSETS binding) with no Workers Builds git
+connection, so Cloudflare runs no build of its own; this script is the deploy
+path and the host-side check. Migrations go first so the
 code never runs against a schema it does not expect: on 2026-08-22 the Worker
 shipped reading `split_brain_events.id` while migration 0007 sat unapplied, and
 the Split-Brain Sandbox returned 500 on every run until 2026-10-12.
 
 ## Lighthouse gate
 
-Every push runs Lighthouse CI (`.github/workflows/lighthouse.yml`,
-`@lhci/cli@0.15.1`) on `/` and `/resume/`, mobile and desktop, median of 3.
-Desktop takes 1 run on a pull request (agentops spec 097); mobile keeps 3,
-because its baseline of 82 sits 2 points over the floor and 1 run went red.
-One build job uploads `out/`; the mobile and desktop audits run as two parallel
-jobs from it. Changes
-to Markdown, `specs/` or `docs/` only skip it (they do not reach a shipped page).
-Budgets (job `timeout-minutes`, measured 2026-10-14, worst of 8 runs: one serial
-job of 260 s): build 2, mobile 4, desktop 3; records-first check 2.
+Lighthouse CI (`@lhci/cli@0.15.1`) runs on `/` and `/resume/`, mobile and
+desktop, median of 3, as the first step of every deploy (Checks below), on the Playwright Chromium (never
+installed Chrome, whose web-app policy installs apps into each temp profile).
+
+## Checks
+
+No GitHub Actions since 2026-10-23 (the Actions budget ran out; Mark's order to
+move every check to a local Trunk pre-push gate plus the host's build).
+
+- `git push` runs Trunk's pre-push hook (`.trunk/trunk.yaml`): a gitleaks scan
+  of the whole tree, then `bun run gate` (`scripts/gate.mjs`): records-first
+  test and `bun run build`. The first failure stops the push.
+- `npm run deploy` runs `scripts/gate.mjs --deploy` first: the same checks plus
+  Lighthouse mobile and desktop. A page under a floor stops the deploy. The
+  12 audits take too long on this laptop for every push, and only a deploy
+  ships a page. `git commit` runs the gitleaks scan on staged files.
+- Trunk's stock hook actions only warn without a terminal, so both are custom
+  actions running `trunk check --ci` (skill `gate-commits-with-trunk`). Install
+  them once per clone: `trunk git-hooks sync`.
+- A push touching only Markdown, `specs/` or `docs/` skips the gate script.
+  `npm run deploy` always runs it.
+- Limits: `git push --no-verify` skips the push gate, but not the deploy gate.
+  The pre-push hook skips itself on headless Linux and macOS (Trunk 1.25.0).
+- Time budget (cold, this laptop, 2026-10-23): see the commit that added it;
+  it only goes down.
 Floors: accessibility, best practices and SEO at least 95; performance at least
 80 mobile and 95 desktop (baseline 2026-10-02: 82/97 mobile, 99/100 desktop).
 Raise a floor when a score rises; never lower it (agentops rule 73).

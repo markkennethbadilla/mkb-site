@@ -1,0 +1,40 @@
+# This file controls the behavior of Trunk: https://docs.trunk.io/cli
+# To learn more about the format of this file, see https://docs.trunk.io/reference/trunk-yaml
+version: 0.1
+cli:
+  version: 1.25.0
+plugins:
+  sources:
+    - id: trunk
+      ref: v1.11.0
+      uri: https://github.com/trunk-io/plugins
+lint:
+  enabled:
+    - gitleaks@8.30.1
+  ignore:
+    - linters: [ALL]
+      paths:
+        - node_modules/**
+        - out/**
+        - .next/**
+        - .wrangler/**
+        - .lighthouseci/**
+        - .trunk/**
+# Local gate (SPEC.md "Checks"). GitHub Actions were removed on 2026-10-23.
+# Stock Trunk hook actions only warn, so these run trunk check --ci (never
+# prompts) and the repo's own gate script, which runs every check the old
+# workflows ran.
+actions:
+  definitions:
+    - id: block-commit-on-findings
+      triggers: [{git_hooks: [pre-commit]}]
+      run: trunk check --ci
+    - id: block-push-on-findings
+      triggers: [{git_hooks: [pre-push]}]
+      run: trunk check --ci --all
+    # A separate action: Trunk runs `run` without a shell, so `&&` in one line
+    # reached trunk check as file arguments and failed the push for that reason.
+    - id: repo-checks-on-push
+      triggers: [{git_hooks: [pre-push]}]
+      run: bun run --silent gate
+  enabled: [block-commit-on-findings, block-push-on-findings, repo-checks-on-push]
