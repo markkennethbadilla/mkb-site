@@ -35,8 +35,16 @@ run("bun run build");
 if (deploy) {
   // Playwright's pinned Chromium, never installed Chrome: Chrome's WebAppInstallForceList
   // policy installs web apps into every temp profile Lighthouse opens.
+  // REPORT ONLY (SPEC.md "Checks"): this laptop scores / at 0.59-0.69 mobile,
+  // the live build included, against a floor set on GitHub's runner (0.82), so
+  // a miss here says more about the laptop than the page.
   const chrome = { CHROME_PATH: chromium.executablePath() };
-  run("npx -y @lhci/cli@0.15.1 autorun --config=lighthouserc.json", chrome);
-  run("npx -y @lhci/cli@0.15.1 autorun --config=lighthouserc.desktop.json", chrome);
+  for (const config of ["lighthouserc.json", "lighthouserc.desktop.json"]) {
+    try {
+      run(`npx -y @lhci/cli@0.15.1 autorun --config=${config}`, chrome);
+    } catch {
+      console.log(`[gate] ${config}: under a floor, report only`);
+    }
+  }
 }
 console.log(`\n[gate] passed in ${Math.round((Date.now() - t0) / 1000)} s`);
