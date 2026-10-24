@@ -235,7 +235,9 @@ deterministic gates so it physically cannot ship a dangerous change.
     skill's "What the notes may claim" and the tracker's Retired claims. Exactly one page:
     check `pypdf` page count and look at a raster before deploy; cut content, never shrink
     type. The old hand-built React sheet (`src/components/resume/*`, `src/app/resume/*`,
-    `resumeSummary`) was deleted 2026-10-24.
+    `resumeSummary`) was deleted 2026-10-24. The favicon `src/app/icon.png` (96) and
+    `src/app/apple-icon.png` (180) are the same headshot, generated from `public/me.png`
+    with `npx -y sharp-cli@6.1.0 -i public/me.png -o <file> resize <n> <n>`.
 29. **The demo source is public, and a gate proves a stranger can open it.**
     Published 2026-08-05 with Mark. Until then the repository was private while
     every room footer linked files inside it and the section above them was
