@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FileTextIcon } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { DATA } from "@/data/resume";
+import { logoSvg, SHIPPED } from "@/lib/logo";
 
 /**
  * A slim sticky header, server-rendered (2026-10-24 overhaul).
@@ -23,15 +24,14 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <nav aria-label="Main" className="mx-auto flex h-14 w-full max-w-5xl items-center gap-4 px-6">
-        {/* The MKB monogram, the same mark as the favicon (src/lib/monogram.tsx). */}
+        {/* The MKB circuit mark, the same SVG as the favicon (src/lib/logo.ts). Its
+            dark squircle and gradient rim read on both themes. */}
         <Link
           href="/"
           aria-label="MKB, Mark Kenneth Badilla, home"
-          className="grid h-9 place-items-center rounded-lg px-2 text-[15px] font-black tracking-[-0.04em] text-white"
-          style={{ background: "#0b7a4b" }}
-        >
-          <span aria-hidden>MKB</span>
-        </Link>
+          className="block size-10 shrink-0"
+          dangerouslySetInnerHTML={{ __html: logoSvg(SHIPPED, { size: 40 }) }}
+        />
         <ul className="ml-auto hidden items-center gap-5 text-sm text-muted-foreground md:flex">
           {SECTIONS.map((s) => (
             <li key={s.href}>
