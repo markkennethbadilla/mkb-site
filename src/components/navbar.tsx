@@ -1,107 +1,63 @@
-import { Dock, DockIcon } from "@/components/magicui/dock";
+import Link from "next/link";
+import { FileTextIcon } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipArrow,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { DATA } from "@/data/resume";
 
+/**
+ * A slim sticky header, server-rendered (2026-10-24 overhaul).
+ *
+ * It replaced the floating bottom dock, which sat on top of the content on a
+ * phone and pulled the motion library plus a Radix tooltip per icon into the
+ * homepage bundle. A header in the normal flow covers nothing, and every link
+ * carries its own visible or aria name, so nothing depends on a hover tooltip.
+ */
+const SECTIONS = [
+  { href: "/#work", label: "Work" },
+  { href: "/#projects", label: "Demos" },
+  { href: "/#skills", label: "Stack" },
+  { href: "/#contact", label: "Contact" },
+];
+
 export default function Navbar() {
+  const social = Object.values(DATA.contact.social).filter((s) => s.navbar);
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30">
-      <Dock className="z-50 pointer-events-auto relative h-14 p-2 w-fit mx-auto flex gap-2 border bg-card/90 backdrop-blur-3xl shadow-[0_0_10px_3px] shadow-primary/5">
-        {DATA.navbar.map((item) => {
-          const isExternal = item.href.startsWith("http");
-          return (
-            <Tooltip key={item.href}>
-              <TooltipTrigger asChild>
-                {/* aria-label and title, not just the tooltip. A Radix tooltip
-                    opens on hover and focus, neither of which a phone has, and
-                    an icon-only link with no accessible name is announced as
-                    bare "link". The dock is the only route to the resume, which
-                    is the one artifact a hiring reader arrives wanting, so it
-                    cannot be the one control nobody can name. */}
-                <a
-                  href={item.href}
-                  aria-label={item.label}
-                  title={item.label}
-                  target={isExternal ? "_blank" : undefined}
-                  rel={isExternal ? "noopener noreferrer" : undefined}
-                >
-                  <DockIcon className="rounded-3xl cursor-pointer size-full bg-background p-0 text-muted-foreground hover:text-foreground hover:bg-muted backdrop-blur-3xl border border-border transition-colors">
-                    <item.icon className="size-full rounded-sm overflow-hidden object-contain" />
-                  </DockIcon>
-                </a>
-              </TooltipTrigger>
-              <TooltipContent
-                side="top"
-                sideOffset={8}
-                className="rounded-xl bg-primary text-primary-foreground px-4 py-2 text-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)]"
-              >
-                <p>{item.label}</p>
-                <TooltipArrow className="fill-primary" />
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
-        <Separator
-          orientation="vertical"
-          className="h-2/3 m-auto w-px bg-border"
-        />
-        {Object.entries(DATA.contact.social)
-          .filter(([_, social]) => social.navbar)
-          .map(([name, social], index) => {
-            const isExternal = social.url.startsWith("http");
-            const IconComponent = social.icon;
-            return (
-              <Tooltip key={`social-${name}-${index}`}>
-                <TooltipTrigger asChild>
-                  <a
-                    href={social.url}
-                    aria-label={social.name}
-                    title={social.name}
-                    target={isExternal ? "_blank" : undefined}
-                    rel={isExternal ? "noopener noreferrer" : undefined}
-                  >
-                    <DockIcon className="rounded-3xl cursor-pointer size-full bg-background p-0 text-muted-foreground hover:text-foreground hover:bg-muted backdrop-blur-3xl border border-border transition-colors">
-                      <IconComponent className="size-full rounded-sm overflow-hidden object-contain" />
-                    </DockIcon>
-                  </a>
-                </TooltipTrigger>
-                <TooltipContent
-                  side="top"
-                  sideOffset={8}
-                  className="rounded-xl bg-primary text-primary-foreground px-4 py-2 text-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)]"
-                >
-                  <p>{name}</p>
-                  <TooltipArrow className="fill-primary" />
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
-        <Separator
-          orientation="vertical"
-          className="h-2/3 m-auto w-px bg-border"
-        />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DockIcon className="rounded-3xl cursor-pointer size-full bg-background p-0 text-muted-foreground hover:text-foreground hover:bg-muted backdrop-blur-3xl border border-border transition-colors">
-              <ModeToggle className="size-full cursor-pointer" />
-            </DockIcon>
-          </TooltipTrigger>
-          <TooltipContent
-            side="top"
-            sideOffset={8}
-            className="rounded-xl bg-primary text-primary-foreground px-4 py-2 text-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)]"
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+      <nav aria-label="Main" className="mx-auto flex h-14 w-full max-w-5xl items-center gap-4 px-6">
+        <Link href="/" className="font-semibold tracking-tight">
+          Mark Badilla
+        </Link>
+        <ul className="ml-auto hidden items-center gap-5 text-sm text-muted-foreground md:flex">
+          {SECTIONS.map((s) => (
+            <li key={s.href}>
+              <Link href={s.href} className="transition-colors hover:text-foreground">
+                {s.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <div className="ml-auto flex items-center gap-1 md:ml-2">
+          <Link
+            href="/resume"
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-foreground px-3.5 text-sm font-medium text-background transition-opacity hover:opacity-85"
           >
-            <p>Theme</p>
-            <TooltipArrow className="fill-primary" />
-          </TooltipContent>
-        </Tooltip>
-      </Dock>
-    </div>
+            <FileTextIcon className="size-4" aria-hidden />
+            Resume
+          </Link>
+          {social.map((s) => (
+            <a
+              key={s.name}
+              href={s.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={s.name}
+              className="grid size-9 place-items-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <s.icon className="size-4" />
+            </a>
+          ))}
+          <ModeToggle className="size-9 p-2.5 text-muted-foreground" />
+        </div>
+      </nav>
+    </header>
   );
 }

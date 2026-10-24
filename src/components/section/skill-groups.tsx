@@ -1,10 +1,3 @@
-import BlurFade from "@/components/magicui/blur-fade";
-import {
-  Tooltip,
-  TooltipArrow,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { DATA } from "@/data/resume";
 import { SKILL_ICONS } from "@/lib/skill-icons";
 
@@ -61,18 +54,14 @@ function SkillIcon({ slug, className }: { slug?: string; className?: string }) {
   );
 }
 
-export default function SkillGroups({ delayStart = 0 }: { delayStart?: number }) {
+export default function SkillGroups() {
   return (
     <dl className="flex flex-col gap-y-5">
       {DATA.resumeSkills.map((group, gi) => (
-        // The BlurFade div IS the dl's group wrapper. A dl allows exactly one level of
+        // This div IS the dl's group wrapper. A dl allows exactly one level of
         // div between itself and a dt, so the extra layout div that used to sit inside
         // this one had to go and its classes moved up here.
-        <BlurFade
-          key={group.group}
-          delay={delayStart + gi * 0.05}
-          className="flex flex-col gap-y-2"
-        >
+        <div key={group.group} className="flex flex-col gap-y-2">
           <dt className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
             {group.group}
           </dt>
@@ -85,16 +74,14 @@ export default function SkillGroups({ delayStart = 0 }: { delayStart?: number })
                 const slug = "icon" in item ? item.icon : undefined;
                 return (
                 <li key={item.name}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <a
+                                    <a
                       href={item.url}
                       target="_blank"
                       rel="noreferrer noopener"
+                      title={item.blurb}
                       className={[
-                        "group flex h-8 w-fit items-center gap-2 rounded-xl border border-border",
-                        "bg-background px-3.5 ring-2 ring-border/20 transition-colors",
-                        "hover:border-foreground/25 hover:bg-accent",
+                        "group flex h-8 w-fit items-center gap-2 rounded-full px-3 transition-colors",
+                        "bg-[oklch(0.6_0.12_var(--tint-hue)/0.09)] hover:bg-[oklch(0.6_0.12_var(--tint-hue)/0.18)]",
                       ].join(" ")}
                     >
                       <SkillIcon
@@ -103,22 +90,12 @@ export default function SkillGroups({ delayStart = 0 }: { delayStart?: number })
                       />
                       <span className="text-[13px] font-medium text-foreground">{item.name}</span>
                     </a>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    sideOffset={6}
-                    className="max-w-[17rem] rounded-xl bg-primary px-3 py-2 text-[12px] leading-relaxed text-primary-foreground shadow-lg"
-                  >
-                    {item.blurb}
-                    <TooltipArrow className="fill-primary" />
-                  </TooltipContent>
-                </Tooltip>
                 </li>
                 );
               })}
             </ul>
           </dd>
-        </BlurFade>
+        </div>
       ))}
     </dl>
   );

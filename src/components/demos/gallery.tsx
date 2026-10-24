@@ -1,10 +1,8 @@
-import BlurFade from "@/components/magicui/blur-fade";
 import RoomCard from "@/components/demos/room-card";
 import { OPEN_ROOMS } from "@/lib/demos/registry";
 import { DATA } from "@/data/resume";
 import { Icons } from "@/components/icons";
 
-const BLUR_FADE_DELAY = 0.04;
 
 /**
  * The entrance to the exhibition, used both at /#projects and at /demos.
@@ -33,21 +31,21 @@ export default function Gallery() {
     <div className="w-full space-y-10">
       <div className="grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2">
         {featured ? (
-          <BlurFade delay={BLUR_FADE_DELAY * 12} className="sm:col-span-2">
+          <div className="sm:col-span-2">
             <RoomCard room={featured} featured />
-          </BlurFade>
+          </div>
         ) : null}
         {rest.map((room, i) => (
-          <BlurFade key={room.slug} delay={BLUR_FADE_DELAY * 12 + (i + 1) * 0.05} className="h-full">
+          <div key={room.slug} className="h-full">
             <RoomCard room={room} />
-          </BlurFade>
+          </div>
         ))}
       </div>
 
       {/* Visually a different object on purpose: no hue accent, no run affordance,
           an outward arrow rather than an inward one. You leave the site to read it. */}
       {repos.map((project, i) => (
-        <BlurFade key={project.title} delay={BLUR_FADE_DELAY * 12 + (rest.length + i + 1) * 0.05}>
+        <div key={project.title}>
           <a
             href={project.href}
             target="_blank"
@@ -73,7 +71,7 @@ export default function Gallery() {
               ))}
             </ul>
           </a>
-        </BlurFade>
+        </div>
       ))}
     </div>
   );

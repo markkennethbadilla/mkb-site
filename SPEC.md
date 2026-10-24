@@ -10,6 +10,21 @@ deterministic gates so it physically cannot ship a dangerous change.
 
 - **Resume surface** - hero, about, work history, education, skills, projects,
   contact. All content lives in one file, `src/data/resume.tsx`.
+  Rebuilt 2026-10-24 (Mark, "maximalist design but concise enough for recruiters
+  to read quick"). The hero gives role, name, stack, three checkable figures, an
+  Email me button and the resume link above the fold. Every section below is an
+  editorial block under a numbered coloured rule (`SectionHead` in
+  `src/app/(site)/page.tsx`), with no bordered cards. About is three numbered
+  statements, Work is a timeline on one coloured spine with six picked WeAssist
+  claims, Education carries the certifications, Contact is one big email button.
+  Colour ink uses CSS `light-dark()` so small coloured type passes AA in both themes.
+  The page is server components only. The floating bottom dock, the canvas
+  FlickeringGrid, BlurFade and the Radix tooltips/accordion/avatar were deleted
+  (the dock covered content on phones; together they held mobile speed at 66 to 71).
+  The header is a sticky bar in normal flow (`src/components/navbar.tsx`). The guide
+  renders as plain markup and imports the real console on first pointer, touch or
+  focus (`src/components/demo/guide-lazy.tsx`, next/dynamic). Local mobile Lighthouse
+  after the rebuild, 92 to 94 speed.
 - **The site guide** (`/#guide`) - a small card under the hero. Ask it something
   in free text and it decides which section of the page answers you, then leaves
   its slot: the page eases to that section, everything else dims, and a small

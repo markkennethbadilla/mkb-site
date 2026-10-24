@@ -1,5 +1,4 @@
 import { ThemeProvider } from "@/components/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { DATA } from "@/data/resume";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
@@ -180,7 +179,7 @@ export default function RootLayout({
               body is also the element the rooms re-tint - see
               src/components/demos/shell/room-tint.tsx for why it has to be body
               and not a wrapper. */}
-          <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
+          {children}
         </ThemeProvider>
       </body>
     </html>

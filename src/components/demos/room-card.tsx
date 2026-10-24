@@ -29,7 +29,9 @@ import RoomSpecimen from "@/components/demos/room-specimen";
  * room's colour as a lead-in rather than a pill.
  */
 export default function RoomCard({ room, featured }: { room: DemoRoom; featured?: boolean }) {
-  const hue = "oklch(0.55 0.15 var(--tint-hue))";
+  // Text ink lighter in dark mode (light-dark, color-scheme from next-themes) for AA contrast.
+  const hue = "light-dark(oklch(0.5 0.15 var(--tint-hue)), oklch(0.78 0.13 var(--tint-hue)))";
+  const fillHue = "oklch(0.5 0.15 var(--tint-hue))";
   return (
     <Link
       href={`/demos/${room.slug}`}
@@ -83,7 +85,7 @@ export default function RoomCard({ room, featured }: { room: DemoRoom; featured?
           <span
             aria-hidden
             className="ml-auto grid size-9 shrink-0 place-items-center rounded-full text-base text-white transition-transform group-hover:translate-x-1 motion-reduce:transition-none"
-            style={{ background: hue }}
+            style={{ background: fillHue }}
           >
             &rarr;
           </span>
