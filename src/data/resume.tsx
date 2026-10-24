@@ -68,7 +68,7 @@ export const DATA = {
   // DATA.education so the two surfaces cannot drift.
   summaryBefore:
     "Core systems for a multi-tenant ERP platform at Hatchit Solutions, where one bug is every client's bug at once.",
-  avatarUrl: "/me.png",
+  avatarUrl: "/me-320.webp",
   // The real stack, grouped, and every entry carries three things beyond its name.
   //
   // WHY EACH ONE EARNS ITS PLACE. A bare list of forty words assumes the reader

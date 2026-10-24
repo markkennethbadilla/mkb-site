@@ -235,7 +235,16 @@ deterministic gates so it physically cannot ship a dangerous change.
     skill's "What the notes may claim" and the tracker's Retired claims. Exactly one page:
     check `pypdf` page count and look at a raster before deploy; cut content, never shrink
     type. The old hand-built React sheet (`src/components/resume/*`, `src/app/resume/*`,
-    `resumeSummary`) was deleted 2026-10-24. The favicon `src/app/icon.png` (96) and
+    `resumeSummary`) was deleted 2026-10-24. The build applies three string fixes to the
+    theme's fixed `<head>`, each throwing if the theme changes: drop `user-scalable=no`
+    (a11y), load Font Awesome non-blocking (mobile speed), drop the theme's 404
+    `./override.css` link. The theme has no option for these and a rehype pipeline for
+    three attributes is more to maintain. Work entries carry no `url` (the theme renders
+    them as un-underlined in-text links, a11y fail). The web page alone gets a
+    "Download PDF" profile entry. Measured 2026-10-24 locally, `/resume/` mobile 95
+    speed, 100 accessibility. The headshot on the page is `public/me-320.webp` (5 KB,
+    also the homepage avatar), made with `npx -y sharp-cli@6.1.0 -i public/me.png -o
+    public/me-320.webp resize 320 320`. The favicon `src/app/icon.png` (96) and
     `src/app/apple-icon.png` (180) are the same headshot, generated from `public/me.png`
     with `npx -y sharp-cli@6.1.0 -i public/me.png -o <file> resize <n> <n>`.
 29. **The demo source is public, and a gate proves a stranger can open it.**

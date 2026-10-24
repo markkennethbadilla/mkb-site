@@ -2,7 +2,7 @@
   "basics": {
     "name": "Mark Kenneth Badilla",
     "label": "Full Stack AI Engineer",
-    "image": "/me.png",
+    "image": "/me-320.webp",
     "email": "markkennethbadilla@gmail.com",
     "phone": "+63 923 261 0477",
     "url": "https://markkennethbadilla.com",
@@ -28,7 +28,6 @@
     {
       "name": "WeAssist",
       "position": "AI Engineer",
-      "url": "https://weassist.io",
       "startDate": "2026-03",
       "highlights": [
         "Built the internal operations platform (Next.js, PostgreSQL) in ten weeks, on additive-only migrations.",
@@ -42,7 +41,6 @@
     {
       "name": "Hatchit Solutions",
       "position": "Software Engineer",
-      "url": "https://hatchitsolutions.com",
       "startDate": "2025-06",
       "endDate": "2026-04",
       "highlights": [
