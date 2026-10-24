@@ -1,100 +1,93 @@
-// No "use client": with the session-flag write gone this renders the same on the
-// server as it does in the browser, and shipping it as a client component would
-// pull the whole gallery into the client bundle for nothing.
+// No "use client": renders the same on the server as in the browser, and a client
+// component would pull the whole gallery into the client bundle for nothing.
 import Link from "next/link";
 import type { DemoRoom } from "@/lib/demos/registry";
 import { cn } from "@/lib/utils";
+import RoomSpecimen from "@/components/demos/room-specimen";
 
 /**
  * One exhibit, in the gallery.
  *
- * Fixed slots, same order on every card, because the point of a gallery is that
+ * Fixed slots, same order for every room, because the point of a gallery is that
  * two things can be compared. Name, then the CAPABILITY (one clause a recruiter
- * can repeat to someone else), then the PROMISE (what you will watch happen,
- * present tense, second person), then the cost.
+ * can repeat to someone else), then the PROMISE (what you will watch happen), then
+ * the cost. A reader who leaves after one line leaves with the clause they can repeat.
  *
- * Capability and promise were the other way round until the eight-second scan
- * put them in this order - a reader who leaves after one line should leave with
- * the clause they can repeat, not with two sentences about a button.
+ * The promise may quantify its inputs and never its outcome ("fire twelve payments"
+ * is honest; "see the two that got refused" would print a result before the run).
+ * The test suite enforces this on the registry.
  *
- * The promise may quantify its inputs and never its outcome. "Fire twelve payments"
- * is an input and is honest. "See the two that got refused" would be an outcome
- * printed before the run - which is either a lie or an admission that the run is
- * scripted, and a senior engineer who clicks through and counts three has caught
- * the site doing the exact thing it argues against. scripts/check-demos.mjs enforces
- * this on the registry rather than trusting whoever writes the next one.
+ * There is deliberately NO live/resting badge: knowing whether the demo budget is
+ * spent would cost a Worker request per visitor who scrolls past, and still could
+ * not see the per-visitor cap. The room explains a refusal on arrival instead.
  *
- * There is deliberately NO live/resting badge. Knowing whether the demo budget is
- * spent would need a Worker request from every visitor who scrolls past this
- * section, against the same daily allowance the badge exists to report on, and it
- * still could not see the per-visitor cap that actually refuses people. A card
- * labelled "live" that then refuses is worse than no label. The room explains the
- * refusal on arrival, using the budget's own words, which is the honest place for it.
- *
+ * Layout (Mark 2026-10-24, the bordered cards read as "very AI generated"): no box.
+ * Each room is an editorial block under a hairline, led by a drawing of what it does
+ * (RoomSpecimen), then the name large, the capability as the hook, the promise, and
+ * quiet metadata, with one round arrow in the room's colour as the call to action.
+ * The featured room sits wide with a larger drawing, and "Start here" is set in the
+ * room's colour as a lead-in rather than a pill.
  */
 export default function RoomCard({ room, featured }: { room: DemoRoom; featured?: boolean }) {
+  const hue = "oklch(0.55 0.15 var(--tint-hue))";
   return (
     <Link
       href={`/demos/${room.slug}`}
       style={{ "--tint-hue": room.hue } as React.CSSProperties}
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-5 transition-all",
-        "hover:-translate-y-0.5 hover:border-foreground/25 hover:shadow-lg",
-        "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
-        featured && "sm:col-span-2 sm:p-7"
+        "group grid h-full gap-5 border-t border-border pt-6",
+        featured ? "sm:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] sm:gap-8" : "grid-rows-[auto_1fr]"
       )}
     >
-      {/* The room announces its own colour before you get there. One hairline, so
-          the card still reads as part of this page rather than as a fragment of
-          another one. */}
-      <span
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-[3px]"
-        style={{ background: "oklch(0.62 0.13 var(--tint-hue))" }}
+      <RoomSpecimen
+        slug={room.slug}
+        className={cn(
+          "aspect-[2/1] transition-transform duration-300 group-hover:scale-[1.02]",
+          "motion-reduce:transition-none motion-reduce:group-hover:scale-100",
+          featured && "sm:aspect-[5/3]"
+        )}
       />
 
-      <div className="flex items-baseline justify-between gap-3">
-        <h3 className={cn("font-semibold tracking-tight", featured ? "text-2xl" : "text-lg")}>
+      <div className="flex flex-col">
+        {featured ? (
+          <p className="mb-2 flex items-center gap-2 text-sm font-semibold" style={{ color: hue }}>
+            Start here
+            <span aria-hidden className="h-px w-10" style={{ background: hue }} />
+          </p>
+        ) : null}
+
+        <h3
+          className={cn(
+            "font-semibold tracking-tight decoration-2 underline-offset-4 group-hover:underline",
+            featured ? "text-3xl sm:text-4xl" : "text-2xl"
+          )}
+          style={{ textDecorationColor: hue }}
+        >
           {room.name}
         </h3>
-        {featured ? (
-          <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-            Start here
+
+        <p className={cn("mt-3 leading-snug text-foreground", featured ? "text-lg sm:text-xl" : "text-base")}>
+          {room.capability}
+        </p>
+
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{room.promise}</p>
+
+        {/* Two facts, so a real list. The arrow is the call to action, not a fact. */}
+        <div className="mt-auto flex items-end gap-3 pt-5">
+          <ul className="flex flex-col gap-0.5 font-mono text-[11px] text-muted-foreground">
+            <li>
+              about {room.runSeconds[0]} to {room.runSeconds[1]} seconds
+            </li>
+            <li>runs for real when you press the button</li>
+          </ul>
+          <span
+            aria-hidden
+            className="ml-auto grid size-9 shrink-0 place-items-center rounded-full text-base text-white transition-transform group-hover:translate-x-1 motion-reduce:transition-none"
+            style={{ background: hue }}
+          >
+            &rarr;
           </span>
-        ) : null}
-      </div>
-
-      <p
-        className={cn(
-          "mt-2 leading-relaxed text-foreground/85",
-          featured ? "max-w-prose text-[15px]" : "text-[13px]"
-        )}
-      >
-        {room.capability}
-      </p>
-
-      <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{room.promise}</p>
-
-      {/* Two facts, so a real list. They were three sibling spans with a middot
-          span between them doing a bullet's job, which is a bullet nothing but a
-          sighted reader can see. The middot stays as decoration inside the second
-          item; the arrow is not a fact and stays outside the list. */}
-      <div className="mt-auto flex items-center gap-3 pt-4 font-mono text-[10px] text-muted-foreground/75">
-        <ul className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <li>
-            about {room.runSeconds[0]} to {room.runSeconds[1]} seconds
-          </li>
-          <li className="flex items-center gap-3">
-            <span aria-hidden className="text-muted-foreground/40">·</span>
-            <span>runs for real when you press the button</span>
-          </li>
-        </ul>
-        <span
-          aria-hidden
-          className="ml-auto transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
-        >
-          &rarr;
-        </span>
+        </div>
       </div>
     </Link>
   );

@@ -22,6 +22,14 @@ deterministic gates so it physically cannot ship a dangerous change.
   followed it landed on a page identical to the one they left. This replaced the gate-harness demo on 2026-08-05. The harness code
   (`src/lib/gates.ts`, `src/components/demo/harness.tsx`, `/api/agent`) is still
   in the repo and still works; it is simply not on the page.
+  The three rooms are editorial blocks, not bordered cards (Mark 2026-10-24, the
+  cards read as AI generated). Each block opens with a small server-rendered SVG of
+  what the room does (`src/components/demos/room-specimen.tsx`: twelve payments into
+  one balance, stated versus checked confidence per question, three nodes with one
+  lease) in the room's hue, then the name large, the capability as the hook, the
+  promise, quiet metadata and one round arrow as the call to action. Ledger is wide
+  with "Start here" in its own colour. Motion is Tailwind `motion-safe:animate-pulse`,
+  so reduced motion gets a still and the homepage ships no extra JavaScript.
 - **The exhibition rooms** (`/demos/<slug>`) - three demos that run for real
   against D1 when a visitor presses the button, one per strand of the work:
   *Ledger Under Fire* (concurrency and money), *ScoreAudit* (a model's stated
