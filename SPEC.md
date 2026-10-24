@@ -244,9 +244,12 @@ deterministic gates so it physically cannot ship a dangerous change.
     "Download PDF" profile entry. Measured 2026-10-24 locally, `/resume/` mobile 95
     speed, 100 accessibility. The headshot on the page is `public/me-320.webp` (5 KB,
     also the homepage avatar), made with `npx -y sharp-cli@6.1.0 -i public/me.png -o
-    public/me-320.webp resize 320 320`. The favicon `src/app/icon.png` (96) and
-    `src/app/apple-icon.png` (180) are the same headshot, generated from `public/me.png`
-    with `npx -y sharp-cli@6.1.0 -i public/me.png -o <file> resize <n> <n>`.
+    public/me-320.webp resize 320 320`. The favicon is the headshot with its background removed and cropped to head
+    and shoulders (Mark 2026-10-24). Step 1, `uvx -p 3.13 --from "rembg[cpu,cli]==2.0.86"
+    rembg i -m isnet-general-use public/me.png cut.png`. Step 2, sharp-cli 6.1.0
+    `extract 30 140 520 520` on cut.png gives head.png. Step 3, `resize 96 96` gives the
+    transparent `src/app/icon.png`. Step 4, `resize 180 180` then `flatten --background
+    "#fcfbf8"` gives `src/app/apple-icon.png`, because iOS paints transparency black.
 29. **The demo source is public, and a gate proves a stranger can open it.**
     Published 2026-08-05 with Mark. Until then the repository was private while
     every room footer linked files inside it and the section above them was
