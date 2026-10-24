@@ -51,3 +51,6 @@ next-env.d.ts
 # the point of use - see scripts/cf.mjs - so this file should never exist here.
 .dev.vars
 .lighthouseci
+
+# Built from resume/resume.json by scripts/build-resume.mjs
+/public/resume/

@@ -1,0 +1,134 @@
+{
+  "basics": {
+    "name": "Mark Kenneth Badilla",
+    "label": "Full Stack AI Engineer",
+    "image": "/me.png",
+    "email": "markkennethbadilla@gmail.com",
+    "phone": "+63 923 261 0477",
+    "url": "https://markkennethbadilla.com",
+    "summary": "I build production software end to end, from Next.js interfaces and Node.js services to PostgreSQL schemas, background jobs, automation and the LLM features on top. Every change ships behind tests, build gates and a backup that is proven to restore.",
+    "location": {
+      "city": "Cebu, Philippines (UTC+8)",
+      "region": "Remote, works EU or US hours"
+    },
+    "profiles": [
+      {
+        "network": "GitHub",
+        "username": "markkennethbadilla",
+        "url": "https://github.com/markkennethbadilla"
+      },
+      {
+        "network": "LinkedIn",
+        "username": "markkennethbadilla",
+        "url": "https://www.linkedin.com/in/markkennethbadilla"
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "WeAssist",
+      "position": "AI Engineer",
+      "url": "https://weassist.io",
+      "startDate": "2026-03",
+      "highlights": [
+        "Built the internal operations platform (Next.js, PostgreSQL) in ten weeks, on additive-only migrations.",
+        "Built an unattended LLM extraction pipeline that turns meeting transcripts into a structured signals database.",
+        "Killed my own predictive model after a label audit; shipped an explainable rules-based detector instead.",
+        "Built desktop AI agents with tool calling for non-technical staff, plus a meeting platform used daily.",
+        "Every deploy backs up production, restores it into a scratch database and diffs row counts before anything migrates.",
+        "Wired a 300+ check gate suite into the build, so bad code is uncommittable whether a person or an agent wrote it."
+      ]
+    },
+    {
+      "name": "Hatchit Solutions",
+      "position": "Software Engineer",
+      "url": "https://hatchitsolutions.com",
+      "startDate": "2025-06",
+      "endDate": "2026-04",
+      "highlights": [
+        "Built atomic inventory operations and financial reconciliation for a multi-tenant ERP platform.",
+        "High-volume background job processing on BullMQ and Redis; query tuning through composite indexing."
+      ]
+    },
+    {
+      "name": "Hatchit Solutions",
+      "position": "Web Engineer Intern",
+      "startDate": "2025-01",
+      "endDate": "2025-05",
+      "highlights": []
+    }
+  ],
+  "projects": [
+    {
+      "name": "markkennethbadilla.com",
+      "description": "Portfolio with a conversational agent running a real tool-calling loop.",
+      "highlights": [
+        "Answers from a fact corpus whose tests reject any figure the corpus does not license."
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "name": "Full stack",
+      "keywords": [
+        "TypeScript",
+        "Python",
+        "Node.js",
+        "NestJS",
+        "Next.js",
+        "React",
+        "REST APIs",
+        "Webhooks"
+      ]
+    },
+    {
+      "name": "AI and LLM",
+      "keywords": [
+        "LLM pipelines",
+        "Tool-calling agents",
+        "RAG",
+        "MCP",
+        "Evaluation",
+        "Vercel AI SDK",
+        "OpenRouter"
+      ]
+    },
+    {
+      "name": "Data and backend",
+      "keywords": [
+        "PostgreSQL",
+        "Drizzle ORM",
+        "Prisma ORM",
+        "Redis",
+        "BullMQ"
+      ]
+    },
+    {
+      "name": "Automation and deploy",
+      "keywords": [
+        "n8n",
+        "Docker",
+        "Coolify",
+        "Cloudflare Workers",
+        "CI/CD"
+      ]
+    },
+    {
+      "name": "Certifications",
+      "keywords": [
+        "AWS Certified AI Practitioner (AIF-C01)",
+        "TOPCIT Level 3",
+        "PhilNITS Fundamental Engineer (FE)"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "CIT University",
+      "area": "Information Technology (Magna Cum Laude)",
+      "studyType": "BS",
+      "startDate": "2021",
+      "endDate": "2025"
+    }
+  ]
+}

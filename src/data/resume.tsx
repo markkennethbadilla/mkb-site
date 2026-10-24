@@ -69,36 +69,6 @@ export const DATA = {
   summaryBefore:
     "Core systems for a multi-tenant ERP platform at Hatchit Solutions, where one bug is every client's bug at once.",
   avatarUrl: "/me.png",
-  // The summary the printable resume opens with.
-  //
-  // Deliberately NOT `summary` above. That one is the About paragraph and it ends
-  // by naming the previous employer and the degree - which on the web page is
-  // useful context and on a resume is the same information the reader is about to
-  // meet twice more, in Experience and in Education. Measured, the duplication was
-  // costing about 20mm of a 297mm page, which is the difference between comfortable
-  // headroom and a second sheet appearing the next time a line is added.
-  //
-  // Same graded material, nothing new asserted.
-  // serena-cannot: Serena holds driftwood as its active root, so this path is outside it
-  // Summary block 1 verbatim, plus the one-line short form, both from profiles-master.md.
-  //
-  // Split into claims by the author rather than by a regex at render time. Element 0 is
-  // the sheet's bold lede; the rest print as bullets under it, two to a row. The leading
-  // "Full Stack AI Engineer." fragment is gone because the sheet already prints that as its
-  // own title line 4mm above this block.
-  //
-  // Element 1 was a 33-word chain of three claims joined by commas, which printed as a
-  // paragraph (Mark, 2026-08-22: no paragraphs anywhere). It is split at its own claim
-  // boundaries into the three things he actually does in order - work it out, decide, build
-  // and run - and the only words dropped are the connectives "I" and "then". No fact moved.
-  resumeSummary: [
-    "Hand me a goal instead of a spec and I come back with the diagnosis, the recommendation and the system.",
-    "Work out how the job actually gets done today.",
-    "Decide what to buy and what to build.",
-    "Build and run the result - interface, services, schema, infrastructure, and the AI on top.",
-    "Gated codebases and deterministic verification, so an agent can ship production code without breaking things.",
-  ],
-
   // The real stack, grouped, and every entry carries three things beyond its name.
   //
   // WHY EACH ONE EARNS ITS PLACE. A bare list of forty words assumes the reader

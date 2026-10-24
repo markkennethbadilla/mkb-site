@@ -40,7 +40,7 @@ deterministic gates so it physically cannot ship a dangerous change.
 | Route | Type | Purpose |
 |---|---|---|
 | `/` | static | The resume surface and the guide. Single page. |
-| `/resume` | static | One A4 page, ATS-parseable, print-to-PDF. Outside the site chrome. Sections: Summary, Certifications (AWS first, semibold), Experience, Skills, Education, Projects. |
+| `/resume/` | static | One Letter page, general (any role), rendered at build from `resume/resume.json` (JSON Resume schema) by the pinned `jsonresume-theme-stackoverflow@3.3.0`, headshot from `basics.image` = `/me.png`. PDF at `/resume/mark-kenneth-badilla-resume.pdf`. Outside the site chrome. |
 | `/demos/ledger-under-fire` | static | Room 1. |
 | `/demos/score-audit` | static | Room 2. |
 | `/demos/split-brain` | static | Room 3. |
@@ -225,13 +225,17 @@ deterministic gates so it physically cannot ship a dangerous change.
     his credential - reconstructing an app from a compiled build, and turning an
     incident into a gate - are stated separately and never adjacent.
 
-28. **The printable resume is print-to-PDF, never a JS PDF library.** `/resume` is
-    A4-sized with a `@page` rule and downloads through `window.print()`. A
-    client-side renderer like html2canvas rasterises the page into an image, and
-    an image is exactly what an applicant tracking system cannot read - which
-    would defeat the only reason the page exists. Printing also keeps the text
-    selectable and adds nothing to the bundle. Everything must fit ONE page;
-    tighten the layout rather than cut content.
+28. **The resume is JSON Resume, rendered at build, never hand-built.** `resume/resume.json`
+    is the single source. `npm run build` runs `scripts/build-resume.mjs` first: it
+    renders the JSON with the pinned `jsonresume-theme-stackoverflow` (same theme as the
+    Driftwood pipeline, skill run-project-driftwood) into `public/resume/index.html` and
+    prints that page with Playwright to `public/resume/mark-kenneth-badilla-resume.pdf`
+    (Letter, scale 0.95, real text so an ATS can read it). Both are gitignored build
+    products. Content is general, for any role, and every claim must pass the Driftwood
+    skill's "What the notes may claim" and the tracker's Retired claims. Exactly one page:
+    check `pypdf` page count and look at a raster before deploy; cut content, never shrink
+    type. The old hand-built React sheet (`src/components/resume/*`, `src/app/resume/*`,
+    `resumeSummary`) was deleted 2026-10-24.
 29. **The demo source is public, and a gate proves a stranger can open it.**
     Published 2026-08-05 with Mark. Until then the repository was private while
     every room footer linked files inside it and the section above them was
@@ -247,8 +251,8 @@ deterministic gates so it physically cannot ship a dangerous change.
     stays "AI Engineer".** Changed 2026-08-08 at Mark's instruction: plain "AI
     Engineer" was undermining his experience by hiding the half of the work that is
     interfaces, services and schemas. Every place the site speaks in its own voice now
-    says Full Stack AI Engineer - the hero line, the printable sheet's subtitle, the
-    `/resume` metadata description, the `resumeSummary`, and the guide's identity fact.
+    says Full Stack AI Engineer - the hero line, the `basics.label` in
+    `resume/resume.json`, and the guide's identity fact.
     **The Experience entry for WeAssist was deliberately NOT changed**, because that
     field reports the title his employer gave him and inflating it there would be a
     false claim about his employment rather than a positioning choice. The two can
