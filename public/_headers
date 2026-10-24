@@ -3,3 +3,7 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+/icon
+  Content-Type: image/png
+/apple-icon
+  Content-Type: image/png

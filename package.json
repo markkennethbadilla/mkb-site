@@ -64,6 +64,7 @@
     "@types/react-dom": "19.2.3",
     "eslint": "9.39.2",
     "eslint-config-next": "16.1.1",
+    "geist": "1.8.2",
     "jsonresume-theme-stackoverflow": "3.3.0",
     "linkinator": "8.0.4",
     "postcss": "8.5.6",

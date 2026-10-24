@@ -72,7 +72,7 @@ export default function GuideLazy() {
           placeholder="Ask anything about his work"
           className="flex-1 rounded-xl border border-border bg-muted/30 px-3.5 py-2.5 text-sm outline-none"
         />
-        <button type="button" className="rounded-xl bg-foreground px-4 py-2.5 text-sm font-medium text-background opacity-50">
+        <button type="button" disabled className="rounded-xl bg-foreground px-4 py-2.5 text-sm font-medium text-background disabled:opacity-50">
           Ask
         </button>
       </div>

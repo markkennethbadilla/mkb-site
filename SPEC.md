@@ -31,6 +31,15 @@ deterministic gates so it physically cannot ship a dangerous change.
   matches the rooms, in green with its own drawing (`agent-guards` in
   `room-specimen.tsx`, a guard stopping a tool call). A one-line footer
   (`src/components/footer.tsx`) closes every site page.
+  The favicon and apple-icon are the MKB monogram (Mark 2026-10-24), generated at
+  build by `src/app/icon.tsx` and `src/app/apple-icon.tsx` through next/og
+  ImageResponse (`src/lib/monogram.tsx`, Geist Black from the pinned `geist`
+  package, green #0b7a4b). The export writes them as `/icon` and `/apple-icon`
+  with no extension, so `public/_headers` sets their Content-Type to image/png
+  (the site sends nosniff). The header logo is the same mark in HTML. The Magic UI
+  FlickeringGrid is back behind the top of each page (Mark asked for it), loaded by
+  `src/components/grid-backdrop.tsx` only after the browser is idle and never for
+  reduced motion.
 - **The site guide** (`/#guide`) - a small card under the hero. Ask it something
   in free text and it decides which section of the page answers you, then leaves
   its slot: the page eases to that section, everything else dims, and a small
@@ -275,12 +284,7 @@ deterministic gates so it physically cannot ship a dangerous change.
     "Download PDF" profile entry. Measured 2026-10-24 locally, `/resume/` mobile 95
     speed, 100 accessibility. The headshot on the page is `public/me-320.webp` (5 KB,
     also the homepage avatar), made with `npx -y sharp-cli@6.1.0 -i public/me.png -o
-    public/me-320.webp resize 320 320`. The favicon is the headshot with its background removed and cropped to head
-    and shoulders (Mark 2026-10-24). Step 1, `uvx -p 3.13 --from "rembg[cpu,cli]==2.0.86"
-    rembg i -m isnet-general-use public/me.png cut.png`. Step 2, sharp-cli 6.1.0
-    `extract 30 140 520 520` on cut.png gives head.png. Step 3, `resize 96 96` gives the
-    transparent `src/app/icon.png`. Step 4, `resize 180 180` then `flatten --background
-    "#fcfbf8"` gives `src/app/apple-icon.png`, because iOS paints transparency black.
+    public/me-320.webp resize 320 320`. The favicon is the MKB monogram (see Features).
 29. **The demo source is public, and a gate proves a stranger can open it.**
     Published 2026-08-05 with Mark. Until then the repository was private while
     every room footer linked files inside it and the section above them was
