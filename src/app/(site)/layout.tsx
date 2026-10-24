@@ -1,4 +1,5 @@
 import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
 
 /**
  * Site chrome: a sticky header in normal flow (nothing floats over content on a
@@ -12,6 +13,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
     <>
       <Navbar />
       <div className="relative mx-auto w-full max-w-5xl px-6 pt-10 pb-20 sm:pt-16">{children}</div>
+      <Footer />
     </>
   );
 }

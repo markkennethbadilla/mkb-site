@@ -191,7 +191,7 @@ export default function Page() {
       </section>
 
       <section id="skills" style={{ "--tint-hue": HUE.skills } as React.CSSProperties}>
-        <SectionHead n="04" title="Stack" hue={HUE.skills} aside="hover a name for what it is" />
+        <SectionHead n="04" title="Stack" hue={HUE.skills} aside="eight core, the rest below" />
         <SkillGroups />
       </section>
 

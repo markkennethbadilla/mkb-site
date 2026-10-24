@@ -25,6 +25,12 @@ deterministic gates so it physically cannot ship a dangerous change.
   renders as plain markup and imports the real console on first pointer, touch or
   focus (`src/components/demo/guide-lazy.tsx`, next/dynamic). Local mobile Lighthouse
   after the rebuild, 92 to 94 speed.
+  Stack leads with eight core skills, large, each with its one-line "what it is"
+  printed (no hover-only text), and the rest under one native `<details>` as comma
+  lists per group (`CORE` in `skill-groups.tsx`). The public-agent-provisioning block
+  matches the rooms, in green with its own drawing (`agent-guards` in
+  `room-specimen.tsx`, a guard stopping a tool call). A one-line footer
+  (`src/components/footer.tsx`) closes every site page.
 - **The site guide** (`/#guide`) - a small card under the hero. Ask it something
   in free text and it decides which section of the page answers you, then leaves
   its slot: the page eases to that section, everything else dims, and a small

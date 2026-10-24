@@ -67,7 +67,26 @@ function Split() {
   );
 }
 
+// The repository: an agent's tool call travels right and a guard (shield) stops it
+// before it reaches the repo, the "blocked before it runs" idea.
+function Guards() {
+  return (
+    <svg viewBox="0 0 160 96" className="h-full w-full" aria-hidden>
+      <rect x="8" y="34" width="34" height="28" rx="5" fill="none" stroke={ink} strokeWidth="1.5" />
+      <text x="25" y="52" textAnchor="middle" fontSize="9" fontFamily="ui-monospace, monospace" fill={ink}>agent</text>
+      <line x1="44" y1="48" x2="78" y2="48" stroke={ink} strokeWidth="1.5" strokeDasharray="4 3" className="motion-safe:animate-pulse" />
+      <path d="M86 30 L100 35 L100 50 C100 59 93 65 86 68 C79 65 72 59 72 50 L72 35 Z" fill={faint} stroke={ink} strokeWidth="1.5" />
+      <path d="M80 49 L85 54 L93 44" fill="none" stroke={ink} strokeWidth="1.8" />
+      <line x1="104" y1="48" x2="116" y2="48" stroke={faint} strokeWidth="1.5" />
+      <rect x="118" y="34" width="34" height="28" rx="5" fill="none" stroke={faint} strokeWidth="1.5" />
+      <text x="135" y="52" textAnchor="middle" fontSize="9" fontFamily="ui-monospace, monospace" fill={ink}>repo</text>
+      <text x="86" y="84" textAnchor="middle" fontSize="8" fontFamily="ui-monospace, monospace" fill={ink}>hook checks first</text>
+    </svg>
+  );
+}
+
 const BY_SLUG: Record<string, () => React.JSX.Element> = {
+  "agent-guards": Guards,
   "ledger-under-fire": Ledger,
   "score-audit": Score,
   "split-brain": Split,

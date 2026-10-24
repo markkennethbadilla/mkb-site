@@ -1,23 +1,21 @@
 import RoomCard from "@/components/demos/room-card";
+import RoomSpecimen from "@/components/demos/room-specimen";
 import { OPEN_ROOMS } from "@/lib/demos/registry";
 import { DATA } from "@/data/resume";
 import { Icons } from "@/components/icons";
 
+const INK = "light-dark(oklch(0.5 0.15 var(--tint-hue)), oklch(0.78 0.13 var(--tint-hue)))";
 
 /**
- * The entrance to the exhibition, used both at /#projects and at /demos.
+ * The entrance to the exhibition, at /#projects.
  *
- * Four things, three shapes, and the difference in shape is doing real work: three
- * of these are exhibits you OPERATE and one is a repository you READ. Rendering
- * them as identical cards in a uniform grid says they are the same kind of object,
- * which is the thing the previous version of this section got wrong - along with
- * having a single entry in a two-column grid, so it drew one card and one hole.
+ * Three exhibits you OPERATE and one repository you READ. Ledger is featured
+ * because a non-technical reader understands it in one sentence; which room is
+ * featured is one boolean in the registry.
  *
- * Ledger is featured because it is the only one a non-technical reader understands
- * in one sentence with no preamble: several payments hit one account at the same
- * moment and the books stayed balanced. Split-Brain is the most impressive to a
- * senior engineer and the hardest to explain cold; ScoreAudit needs you to already
- * care about model confidence. Which room is featured is one boolean in the registry.
+ * The repository (2026-10-24 overhaul) is the same editorial block as the rooms,
+ * in its own green with its own drawing (a guard stopping a tool call), but its
+ * action is "Read it on GitHub" because you leave the site to read it.
  */
 export default function Gallery() {
   const featured = OPEN_ROOMS.find((r) => r.featured);
@@ -25,9 +23,6 @@ export default function Gallery() {
   const repos = DATA.projects;
 
   return (
-    // No width cap of its own. The gallery renders inside two different measures -
-    // the home page's max-w-4xl and the wider /demos - and capping it here put the
-    // cards on a different left edge from the heading above them on the wider one.
     <div className="w-full space-y-10">
       <div className="grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2">
         {featured ? (
@@ -35,43 +30,51 @@ export default function Gallery() {
             <RoomCard room={featured} featured />
           </div>
         ) : null}
-        {rest.map((room, i) => (
+        {rest.map((room) => (
           <div key={room.slug} className="h-full">
             <RoomCard room={room} />
           </div>
         ))}
       </div>
 
-      {/* Visually a different object on purpose: no hue accent, no run affordance,
-          an outward arrow rather than an inward one. You leave the site to read it. */}
-      {repos.map((project, i) => (
-        <div key={project.title}>
-          <a
-            href={project.href}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="group flex flex-col gap-1.5 rounded-xl border border-border bg-card/50 px-5 py-4 transition-colors hover:border-foreground/25 hover:bg-card"
-          >
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                Source
-              </span>
-              <span className="font-mono text-[13px] font-medium">{project.title}</span>
-              <Icons.github className="ml-auto size-3.5 text-muted-foreground transition-colors group-hover:text-foreground" />
-            </div>
-            {/* Element 0 is the claim, the rest are the mechanisms under it.
-                They arrived as one sentence with five clauses hanging off it,
-                which nobody reads to the end of; four of the five are under
-                fifty characters, so they pair up two to a row and stack on a
-                phone. The split is authored in the data, not guessed here. */}
-            <p className="text-[13px] leading-relaxed text-muted-foreground">{project.description[0]}</p>
-            <ul className="grid gap-x-4 gap-y-0.5 text-[13px] leading-relaxed text-muted-foreground/80 sm:grid-cols-2">
+      {repos.map((project) => (
+        <a
+          key={project.title}
+          href={project.href}
+          target="_blank"
+          rel="noreferrer noopener"
+          style={{ "--tint-hue": 150 } as React.CSSProperties}
+          className="group grid gap-5 border-t border-border pt-6 sm:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] sm:gap-8"
+        >
+          <RoomSpecimen slug="agent-guards" className="aspect-[2/1] sm:aspect-[5/3]" />
+          <div className="flex flex-col">
+            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.16em]" style={{ color: INK }}>
+              Open source
+            </p>
+            <h3
+              className="break-words font-mono text-xl font-semibold tracking-tight decoration-2 underline-offset-4 group-hover:underline sm:text-3xl"
+              style={{ textDecorationColor: INK }}
+            >
+              {project.title}
+            </h3>
+            <p className="mt-3 text-lg leading-snug">{project.description[0]}</p>
+            {/* Element 0 is the claim, the rest are the mechanisms under it. */}
+            <ul className="mt-3 grid gap-x-6 gap-y-1 text-sm leading-relaxed text-muted-foreground sm:grid-cols-2">
               {project.description.slice(1).map((line) => (
-                <li key={line}>{line}</li>
+                <li key={line} className="flex gap-2">
+                  <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full" style={{ background: INK }} />
+                  {line}
+                </li>
               ))}
             </ul>
-          </a>
-        </div>
+            <span
+              className="mt-5 inline-flex items-center gap-2 self-start rounded-full px-4 py-2 text-sm font-semibold text-white"
+              style={{ background: "oklch(0.5 0.15 var(--tint-hue))" }}
+            >
+              <Icons.github className="size-4" /> Read it on GitHub
+            </span>
+          </div>
+        </a>
       ))}
     </div>
   );
