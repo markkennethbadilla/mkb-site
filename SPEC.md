@@ -49,7 +49,9 @@ deterministic gates so it physically cannot ship a dangerous change.
   against D1 when a visitor presses the button, one per strand of the work:
   *Ledger Under Fire* (concurrency and money), *ScoreAudit* (a model's stated
   confidence against a deterministic verifier), *Split-Brain Sandbox* (leader
-  election, lease expiry and fencing tokens). Each room re-lights the entire
+  election, lease expiry and fencing tokens). Since 2026-10-24 each room's header
+  carries the same RoomSpecimen drawing as its homepage block (beside the title on
+  wide screens, above it on a phone) and a larger title. Each room re-lights the entire
   interface with its own hue, carries the same wall label in the same position,
   and refuses to run on arrival.
 - **Live telemetry** - per attempt: latency, input/output/total tokens, cost,

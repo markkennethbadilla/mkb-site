@@ -3,6 +3,7 @@ import Rail from "@/components/demos/shell/rail";
 import ScopeNote from "@/components/demos/shell/scope-note";
 import SourceFooter from "@/components/demos/shell/source-footer";
 import type { DemoRoom } from "@/lib/demos/registry";
+import RoomSpecimen from "@/components/demos/room-specimen";
 
 /**
  * Everything that is the same in every room, in the same order, every time.
@@ -35,11 +36,15 @@ export default function RoomShell({
       <RoomTint hue={room.hue} />
       <Rail room={room} />
       <div className="space-y-6 pb-4">
+        <div className="grid items-start gap-6 sm:grid-cols-[minmax(0,1fr)_14rem]" style={{ "--tint-hue": room.hue } as React.CSSProperties}>
+          {/* The same drawing as the room's homepage block (2026-10-24 overhaul), so the
+              visitor recognises the machine they clicked. */}
+          <RoomSpecimen slug={room.slug} className="order-first aspect-[2/1] sm:order-last sm:aspect-[5/3]" />
         <div className="space-y-2">
-          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em]" style={{ color: "light-dark(oklch(0.5 0.15 var(--tint-hue)), oklch(0.78 0.13 var(--tint-hue)))" }}>
             Room {room.order} of 3
           </p>
-          <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">{room.name}</h1>
+          <h1 className="text-4xl font-semibold tracking-tighter sm:text-6xl">{room.name}</h1>
           <p className="max-w-prose text-[15px] leading-relaxed text-foreground/85">
             {room.promise}
           </p>
@@ -52,6 +57,7 @@ export default function RoomShell({
               <li key={step}>{step}</li>
             ))}
           </ol>
+        </div>
         </div>
 
         {/* Same dl idiom, same label column width and same type scale as the wall
