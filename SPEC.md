@@ -31,15 +31,13 @@ deterministic gates so it physically cannot ship a dangerous change.
   matches the rooms, in green with its own drawing (`agent-guards` in
   `room-specimen.tsx`, a guard stopping a tool call). A one-line footer
   (`src/components/footer.tsx`) closes every site page.
-  The logo is the MKB circuit mark (Mark 2026-10-24, "maximalist, a squircle, has
-  meaning"), one SVG in `src/lib/logo.ts`: M, K and B as one circuit trace on a deep
-  squircle (outline from the pinned `figma-squircle`) with a room-colour gradient rim
-  and the flickering-grid dots; the K's arms converge on one gold node, twelve
-  payments into one ledger. A small variant (no grid or nodes, thicker strokes)
-  is the favicon. `src/app/icon.tsx` and `src/app/apple-icon.tsx` render it at build
-  through next/og ImageResponse (apple-icon full bleed on a solid square), and the
-  header logo inlines the same SVG. Two rejected concepts (ledger, shield) live in
-  the same file for comparison. The export writes the icons as `/icon` and
+  The logo is the MKB ligature (Mark 2026-10-25, "more simple but creatively
+  done"), one SVG in `src/lib/logo.ts`: the letters share stems (the M's last stroke
+  is the K's stem, the K's arms meet the B's stem), white on the site green, on a
+  squircle from the pinned `figma-squircle`. The favicon uses thicker strokes.
+  `src/app/icon.tsx` and `src/app/apple-icon.tsx` render it at build through next/og
+  ImageResponse (apple-icon full bleed on a solid square), and the header logo
+  inlines the same SVG. The export writes the icons as `/icon` and
   `/apple-icon` with no extension, so `public/_headers` sets their Content-Type to
   image/png (the site sends nosniff). The Magic UI
   FlickeringGrid is back behind the top of each page (Mark asked for it), loaded by

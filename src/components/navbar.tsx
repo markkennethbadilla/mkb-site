@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FileTextIcon } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { DATA } from "@/data/resume";
-import { logoSvg, SHIPPED } from "@/lib/logo";
+import { logoSvg } from "@/lib/logo";
 
 /**
  * A slim sticky header, server-rendered (2026-10-24 overhaul).
@@ -30,7 +30,7 @@ export default function Navbar() {
           href="/"
           aria-label="MKB, Mark Kenneth Badilla, home"
           className="block size-10 shrink-0"
-          dangerouslySetInnerHTML={{ __html: logoSvg(SHIPPED, { size: 40 }) }}
+          dangerouslySetInnerHTML={{ __html: logoSvg({ size: 40 }) }}
         />
         <ul className="ml-auto hidden items-center gap-5 text-sm text-muted-foreground md:flex">
           {SECTIONS.map((s) => (
