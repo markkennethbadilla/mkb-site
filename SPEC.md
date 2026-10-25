@@ -41,7 +41,7 @@ deterministic gates so it physically cannot ship a dangerous change.
   `/apple-icon` with no extension, so `public/_headers` sets their Content-Type to
   image/png (the site sends nosniff). The Magic UI
   FlickeringGrid is back behind the top of each page (Mark asked for it), loaded by
-  `src/components/grid-backdrop.tsx` only after the browser is idle and never for
+  `src/components/grid-backdrop.tsx` only on first interaction or after 6 s, never for
   reduced motion.
 - **The site guide** (`/#guide`) - a small card under the hero. Ask it something
   in free text and it decides which section of the page answers you, then leaves
