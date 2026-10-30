@@ -14,6 +14,7 @@ const PDF = "mark-kenneth-badilla-resume.pdf";
 const resume = JSON.parse(readFileSync(join(ROOT, "resume/resume.json"), "utf8"));
 const { name, label } = resume.basics;
 
+// nosemgrep: html-in-template-string
 const head = `<head><meta name="description" content="${name}, ${label}. One-page resume, PDF at /resume/${PDF}."><link rel="alternate" type="application/pdf" href="/resume/${PDF}">`;
 
 // Three string fixes to the theme's fixed <head> (it has no option for them; a

@@ -18,7 +18,9 @@ export function logoSvg(opts: { small?: boolean; size?: number; fullBleed?: bool
   const sz = opts.size ?? 100;
   const squircle = getSvgPath({ width: 100, height: 100, cornerRadius: 27, cornerSmoothing: 0.8 });
   // fullBleed: a solid square behind the squircle for the apple-icon (iOS masks it).
+  // nosemgrep: html-in-template-string
   const ground = opts.fullBleed ? `<rect width="100" height="100" fill="${GREEN}"/>` : "";
+  // nosemgrep: html-in-template-string
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${sz}" height="${sz}">${ground}<path d="${squircle}" fill="${GREEN}"/><path d="${LETTERS}" fill="none" stroke="#ffffff" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 

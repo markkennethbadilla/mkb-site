@@ -405,3 +405,12 @@ move every check to a local Trunk pre-push gate plus the host's build).
 Floors: accessibility, best practices and SEO at least 95; performance at least
 80 mobile and 95 desktop (baseline 2026-10-02: 82/97 mobile, 99/100 desktop).
 Raise a floor when a score rises; never lower it (agentops rule 73).
+
+## Security scan
+
+The Trunk pre-push gate runs Opengrep with the pinned JavaScript and
+TypeScript security rules (mkb-winops spec 060). It scans only files changed
+since origin/main and blocks a push on a new ERROR or WARNING finding. Fix the
+finding, or when it is a false positive put `// nosemgrep: <rule-id>` on the
+line above it, using the short rule id the scan prints. There is no global
+skip.
