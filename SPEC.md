@@ -348,6 +348,25 @@ deterministic gates so it physically cannot ship a dangerous change.
 - Input validated by Zod with a hard length cap before any model is called.
 - Output validated by Zod; non-conforming responses advance the cascade.
 
+## Budget cap on paid calls (rule 97)
+
+Every paid model call (guide and ScoreAudit on DeepSeek `deepseek/personal-api-key`,
+the agent harness on OpenRouter `openrouter/personal-api-key`, and the two
+scripts `probe-guide.mjs` and `bench-guide.mjs`) goes through `src/lib/spend-cap.ts`:
+
+- `maxOutputTokens` is always 600 per step.
+- The worst-case cost of the run is estimated from list prices before the call and
+  refused past 0.10 USD per run.
+- The OpenRouter key's own usage is read first; calls stop at its credit limit and
+  one alert goes out past 80 percent.
+- A refusal, a provider 402 or a limit error logs FAIL with the real error and
+  POSTs `{source:"budget-cap",...}` to `https://leads.weassist.uk/notify/ops-alert`
+  when a `NOTIFY_TOKEN` is set. This is a personal project, so the work token is
+  not copied here (rule 64); without it the FAIL log line is the record.
+
+Open: the OpenRouter key has no provider credit limit yet; a dedicated
+`openrouter/mkb-site` key needs a management key, which the personal vault lacks.
+
 ## Records first (rule 43)
 
 Every POST to `/api/*` (the guide, the agent, the demo rooms) is written whole to

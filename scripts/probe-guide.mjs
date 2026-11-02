@@ -1,3 +1,5 @@
+// BUDGET-CAP: deepseek/personal-api-key 0.10USD-per-run
+// BUDGET-ALERT: ops-alert
 // Proves a free model actually CALLS the guide's tools, and routes to the right
 // section, against real models rather than a stub.
 //
@@ -23,6 +25,10 @@ import { GUIDE_CHAIN, DEEPSEEK_BASE_URL } from "../src/lib/guide-models.ts";
 import { checkGrounding } from "../src/lib/grounding.ts";
 import { FACTS_BRIEF, LICENCE } from "../src/lib/public-facts.ts";
 import { vaultRow } from "./vault.mjs";
+import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap.ts";
+
+// Optional alert token from the environment; personal project, so the work token is not used (rule 64).
+const capCtx = { project: "mkb-site scripts", keySlug: "deepseek/personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
 
 const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 
@@ -92,15 +98,23 @@ async function run(model, question) {
     }),
   };
 
-  const result = await generateText({
+  if (await checkRunCap(capCtx, model, GUIDE_SYSTEM_PROMPT.length + question.length, 1, "probe-guide case")) throw new Error("budget cap reached, call skipped");
+  let result;
+  try {
+  result = await generateText({
     model: openrouter(model),
     system: GUIDE_SYSTEM_PROMPT,
     prompt: question,
     tools: toolbox,
     stopWhen: stepCountIs(1),
     temperature: 0.3,
+    maxOutputTokens: MAX_OUTPUT_TOKENS,
     maxRetries: 1,
   });
+  } catch (e) {
+    await alertIfLimitError(capCtx, e, "probe-guide case");
+    throw e;
+  }
 
   // Mirror production's three shapes exactly, or the probe reports a pass on
   // behaviour production would treat differently. Answering in place - a grounded
@@ -147,4 +161,4 @@ console.log(
   `\n${pass} passed, ${fail} failed, ${skipped} skipped (rate limits/transport)` +
     `\n${blocked} fabricated answers blocked by the grounding check before reaching a visitor`
 );
-process.exit(fail > 0 ? 1 : 0);
+process.exit(fail > 0 ? 1 : 0);

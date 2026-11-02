@@ -1,3 +1,5 @@
+// BUDGET-CAP: openrouter/personal-api-key no-provider-limit-yet
+// BUDGET-ALERT: ops-alert
 // serena-cannot: concurrent background workflow agents keep re-activating a different
 // Serena project, so relative-path edits resolve into the wrong repository.
 /**
@@ -32,6 +34,7 @@ import { extractJsonMiddleware, generateText, Output, wrapLanguageModel } from "
 import { z } from "zod";
 import { handleGuide } from "./guide";
 import { budgetStatus, reserve } from "./budget";
+import { alertIfLimitError, checkOpenRouterKey, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap";
 import { handleDemos } from "./demos/router";
 import { discoverFreeModels, json, FINAL_FALLBACK, MAX_ATTEMPTS } from "./models";
 
@@ -142,6 +145,11 @@ async function handleAgent(req: Request, env: Env): Promise<Response> {
   const chain = [...discovered.slice(0, MAX_ATTEMPTS), FINAL_FALLBACK];
   const cascade: { model: string; ok: boolean; ms: number; error?: string }[] = [];
   const startedAll = Date.now();
+  const capCtx = { project: "mkb-site", keySlug: "openrouter/personal-api-key", notifyToken: env.NOTIFY_TOKEN };
+  const capRefused =
+    (await checkOpenRouterKey(capCtx, key, "agent-harness run")) ??
+    (await checkRunCap(capCtx, FINAL_FALLBACK, SYSTEM_PROMPT.length + JSON_INSTRUCTION.length + prompt.length, 1, "agent-harness run"));
+  if (capRefused) return json({ degraded: true, reason: `budget-cap:${capRefused}`, cascade: [] });
 
   // serena-cannot: concurrent workflow agents hold Serena's active project.
   //
@@ -171,6 +179,7 @@ async function handleAgent(req: Request, env: Env): Promise<Response> {
         system: SYSTEM_PROMPT + "\n" + JSON_INSTRUCTION,
         prompt,
         temperature: 0.2,
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
         maxRetries: 1,
         timeout: { totalMs: MODEL_TIMEOUT_MS },
         experimental_telemetry: { isEnabled: true, functionId: "agent-harness" },
@@ -201,6 +210,7 @@ async function handleAgent(req: Request, env: Env): Promise<Response> {
         },
       });
     } catch (e) {
+      if (await alertIfLimitError(capCtx, e, `agent-harness model ${model}`)) break;
       cascade.push({ model, ok: false, ms: Date.now() - startedAt, error: String(e).slice(0, 140) });
     }
   }

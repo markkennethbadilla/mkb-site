@@ -1,3 +1,5 @@
+// BUDGET-CAP: deepseek/personal-api-key 0.10USD-per-run
+// BUDGET-ALERT: ops-alert
 /**
  * POST /api/demos/score-audit/run - the ScoreAudit room's only endpoint.
  *
@@ -59,6 +61,7 @@ import { DEEPSEEK_BASE_URL, GUIDE_CHAIN } from "../../src/lib/guide-models";
 import { QUESTIONS, CAN_QUERY, type Question } from "../../src/lib/demos/score-audit-questions";
 import { guardSql, MAX_ROWS } from "../../src/lib/sql-guard";
 import { json, type DemoEnv } from "./router";
+import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../../src/lib/spend-cap";
 
 export const START_ACTIONS = ["run"] as const;
 
@@ -207,6 +210,10 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
     supportsStructuredOutputs: false,
   });
 
+  const capCtx = { project: "mkb-site", keySlug: "deepseek/personal-api-key", notifyToken: env.NOTIFY_TOKEN };
+  const capRefused = await checkRunCap(capCtx, GUIDE_CHAIN[0], buildSystemPrompt(questions, canQuery).length, MAX_STEPS, "score-audit run");
+  if (capRefused) return json({ error: `Budget cap reached (${capRefused}), so no model call was made.` }, 429);
+
   const startedAt = Date.now();
 
   // Independent of the model on purpose - fired now, awaited after the model
@@ -231,12 +238,14 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
       tools: buildToolbox(db, decision, ids, canQuery),
       stopWhen: stepCountIs(MAX_STEPS),
       temperature: 0.2,
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
       maxRetries: 1,
       experimental_telemetry: { isEnabled: true, functionId: "score-audit" },
     });
     usage = { inputTokens: result.usage?.inputTokens, outputTokens: result.usage?.outputTokens };
     stepsTaken = result.steps.length;
   } catch (e) {
+    await alertIfLimitError(capCtx, e, "score-audit run");
     return json({ error: `The model call failed: ${String(e).slice(0, 200)}` }, 502);
   }
 

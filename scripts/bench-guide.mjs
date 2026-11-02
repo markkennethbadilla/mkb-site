@@ -1,3 +1,5 @@
+// BUDGET-CAP: deepseek/personal-api-key 0.10USD-per-run
+// BUDGET-ALERT: ops-alert
 // Measures the guide's real task on each blessed DeepSeek model, so the model
 // choice is decided by latency and correctness rather than by assumption.
 //
@@ -17,6 +19,10 @@ import { z } from "zod";
 import { SECTION_IDS, buildGuidePrompt } from "../src/lib/site-sections.ts";
 import { FACTS_BRIEF } from "../src/lib/public-facts.ts";
 import { vaultRow } from "./vault.mjs";
+import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap.ts";
+
+// Optional alert token from the environment; personal project, so the work token is not used (rule 64).
+const capCtx = { project: "mkb-site scripts", keySlug: "deepseek/personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
 
 const cred = vaultRow("deepseek/personal-api-key");
 
@@ -58,15 +64,23 @@ async function run(model, question) {
   };
 
   const t0 = Date.now();
-  const result = await generateText({
+  if (await checkRunCap(capCtx, model, SYSTEM.length + question.length, 1, "bench-guide case")) throw new Error("budget cap reached, call skipped");
+  let result;
+  try {
+  result = await generateText({
     model: deepseek(model),
     system: SYSTEM,
     prompt: question,
     tools: toolbox,
     stopWhen: stepCountIs(1),
     temperature: 0.3,
+    maxOutputTokens: MAX_OUTPUT_TOKENS,
     maxRetries: 1,
   });
+  } catch (e) {
+    await alertIfLimitError(capCtx, e, "bench-guide case");
+    throw e;
+  }
   const ms = Date.now() - t0;
 
   if (!section && !answer && !declined) declined = true;

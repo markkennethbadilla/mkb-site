@@ -1,3 +1,5 @@
+// BUDGET-CAP: deepseek/personal-api-key 0.10USD-per-run
+// BUDGET-ALERT: ops-alert
 /**
  * POST /api/guide - the site guide's tool-calling loop.
  *
@@ -23,6 +25,7 @@ const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 import { buildToolbox, type GuideDecision } from "./guide-tools";
 import { lookup, remember } from "./cache";
 import { reserve } from "./budget";
+import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap";
 // Env is global, generated from wrangler.jsonc by `wrangler types`.
 import { json, refuseForQuota, GUIDE_CHAIN, DEEPSEEK_BASE_URL } from "./models";
 
@@ -112,6 +115,10 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
 
   const chain = [...GUIDE_CHAIN];
 
+  const capCtx = { project: "mkb-site", keySlug: "deepseek/personal-api-key", notifyToken: env.NOTIFY_TOKEN };
+  const capRefused = await checkRunCap(capCtx, chain[0], GUIDE_SYSTEM_PROMPT.length + parsed.data.question.length, MAX_STEPS * chain.length, "site-guide question");
+  if (capRefused) return json(degraded(`budget-cap:${capRefused}`));
+
   for (const model of chain) {
     const decision: GuideDecision = {
       section: null,
@@ -129,6 +136,7 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
         tools: buildToolbox(decision),
         stopWhen: stepCountIs(MAX_STEPS),
         temperature: 0.3,
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
         maxRetries: 1,
         experimental_telemetry: { isEnabled: true, functionId: "site-guide" },
       });
@@ -190,7 +198,8 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
         inputTokens: result.usage?.inputTokens ?? null,
         outputTokens: result.usage?.outputTokens ?? null,
       });
-    } catch {
+    } catch (e) {
+      await alertIfLimitError(capCtx, e, `site-guide model ${model}`);
       // Try the next model. Nothing has been sent to the browser yet, so this is
       // invisible to the visitor - which is the whole reason the loop is not
       // streamed.

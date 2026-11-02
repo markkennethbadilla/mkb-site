@@ -16,4 +16,6 @@ interface Env {
   OPENROUTER_API_KEY?: string;
   /** Mark's own DeepSeek key. The site guide and the ScoreAudit room run on it. */
   DEEPSEEK_API_KEY?: string;
+  /** Optional bearer for the ops-alert notify endpoint; unset on this personal project (rule 64). */
+  NOTIFY_TOKEN?: string;
 }
