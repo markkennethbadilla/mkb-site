@@ -6,6 +6,7 @@ import { existsSync, unlinkSync, readFileSync, writeFileSync, mkdirSync } from "
 import { join } from "node:path";
 import { render } from "jsonresume-theme-stackoverflow";
 import { chromium } from "@playwright/test";
+import escapeHtml from "escape-html";
 
 const ROOT = join(import.meta.dirname, "..");
 const PUB = join(ROOT, "public");
@@ -14,8 +15,9 @@ const PDF = "mark-kenneth-badilla-resume.pdf";
 const resume = JSON.parse(readFileSync(join(ROOT, "resume/resume.json"), "utf8"));
 const { name, label } = resume.basics;
 
+// name and label come from resume.json and are escaped; the rule is syntax-only.
 // nosemgrep: html-in-template-string
-const head = `<head><meta name="description" content="${name}, ${label}. One-page resume, PDF at /resume/${PDF}."><link rel="alternate" type="application/pdf" href="/resume/${PDF}">`;
+const head = `<head><meta name="description" content="${escapeHtml(name)}, ${escapeHtml(label)}. One-page resume, PDF at /resume/${PDF}."><link rel="alternate" type="application/pdf" href="/resume/${PDF}">`;
 
 // Three string fixes to the theme's fixed <head> (it has no option for them; a
 // rehype pipeline for three attributes would be more to maintain than this). Each
