@@ -2,8 +2,9 @@
 // jsonresume-theme-stackoverflow into public/resume/index.html, then prints the
 // same page to public/resume/mark-kenneth-badilla-resume.pdf with Playwright.
 // Both outputs are gitignored build products; resume.json is the only source.
-import { existsSync, unlinkSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
+import { execFileSync } from "node:child_process";
 import { render } from "jsonresume-theme-stackoverflow";
 import { chromium } from "@playwright/test";
 import escapeHtml from "escape-html";
@@ -53,5 +54,6 @@ await page.route("http://resume.local/**", (r) =>
 await page.goto("http://resume.local/resume/print.html", { waitUntil: "networkidle" });
 await page.pdf({ path: join(OUT, PDF), format: "Letter", scale: 0.95 });
 await browser.close();
-unlinkSync(join(OUT, "print.html"));
+// Rule 94: the only delete is the Recycle Bin through agentops recycle.mjs.
+execFileSync(process.execPath, ["A:/personal-markkennethbadilla/mkb-agentops/scripts/recycle.mjs", join(OUT, "print.html")], { stdio: "inherit" });
 console.log(`resume: ${OUT}`);

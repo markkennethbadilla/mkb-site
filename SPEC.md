@@ -274,7 +274,9 @@ deterministic gates so it physically cannot ship a dangerous change.
     Driftwood pipeline, skill run-project-driftwood) into `public/resume/index.html` and
     prints that page with Playwright to `public/resume/mark-kenneth-badilla-resume.pdf`
     (Letter, scale 0.95, real text so an ATS can read it). Both are gitignored build
-    products. Content is general, for any role, and every claim must pass the Driftwood
+    products. The temporary `print.html` goes through
+    `mkb-agentops/scripts/recycle.mjs` (Recycle Bin, rule 94), never a raw delete.
+    Content is general, for any role, and every claim must pass the Driftwood
     skill's "What the notes may claim" and the tracker's Retired claims. Exactly one page:
     check `pypdf` page count and look at a raster before deploy; cut content, never shrink
     type. The old hand-built React sheet (`src/components/resume/*`, `src/app/resume/*`,
