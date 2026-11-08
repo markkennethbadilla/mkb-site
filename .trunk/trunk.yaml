@@ -32,7 +32,12 @@ actions:
     # finding with `// nosemgrep: <rule-id>` (the short id it prints) on or above the line.
     - id: block-push-on-opengrep
       triggers: [{git_hooks: [pre-push]}]
-      run: '"C:/Program Files/opengrep/opengrep.exe" scan --experimental --disable-version-check --quiet --error --severity ERROR --severity WARNING --baseline-commit origin/main --config C:/ProgramData/opengrep/semgrep-rules .'
+      environment:
+        - name: MISE_GLOBAL_CONFIG_FILE
+          value: ${env.MISE_GLOBAL_CONFIG_FILE}
+        - name: PATHEXT
+          value: ${env.PATHEXT}
+      run: 'opengrep scan --experimental --disable-version-check --quiet --error --severity ERROR --severity WARNING --baseline-commit origin/main --config C:/ProgramData/opengrep/semgrep-rules .'
     - id: block-commit-on-findings
       triggers: [{git_hooks: [pre-commit]}]
       run: trunk check --ci
