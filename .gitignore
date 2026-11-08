@@ -55,3 +55,12 @@ next-env.d.ts
 # Built from resume/resume.json by scripts/build-resume.mjs
 /public/resume/
 /%SystemDrive%/
+
+# secrets and keys (2026-11-08)
+*.key
+id_rsa*
+id_ed25519*
+*_deploy_key
+.temp_deploy_key
+*.pfx
+*.p12
