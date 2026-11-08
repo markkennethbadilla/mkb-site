@@ -54,3 +54,4 @@ next-env.d.ts
 
 # Built from resume/resume.json by scripts/build-resume.mjs
 /public/resume/
+/%SystemDrive%/
