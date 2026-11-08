@@ -1,4 +1,4 @@
-// BUDGET-CAP: openrouter/personal-api-key no-provider-limit-yet; deepseek/personal-api-key 0.10USD-per-run
+// BUDGET-CAP: openrouter/personal-api-key 1USD-monthly-provider-limit; deepseek/personal-api-key 0.10USD-per-run
 // BUDGET-ALERT: ops-alert
 //
 // Hard budget cap on every paid model call (rule 97, agentops spec 119).

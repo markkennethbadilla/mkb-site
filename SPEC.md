@@ -366,8 +366,15 @@ scripts `probe-guide.mjs` and `bench-guide.mjs`) goes through `src/lib/spend-cap
   when a `NOTIFY_TOKEN` is set. This is a personal project, so the work token is
   not copied here (rule 64); without it the FAIL log line is the record.
 
-Open: the OpenRouter key has no provider credit limit yet; a dedicated
-`openrouter/mkb-site` key needs a management key, which the personal vault lacks.
+Provider-side limit (set 2026-11-07 in the OpenRouter UI, key "portfolio",
+`sk-or-v1-d71...252`, vault slug `openrouter/personal-api-key`): **1 USD credit
+limit, monthly reset** (1st of the month, UTC). The key stops working at 1 USD in a
+month; spend-cap.ts reads it and stops at the limit, alerting at 0.80 USD. It reads
+`GET https://openrouter.ai/api/v1/key` (fields `limit`, `limit_reset`,
+`limit_remaining`, `usage_monthly`) and writes nothing to OpenRouter. Check:
+`curl -s https://openrouter.ai/api/v1/key -H "Authorization: Bearer $KEY"` shows
+`"limit":1,"limit_reset":"monthly"`. Change it at openrouter.ai, Workspace, API
+keys, portfolio (the personal vault has no management key).
 
 ## Records first (rule 43)
 
