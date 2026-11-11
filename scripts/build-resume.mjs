@@ -55,5 +55,5 @@ await page.goto("http://resume.local/resume/print.html", { waitUntil: "networkid
 await page.pdf({ path: join(OUT, PDF), format: "Letter", scale: 0.95 });
 await browser.close();
 // Rule 94: the only delete is the Recycle Bin through agentops recycle.mjs.
-execFileSync(process.execPath, ["A:/personal-markkennethbadilla/mkb-agentops/scripts/recycle.mjs", join(OUT, "print.html")], { stdio: "inherit" });
+execFileSync(process.execPath, ["A:/personal-markkennethbadilla/mkb-agentops/scripts/recycle.mjs", join(OUT, "print.html")], { stdio: "inherit", windowsHide: true });
 console.log(`resume: ${OUT}`);
