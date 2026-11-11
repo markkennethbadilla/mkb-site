@@ -5,8 +5,8 @@ const cut = (d: string) =>
   `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath fill-rule='evenodd' d='M0 0H100V100H0Z ${d}'/%3E%3C/svg%3E")`;
 
 const LAYERS = [
-  { art: "url(/art/gate-1.webp)", size: "100% 100%" },
-  { art: "url(/art/gate-4.webp)", size: "115% 115%" },
+  { art: "url(/art/gate-1.svg)", size: "100% 100%" },
+  { art: "url(/art/gate-4.svg)", size: "115% 115%" },
   { art: cut("M22.5 82.5V45A27.5 27.5 0 0 1 77.5 45V82.5Z"), size: "100% 100%" },
   { art: cut("M23 82.5V48Q23 26 50 17.5Q77 26 77 48V82.5Z"), size: "100% 100%" },
   { art: cut("M24 82.5V40H31V30H38V22H62V30H69V40H76V82.5Z"), size: "100% 100%" },

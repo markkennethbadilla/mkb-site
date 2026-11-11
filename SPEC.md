@@ -128,9 +128,15 @@ Components.
 - Guide card and its bubble, sheets, the entity re-tints as before.
 - Share card, nested arch sheets and the backlight with the name and role.
 - Art, one Gemini set from one locked style reference, listed in
-  `USED-ASSETS.md`. Hero layers are alpha masks filled with the paper tokens,
+  `USED-ASSETS.md`. Art assets are SVG, only photos and OG cards are raster.
+  Hero layers are vector masks filled with the paper tokens,
   so both themes and every room hue colour them. The set holds three sheets
-  (`gate-1`, `gate-2`, `gate-4`). The other hero openings, the contact window
+  (`gate-1`, `gate-2`, `gate-4`), each traced from its Gemini sheet to paths
+  (alpha upscaled 4x, `vtracer` 0.6.11 spline mode, `svgo` 4.0.0) and looked at
+  beside its source. Each hero layer is laid out at 1.5 times its shown size
+  and scaled back down (`--k` in `src/app/lightbox.css`), so its one texture
+  holds enough pixels to stay sharp as the camera moves in, with no repaint
+  while scrolling. The other hero openings, the contact window
   and the not found window are plain arches drawn in code, and no section
   scene exists yet.
 

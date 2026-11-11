@@ -129,13 +129,14 @@ html {
   .lb-layer {
     --w: max(140vw, 116svh, 50rem);
     --h: max(124svh, 62vw, 54rem);
+    --k: 1.5;
     position: absolute;
     top: 50%;
     left: 50%;
-    width: var(--w);
-    height: var(--h);
-    margin: calc(var(--h) / -2) 0 0 calc(var(--w) / -2);
-    transform: translateZ(calc(var(--i) * -50px));
+    width: calc(var(--w) * var(--k));
+    height: calc(var(--h) * var(--k));
+    margin: calc(var(--h) * var(--k) / -2) 0 0 calc(var(--w) * var(--k) / -2);
+    transform: translateZ(calc(var(--i) * -50px)) scale(calc(1 / var(--k)));
     pointer-events: none;
   }
 
@@ -149,7 +150,7 @@ html {
     display: block;
     width: 100%;
     height: 100%;
-    filter: drop-shadow(0 12px 14px var(--shade-deep));
+    filter: drop-shadow(0 calc(12px * var(--k)) calc(14px * var(--k)) var(--shade-deep));
   }
 
   .lb-layer > i::before {
@@ -226,7 +227,7 @@ html {
 
 @keyframes lb-fly {
   to {
-    transform: translateZ(calc(var(--i) * -50px + 700px));
+    transform: translateZ(calc(var(--i) * -50px + 700px)) scale(calc(1 / var(--k)));
   }
 }
 

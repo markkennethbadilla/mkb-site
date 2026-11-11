@@ -1,12 +1,12 @@
 # Used assets
 
-One Gemini set from one locked style reference (`gate-1` set the look, every later prompt attached it). Theme sheet is in `SPEC.md`, "Art theme". No asset is used twice. Licence for every generated row is Gemini output on Mark's own subscription, free to use.
+One Gemini set from one locked style reference (`gate-1` set the look, every later prompt attached it). Theme sheet is in `SPEC.md`, "Art theme". No asset is used twice. Licence for every generated row is Gemini output on Mark's own subscription, free to use. Art assets are SVG, only photos and OG cards are raster: each Gemini sheet was traced to paths (alpha upscaled 4x, `vtracer` 0.6.11 spline mode, `svgo` 4.0.0) and the raster sheet is not in the repo. The three company logos in `public/` (`weassist.png`, `hatchit.png`, `cit.png`) are third-party marks kept as supplied.
 
 | File | Page and spot | What the words there say | Object | Size and placement | Source | Why it fits | Kind |
 |---|---|---|---|---|---|---|---|
-| `public/art/gate-1.webp` | `/` hero, front layer | name and role | arch cut in a sheet, broad leaf edge | 1024 square alpha mask, full stage | Gemini, style lock sheet | the first gate of the light box | hero |
-| `public/art/gate-2.webp` | `/` proof strip under the hero, right edge decor | three checkable figures | round opening with gear teeth | 1024 square alpha mask, faded at its edge | Gemini with the lock sheet attached | the build gate as a cut gear | hero |
-| `public/art/gate-4.webp` | `/` hero, layer 2 | name and role | scalloped arch with small windows | 1024 square alpha mask, full stage at 115 percent | Gemini with the lock sheet attached | a built facade behind the leaves | hero |
+| `public/art/gate-1.svg` | `/` hero, front layer | name and role | arch cut in a sheet, broad leaf edge | square vector mask stretched to the full stage | Gemini, style lock sheet | the first gate of the light box | hero |
+| `public/art/gate-2.svg` | `/` proof strip under the hero, right edge decor | three checkable figures | round opening with gear teeth | square vector mask, faded at its edge | Gemini with the lock sheet attached | the build gate as a cut gear | hero |
+| `public/art/gate-4.svg` | `/` hero, layer 2 | name and role | scalloped arch with small windows | square vector mask, full stage at 115 percent | Gemini with the lock sheet attached | a built facade behind the leaves | hero |
 | `public/me-320.webp` | `/` about, cut paper frame | how I work | Mark's portrait | 320 square, framed | Mark's own photo | the person behind the gates | hero |
 | `src/app/icon.svg` | every page, browser tab icon | brand | the letters MKB, no background | 16 px and up, transparent, light and dark fill | Bricolage Grotesque 800 outlines from `@fontsource/bricolage-grotesque` (OFL) through `bun run favicon` | the hero name face, nothing drawn | plain |
 | `src/components/demos/room-specimen.tsx` | `/` projects, room pages | what each room does | one SVG drawing per room | card top | code geometry | plain diagrams framed as cut windows | plain |
