@@ -15,7 +15,8 @@ deterministic gates so it physically cannot ship a dangerous change.
   on the server, `fly.tsx` the one small client island): five cut paper gate
   layers (two art sheets, `gate-1` leaves in front and `gate-4` behind it, then
   three arch openings drawn as code geometry) stand in CSS 3D in front of a
-  warm backlight, and scroll moves the camera through them. The name is the h1, set as cut paper letters, and it is
+  warm backlight, and scroll moves the camera through them; the pin is 260svh
+  tall and every layer has passed or faded out exactly as it ends. The name is the h1, set as cut paper letters, and it is
   the LCP element. Role, tagline, Email me, the resume link and the location sit inside the gate
   opening, and three checkable figures sit on a proof strip under it with the
   cut gear (`gate-2`) as decor. With reduced motion or scripts off the
@@ -36,7 +37,9 @@ deterministic gates so it physically cannot ship a dangerous change.
   `/icon` and `/apple-icon` with no extension, so `public/_headers` sets their
   Content-Type. The share card is `src/app/og-lightbox.png/route.tsx`, a
   1200x630 PNG made at build with next/og from the name, the role and nested
-  arch sheets, used for both Open Graph and X.
+  arch sheets, set in Bricolage Grotesque from the pinned
+  `@fontsource/bricolage-grotesque` files, used for both Open Graph and X.
+  `/resume/` links `/icon` as its favicon (`scripts/build-resume.mjs`).
 - **The site guide** (`/#guide`) - a small card under the hero. Ask it something
   in free text and it decides which section of the page answers you, then leaves
   its slot: the page eases to that section, everything else dims, and a small

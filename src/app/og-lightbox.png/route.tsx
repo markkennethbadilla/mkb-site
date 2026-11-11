@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { DATA } from "@/data/resume";
 
@@ -10,6 +12,13 @@ const SHEETS = [
   { inset: 132, fill: "#7fbf9c" },
   { inset: 176, fill: "#ffd98a" },
 ];
+
+const face = (weight: 500 | 800) => ({
+  name: "Bricolage Grotesque",
+  weight,
+  style: "normal" as const,
+  data: readFileSync(join(process.cwd(), `node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-${weight}-normal.woff`)),
+});
 
 export function GET() {
   const role = DATA.description.slice(0, DATA.description.indexOf(". "));
@@ -44,13 +53,15 @@ export function GET() {
           justifyContent: "center",
           paddingTop: 110,
           color: "#04361f",
+          fontFamily: "Bricolage Grotesque",
+          fontWeight: 500,
         }}
       >
         <div style={{ fontSize: 26, letterSpacing: 6, textTransform: "uppercase" }}>{role}</div>
-        <div style={{ fontSize: 64, fontWeight: 700, letterSpacing: -2, marginTop: 10 }}>{DATA.name}</div>
+        <div style={{ fontSize: 72, fontWeight: 800, letterSpacing: -2, marginTop: 10 }}>{DATA.name}</div>
         <div style={{ fontSize: 28, marginTop: 14 }}>{DATA.url.replace("https://", "")}</div>
       </div>
     </div>,
-    { width: 1200, height: 630 },
+    { width: 1200, height: 630, fonts: [face(500), face(800)] },
   );
 }

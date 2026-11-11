@@ -3,9 +3,9 @@
 import { animate, scroll } from "motion";
 import { useEffect, useRef } from "react";
 
-const TRAVEL = 1080;
-const FADE_FROM = 520;
-const FADE_TO = 860;
+const TRAVEL = 700;
+const FADE_FROM = 480;
+const FADE_TO = 700;
 
 export function Fly({ gap }: { gap: number }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -15,7 +15,7 @@ export function Fly({ gap }: { gap: number }) {
     if (!root || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const stops = Array.from(root.querySelectorAll<HTMLElement>(".lb-layer")).map((el) => {
       const z0 = -gap * Number(el.dataset.i);
-      const a = Math.min(0.98, (FADE_FROM - z0) / TRAVEL);
+      const a = Math.min(0.82, (FADE_FROM - z0) / TRAVEL);
       const b = Math.min(1, (FADE_TO - z0) / TRAVEL);
       return scroll(
         animate(

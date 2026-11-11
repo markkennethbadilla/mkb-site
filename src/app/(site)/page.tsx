@@ -19,7 +19,7 @@ const PROOF = [
 
 const WEASSIST_PICK = [1, 8, 10, 7, 2, 3];
 const LEAN = ["sm:-rotate-1", "sm:translate-y-3 sm:rotate-[0.6deg]", "sm:-rotate-[0.5deg]"];
-const GEAR = "url(/art/gate-2.webp) center / 100% 100% no-repeat";
+const GEAR = "url(/art/gate-2.webp) center / 100% 100% no-repeat, radial-gradient(circle closest-side, black 66%, transparent 98%)";
 const WRAP = "mx-auto w-full max-w-6xl px-5 sm:px-8 2xl:max-w-7xl";
 const TITLE = "cut-title text-4xl sm:text-5xl 2xl:text-6xl";
 
@@ -36,7 +36,7 @@ export default function Page() {
           >
             <div
               className="absolute -right-28 -bottom-40 size-[26rem] bg-paper-2 dark:bg-paper-3 sm:-right-24 sm:top-1/2 sm:bottom-auto sm:size-[44rem] sm:-translate-y-1/2"
-              style={{ mask: GEAR, WebkitMask: GEAR }}
+              style={{ mask: GEAR, WebkitMask: GEAR, maskComposite: "intersect", WebkitMaskComposite: "source-in" }}
             />
           </div>
           <dl className={`${WRAP} relative grid gap-8 py-12 pb-40 sm:grid-cols-3 sm:py-16 sm:pr-64 lg:pr-80`}>
