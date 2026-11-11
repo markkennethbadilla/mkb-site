@@ -13,17 +13,19 @@ deterministic gates so it physically cannot ship a dangerous change.
   `src/data/resume.tsx`. The look is the paper-cut light box (see "Art theme").
   The hero is a pinned scroll scene (`src/components/hero/light-box.tsx`, markup
   on the server, `fly.tsx` the one small client island): five cut paper gate
-  layers stand in CSS 3D in front of a warm backlight, and scroll moves the
-  camera through them. The name is the h1, set as cut paper letters, and it is
-  the LCP element. Role, tagline, Email me, the resume link and three checkable
-  figures sit inside the gate opening. With reduced motion or scripts off the
+  layers (two art sheets, `gate-1` leaves in front and `gate-4` behind it, then
+  three arch openings drawn as code geometry) stand in CSS 3D in front of a
+  warm backlight, and scroll moves the camera through them. The name is the h1, set as cut paper letters, and it is
+  the LCP element. Role, tagline, Email me, the resume link and the location sit inside the gate
+  opening, and three checkable figures sit on a proof strip under it with the
+  cut gear (`gate-2`) as decor. With reduced motion or scripts off the
   hero is one screen tall and shows the same layers as a still shadowbox.
   After the hero the page is a normal vertical document. Each section is a
-  paper sheet with its own structure: About is three stacked sheets, Work is a
-  strip of cut tabs on one spine beside a paper scene, Projects is the three
+  paper sheet with its own structure: About is a framed portrait beside three leaning sheets, Work is the current
+  role sheet over a strip of cut tabs for the earlier roles, Projects is the three
   rooms and the repository as framed shadowboxes, Stack is eight cut tiles and
-  one native `<details>`, Education is a certificate sheet beside its scene,
-  Contact is one lit window with one button. The page is server components
+  one native `<details>`, Education is a degree sheet beside the certificate list in a slot,
+  Contact is one lit arch window with one button. The page is server components
   except the hero island and the guide, which still loads on first intent
   (`src/components/demo/guide-lazy.tsx`).
   The chrome is a floating logo with the resume link and the theme toggle
@@ -33,8 +35,8 @@ deterministic gates so it physically cannot ship a dangerous change.
   `src/app/apple-icon.tsx` render it at build through next/og, written as
   `/icon` and `/apple-icon` with no extension, so `public/_headers` sets their
   Content-Type. The share card is `src/app/og-lightbox.png/route.tsx`, a
-  1200x630 PNG made at build with next/og from the name, the role and the gate
-  art, used for both Open Graph and X.
+  1200x630 PNG made at build with next/og from the name, the role and nested
+  arch sheets, used for both Open Graph and X.
 - **The site guide** (`/#guide`) - a small card under the hero. Ask it something
   in free text and it decides which section of the page answers you, then leaves
   its slot: the page eases to that section, everything else dims, and a small
@@ -97,7 +99,7 @@ name settles once as cut letters).
 Components.
 
 - Sheet (`.sheet`), the card. A paper step with `--shadow-cut`, no border.
-- Button, a full round cut tab in `--ink-fill` with white text, lifts on hover.
+- Button (`.btn-cut`), a full round cut tab in `--primary`, lifts on hover, with a paper variant (`.btn-paper`).
 - Chip, a small paper tab, radius 0.75rem.
 - Inputs, an inset slot (`.slot`), a cut-out showing the layer under it.
 - Section head (`.cut-title`), display type with a short amber cut bar.
@@ -107,16 +109,18 @@ Components.
 - Footer, the last sheet, one line.
 - Logo, the MKB squircle, floating, with `--shadow-cut`.
 - Guide card and its bubble, sheets, the entity re-tints as before.
-- Share card, the gate layers and backlight with the name and role.
+- Share card, nested arch sheets and the backlight with the name and role.
 - Art, one Gemini set from one locked style reference, listed in
   `USED-ASSETS.md`. Hero layers are alpha masks filled with the paper tokens,
-  so both themes and every room hue colour them. Scenes are raster WebP inside
-  a cut frame.
+  so both themes and every room hue colour them. The set holds three sheets
+  (`gate-1`, `gate-2`, `gate-4`). The other hero openings, the contact window
+  and the not found window are plain arches drawn in code, and no section
+  scene exists yet.
 
 Pages.
 
 - `/`, the hero fly-through, then sheets per section as described under Features.
-- Not found, a closed gate sheet with the way home and the three rooms.
+- Not found (`src/app/not-found.tsx`), a lit arch window with the way home and the three rooms.
 - `/demos/<slug>`, the same sheets, slots and type in the room's hue, the
   specimen drawing in a cut frame, the rail a floating sheet.
 - `/resume/`, the pinned JSON Resume theme, outside the theme on purpose.

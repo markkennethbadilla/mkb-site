@@ -126,11 +126,11 @@ export default function Page() {
 
       <section id="education" className={WRAP}>
         <h2 className={TITLE}>Education</h2>
-        <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
           {DATA.education.map((e) => (
             <a key={e.school} href={e.href} target="_blank" rel="noopener noreferrer" className="sheet sheet-lift flex items-start gap-4 p-6 sm:p-8">
               {e.logoUrl ? <Image src={e.logoUrl} alt="" width={56} height={56} className="size-14 shrink-0 rounded-full bg-white object-contain p-1.5 shadow-[var(--shadow-cut)]" /> : null}
-              <span>
+              <span className="min-w-0 break-words">
                 <span className="block font-display text-2xl font-extrabold tracking-tight sm:text-3xl">{e.degree}</span>
                 <span className="mt-1 block text-muted-foreground">{e.school}</span>
                 <span className="tab mt-3 font-mono">
@@ -141,7 +141,7 @@ export default function Page() {
           ))}
           <ul className="slot grid content-center gap-3 p-5 sm:p-6">
             {DATA.certifications.map((c) => (
-              <li key={c} className="sheet flex items-start gap-3 rounded-xl p-3.5 text-sm font-medium leading-snug">
+              <li key={c} className="sheet flex min-w-0 items-start gap-3 rounded-xl p-3.5 text-sm font-medium leading-snug [overflow-wrap:anywhere]">
                 <span aria-hidden className="mt-1 size-2.5 shrink-0 rotate-45 rounded-[2px] bg-glow" />
                 {c}
               </li>

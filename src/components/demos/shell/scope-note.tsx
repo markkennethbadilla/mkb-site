@@ -53,7 +53,7 @@ const split = (value: string): [string, string] => {
 // and two elements announcing the same name is one of them read twice.
 export default function ScopeNote({ room }: { room: DemoRoom }) {
   return (
-    <section className="rounded-lg border border-border bg-card/60 px-4 py-3 sm:px-5 sm:py-4">
+    <section className="slot px-4 py-3 sm:px-5 sm:py-4">
       <table role="table" className="block w-full border-collapse sm:table">
         <caption className="sr-only">What this demo is and is not</caption>
         <tbody role="rowgroup" className="block sm:table-row-group">
@@ -68,7 +68,7 @@ export default function ScopeNote({ room }: { room: DemoRoom }) {
                 <th
                   role="rowheader"
                   scope="row"
-                  className="block text-left align-top font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-muted-foreground sm:table-cell sm:w-[10.5rem] sm:pb-3 sm:pr-6 sm:pt-[3px]"
+                  className="block text-left align-top font-mono text-[0.6875rem] font-normal uppercase tracking-[0.14em] text-muted-foreground sm:table-cell sm:w-[10.5rem] sm:pb-3 sm:pr-6 sm:pt-[3px]"
                 >
                   {row.label}
                 </th>

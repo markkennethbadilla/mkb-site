@@ -25,17 +25,17 @@ export default function SourceFooter({ room }: { room: DemoRoom }) {
   const next = nextRoom(room.slug);
 
   return (
-    <footer className="mt-14 space-y-8 border-t border-border pt-8">
+    <footer className="mt-14 space-y-8 pt-2">
       {next ? (
         <Link
           href={`/demos/${next.slug}`}
-          className="group block rounded-xl border border-border bg-card/50 p-5 transition-colors hover:border-foreground/25 hover:bg-card"
+          className="sheet sheet-lift group block p-5"
         >
-          <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+          <div className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground">
             Next room
           </div>
           <div className="mt-1.5 flex items-baseline gap-2">
-            <span className="text-lg font-semibold tracking-tight">{next.name}</span>
+            <span className="font-display text-xl font-bold tracking-tight">{next.name}</span>
             <span aria-hidden className="text-muted-foreground transition-transform group-hover:translate-x-0.5">
               &rarr;
             </span>
@@ -47,13 +47,13 @@ export default function SourceFooter({ room }: { room: DemoRoom }) {
       ) : (
         <Link
           href="/#projects"
-          className="group block rounded-xl border border-border bg-card/50 p-5 transition-colors hover:border-foreground/25 hover:bg-card"
+          className="sheet sheet-lift group block p-5"
         >
-          <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+          <div className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground">
             That is all three
           </div>
           <div className="mt-1.5 flex items-baseline gap-2">
-            <span className="text-lg font-semibold tracking-tight">Back to the gallery</span>
+            <span className="font-display text-xl font-bold tracking-tight">Back to the gallery</span>
             <span aria-hidden className="text-muted-foreground transition-transform group-hover:translate-x-0.5">
               &rarr;
             </span>
@@ -88,7 +88,7 @@ export default function SourceFooter({ room }: { room: DemoRoom }) {
           href={REPO_URL}
           target="_blank"
           rel="noreferrer noopener"
-          className="group inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3.5 py-2 text-[13px] font-medium transition-colors hover:border-foreground/25 hover:bg-accent"
+          className="btn-cut btn-paper group text-[13px]"
         >
           <Icons.github className="size-3.5 text-muted-foreground transition-colors group-hover:text-foreground" />
           <span>Source on GitHub</span>

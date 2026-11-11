@@ -237,7 +237,7 @@ export default function AgentConsole() {
             <p
               className={cn(
                 "text-sm text-pretty",
-                run.degraded ? "text-amber-500" : "text-muted-foreground"
+                run.degraded ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"
               )}
             >
               {run.answer}
@@ -249,7 +249,7 @@ export default function AgentConsole() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-sm text-amber-500 text-pretty"
+            className="text-sm text-amber-700 dark:text-amber-400 text-pretty"
           >
             {error}
           </motion.p>

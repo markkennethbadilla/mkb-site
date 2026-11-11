@@ -39,12 +39,12 @@ export default function RoomShell({
         <div className="grid items-start gap-6 sm:grid-cols-[minmax(0,1fr)_14rem]" style={{ "--tint-hue": room.hue } as React.CSSProperties}>
           {/* The same drawing as the room's homepage block (2026-10-24 overhaul), so the
               visitor recognises the machine they clicked. */}
-          <RoomSpecimen slug={room.slug} className="order-first aspect-[2/1] sm:order-last sm:aspect-[5/3]" />
+          <RoomSpecimen slug={room.slug} className="order-first aspect-[2/1] rounded-[1.25rem] shadow-[var(--shadow-lift)] sm:order-last sm:aspect-[5/3]" />
         <div className="space-y-2">
           <p className="font-mono text-[11px] uppercase tracking-[0.16em]" style={{ color: "light-dark(oklch(0.5 0.15 var(--tint-hue)), oklch(0.78 0.13 var(--tint-hue)))" }}>
             Room {room.order} of 3
           </p>
-          <h1 className="text-4xl font-semibold tracking-tighter sm:text-6xl">{room.name}</h1>
+          <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-6xl">{room.name}</h1>
           <p className="max-w-prose text-[15px] leading-relaxed text-foreground/85">
             {room.promise}
           </p>
@@ -64,12 +64,12 @@ export default function RoomShell({
             label below it, so the two blocks read as one object rather than as two
             components that happened to land next to each other. */}
         <dl className="grid max-w-prose gap-2.5 pt-1 sm:grid-cols-[10.5rem_1fr] sm:gap-x-6 sm:gap-y-3">
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:pt-[5px]">
+          <dt className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground sm:pt-[5px]">
             What this shows
           </dt>
           <dd className="text-[14px] leading-relaxed text-foreground">{room.capability}</dd>
 
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:pt-[5px]">
+          <dt className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted-foreground sm:pt-[5px]">
             How
           </dt>
           {/* A list rather than a sentence, because a term a reader does not know
