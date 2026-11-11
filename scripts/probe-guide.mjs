@@ -1,4 +1,4 @@
-// BUDGET-CAP: deepseek/personal-api-key 0.10USD-per-run
+// BUDGET-CAP: deepseek/active-personal-api-key 0.10USD-per-run
 // BUDGET-ALERT: ops-alert
 // Proves a free model actually CALLS the guide's tools, and routes to the right
 // section, against real models rather than a stub.
@@ -28,11 +28,11 @@ import { vaultRow } from "./vault.mjs";
 import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap.ts";
 
 // Optional alert token from the environment; personal project, so the work token is not used (rule 64).
-const capCtx = { project: "mkb-site scripts", keySlug: "deepseek/personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
+const capCtx = { project: "mkb-site scripts", keySlug: "deepseek/active-personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
 
 const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 
-const cred = vaultRow("deepseek/personal-api-key");
+const cred = vaultRow("deepseek/active-personal-api-key");
 
 // Points at the provider and the exact chain production uses. It used to discover
 // free OpenRouter models, which stopped testing anything real the moment the guide

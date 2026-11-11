@@ -5,3 +5,6 @@ tasks:
   app:
     cmd: ["cmd", "/c", "bun run dev"]
     autostart: true
+  worker:
+    cmd: ["node", "scripts/dev-worker.mjs"]
+    autostart: false

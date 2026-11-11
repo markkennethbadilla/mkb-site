@@ -1,4 +1,4 @@
-// BUDGET-CAP: deepseek/personal-api-key 0.10USD-per-run
+// BUDGET-CAP: deepseek/active-personal-api-key 0.10USD-per-run
 // BUDGET-ALERT: ops-alert
 /**
  * POST /api/guide - the site guide's tool-calling loop.
@@ -115,7 +115,7 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
 
   const chain = [...GUIDE_CHAIN];
 
-  const capCtx = { project: "mkb-site", keySlug: "deepseek/personal-api-key", notifyToken: env.NOTIFY_TOKEN };
+  const capCtx = { project: "mkb-site", keySlug: "deepseek/active-personal-api-key", notifyToken: env.NOTIFY_TOKEN };
   const capRefused = await checkRunCap(capCtx, chain[0], GUIDE_SYSTEM_PROMPT.length + parsed.data.question.length, MAX_STEPS * chain.length, "site-guide question");
   if (capRefused) return json(degraded(`budget-cap:${capRefused}`));
 

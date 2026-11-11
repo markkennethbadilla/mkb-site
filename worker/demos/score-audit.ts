@@ -1,4 +1,4 @@
-// BUDGET-CAP: deepseek/personal-api-key 0.10USD-per-run
+// BUDGET-CAP: deepseek/active-personal-api-key 0.10USD-per-run
 // BUDGET-ALERT: ops-alert
 /**
  * POST /api/demos/score-audit/run - the ScoreAudit room's only endpoint.
@@ -210,7 +210,7 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
     supportsStructuredOutputs: false,
   });
 
-  const capCtx = { project: "mkb-site", keySlug: "deepseek/personal-api-key", notifyToken: env.NOTIFY_TOKEN };
+  const capCtx = { project: "mkb-site", keySlug: "deepseek/active-personal-api-key", notifyToken: env.NOTIFY_TOKEN };
   const capRefused = await checkRunCap(capCtx, GUIDE_CHAIN[0], buildSystemPrompt(questions, canQuery).length, MAX_STEPS, "score-audit run");
   if (capRefused) return json({ error: `Budget cap reached (${capRefused}), so no model call was made.` }, 429);
 

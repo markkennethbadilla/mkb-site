@@ -1,4 +1,4 @@
-// BUDGET-CAP: deepseek/personal-api-key 0.10USD-per-run
+// BUDGET-CAP: deepseek/active-personal-api-key 0.10USD-per-run
 // BUDGET-ALERT: ops-alert
 // Measures the guide's real task on each blessed DeepSeek model, so the model
 // choice is decided by latency and correctness rather than by assumption.
@@ -22,9 +22,9 @@ import { vaultRow } from "./vault.mjs";
 import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap.ts";
 
 // Optional alert token from the environment; personal project, so the work token is not used (rule 64).
-const capCtx = { project: "mkb-site scripts", keySlug: "deepseek/personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
+const capCtx = { project: "mkb-site scripts", keySlug: "deepseek/active-personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
 
-const cred = vaultRow("deepseek/personal-api-key");
+const cred = vaultRow("deepseek/active-personal-api-key");
 
 const deepseek = createOpenAICompatible({
   name: "deepseek",

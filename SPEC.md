@@ -399,7 +399,7 @@ Pages.
 
 ## Budget cap on paid calls (rule 97)
 
-Every paid model call (guide and ScoreAudit on DeepSeek `deepseek/personal-api-key`,
+Every paid model call (guide and ScoreAudit on DeepSeek `deepseek/active-personal-api-key`,
 the agent harness on OpenRouter `openrouter/personal-api-key`, and the two
 scripts `probe-guide.mjs` and `bench-guide.mjs`) goes through `src/lib/spend-cap.ts`:
 
