@@ -1,8 +1,5 @@
 import { ArrowRight, MapPin } from "lucide-react";
 import { DATA } from "@/data/resume";
-import { Fly } from "./fly";
-
-const GAP = 50;
 
 const cut = (d: string) =>
   `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath fill-rule='evenodd' d='M0 0H100V100H0Z ${d}'/%3E%3C/svg%3E")`;
@@ -24,14 +21,13 @@ export function LightBox({ role, tagline }: { role: string; tagline: string }) {
     <div className="lb">
       <div className="lb-stage">
         {ORDER.map((i) => (
-          <div key={i} className="lb-layer" data-i={i} style={{ "--i": i } as React.CSSProperties} aria-hidden>
+          <div key={i} className="lb-layer" style={{ "--i": i } as React.CSSProperties} aria-hidden>
             <i
               style={
                 {
                   "--paper": `var(--paper-${i + 1})`,
                   "--art": LAYERS[i].art,
-                  WebkitMaskSize: LAYERS[i].size,
-                  maskSize: LAYERS[i].size,
+                  "--fit": LAYERS[i].size,
                 } as React.CSSProperties
               }
             />
@@ -68,7 +64,6 @@ export function LightBox({ role, tagline }: { role: string; tagline: string }) {
           </p>
         </div>
       </div>
-      <Fly gap={GAP} />
     </div>
   );
 }

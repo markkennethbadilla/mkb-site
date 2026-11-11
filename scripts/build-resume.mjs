@@ -18,7 +18,7 @@ const { name, label } = resume.basics;
 
 // name and label come from resume.json and are escaped; the rule is syntax-only.
 // nosemgrep: html-in-template-string
-const head = `<head><link rel="icon" type="image/png" href="/icon"><meta name="description" content="${escapeHtml(name)}, ${escapeHtml(label)}. One-page resume, PDF at /resume/${PDF}."><link rel="alternate" type="application/pdf" href="/resume/${PDF}">`;
+const head = `<head><link rel="icon" type="image/svg+xml" href="/icon.svg"><meta name="description" content="${escapeHtml(name)}, ${escapeHtml(label)}. One-page resume, PDF at /resume/${PDF}."><link rel="alternate" type="application/pdf" href="/resume/${PDF}">`;
 
 // Three string fixes to the theme's fixed <head> (it has no option for them; a
 // rehype pipeline for three attributes would be more to maintain than this). Each

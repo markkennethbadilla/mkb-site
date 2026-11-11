@@ -8,7 +8,7 @@ One Gemini set from one locked style reference (`gate-1` set the look, every lat
 | `public/art/gate-2.webp` | `/` proof strip under the hero, right edge decor | three checkable figures | round opening with gear teeth | 1024 square alpha mask, faded at its edge | Gemini with the lock sheet attached | the build gate as a cut gear | hero |
 | `public/art/gate-4.webp` | `/` hero, layer 2 | name and role | scalloped arch with small windows | 1024 square alpha mask, full stage at 115 percent | Gemini with the lock sheet attached | a built facade behind the leaves | hero |
 | `public/me-320.webp` | `/` about, cut paper frame | how I work | Mark's portrait | 320 square, framed | Mark's own photo | the person behind the gates | hero |
-| `src/lib/logo.ts` | every page, floating logo, icons, share card | brand | MKB ligature | 40 px and up | house SVG | brand mark, the one allowed repeat | plain |
+| `src/app/icon.svg` | every page, browser tab icon | brand | the letters MKB, no background | 16 px and up, transparent, light and dark fill | Bricolage Grotesque 800 outlines from `@fontsource/bricolage-grotesque` (OFL) through `bun run favicon` | the hero name face, nothing drawn | plain |
 | `src/components/demos/room-specimen.tsx` | `/` projects, room pages | what each room does | one SVG drawing per room | card top | code geometry | plain diagrams framed as cut windows | plain |
 
 ## Sheets looked at and dropped

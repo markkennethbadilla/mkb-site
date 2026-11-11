@@ -11,8 +11,16 @@ deterministic gates so it physically cannot ship a dangerous change.
 - **Resume surface** - hero, guide, about, work, projects, skills, education,
   contact, in that order on `/`. All content lives in one file,
   `src/data/resume.tsx`. The look is the paper-cut light box (see "Art theme").
-  The hero is a pinned scroll scene (`src/components/hero/light-box.tsx`, markup
-  on the server, `fly.tsx` the one small client island): five cut paper gate
+  The hero is a pinned scroll scene (`src/components/hero/light-box.tsx`, a
+  server component with no script; the motion is a CSS scroll-driven animation
+  in `src/app/lightbox.css`, a named view timeline on `.lb` driving `lb-fly` and
+  `lb-fade` on each layer, so it runs on the compositor in step with the sticky
+  pin; each layer is promoted with `will-change` and carries its shadow and mask
+  on inner elements, so it is rastered once and never again while scrolling;
+  measured over the pin at 1280x640, raster tasks went from 3988 to 185 and GPU
+  time from 633 ms to 154 ms against the old script-driven version; the pin sits
+  behind `@supports (animation-timeline: view())`, so a browser without
+  scroll-driven animations gets the one-screen still): five cut paper gate
   layers (two art sheets, `gate-1` leaves in front and `gate-4` behind it, then
   three arch openings drawn as code geometry) stand in CSS 3D in front of a
   warm backlight, and scroll moves the camera through them; the pin is 260svh
@@ -27,19 +35,25 @@ deterministic gates so it physically cannot ship a dangerous change.
   rooms and the repository as framed shadowboxes, Stack is eight cut tiles and
   one native `<details>`, Education is a degree sheet beside the certificate list in a slot,
   Contact is one lit arch window with one button. The page is server components
-  except the hero island and the guide, which still loads on first intent
+  except the guide, which still loads on first intent
   (`src/components/demo/guide-lazy.tsx`).
-  The chrome is a floating logo with the resume link and the theme toggle
-  (`src/components/navbar.tsx`) and a one-line footer. The logo is the MKB
-  ligature, one SVG in `src/lib/logo.ts` (letters share stems, white on the site
-  green, squircle from the pinned `figma-squircle`). `src/app/icon.tsx` and
-  `src/app/apple-icon.tsx` render it at build through next/og, written as
-  `/icon` and `/apple-icon` with no extension, so `public/_headers` sets their
-  Content-Type. The share card is `src/app/og-lightbox.png/route.tsx`, a
+  The chrome is one floating pill at the top right with the resume link and the
+  theme toggle (`src/components/navbar.tsx`) and a one-line footer. There is no
+  site logo. The favicon is the plain letters MKB in Bricolage Grotesque 800,
+  the hero name face, with no background: `src/app/icon.svg`, real font outlines
+  written by `bun run favicon` (`scripts/gen-favicon.mjs`, pinned `fontkit`
+  reading the pinned `@fontsource/bricolage-grotesque` 800 file), filled
+  `--paper-1` green and swapped to a pale mint under
+  `prefers-color-scheme: dark` so it reads on light and dark tab strips. Run
+  the script again when the font pin changes. The Apple touch icon
+  (`src/app/apple-icon.tsx`, next/og at build, same font file) is the same
+  letters on the site background colour, because iOS fills a transparent icon
+  with black; it is written as `/apple-icon` with no extension, so
+  `public/_headers` sets its Content-Type. The share card is `src/app/og-lightbox.png/route.tsx`, a
   1200x630 PNG made at build with next/og from the name, the role and nested
   arch sheets, set in Bricolage Grotesque from the pinned
   `@fontsource/bricolage-grotesque` files, used for both Open Graph and X.
-  `/resume/` links `/icon` as its favicon (`scripts/build-resume.mjs`).
+  `/resume/` links `/icon.svg` as its favicon (`scripts/build-resume.mjs`).
 - **The site guide** (`/#guide`) - a small card under the hero. Ask it something
   in free text and it decides which section of the page answers you, then leaves
   its slot: the page eases to that section, everything else dims, and a small
@@ -89,7 +103,7 @@ name settles once as cut letters).
 | Radius | sheets 1.25rem, tabs and chips 0.75rem, buttons full, never above a quarter of the short side | scissor curves, no pills on big sheets |
 | Line cap and join | round | cut curves |
 | Shadow | two stacked soft drops, short and long, straight down, tinted with the hue (`--shadow-cut`, `--shadow-lift`) | a sheet lifted off the one under it |
-| Palette | hue 158, six paper steps `--paper-1` (front, deep green teal) to `--paper-6` (back, pale mint), backlight amber hue 75 (`--glow`) | the logo green, lit from behind |
+| Palette | hue 158, six paper steps `--paper-1` (front, deep green teal) to `--paper-6` (back, pale mint), backlight amber hue 75 (`--glow`) | paper green, lit from behind |
 | Dark theme | night light box, dark sheets, bright backlight | the box in a dark room |
 | Light theme | daylight paper, pale sheets, soft shadows | the box on a desk |
 | Shading | flat fills, depth from shadow only, no grain or noise | clean cut paper |
@@ -110,7 +124,7 @@ Components.
 - Focus, a 3px amber ring with offset, on every control.
 - Scrollbar, thin, paper thumb.
 - Footer, the last sheet, one line.
-- Logo, the MKB squircle, floating, with `--shadow-cut`.
+- Top bar, one floating paper pill at the top right with the resume link and the theme toggle, with `--shadow-cut`. No logo.
 - Guide card and its bubble, sheets, the entity re-tints as before.
 - Share card, nested arch sheets and the backlight with the name and role.
 - Art, one Gemini set from one locked style reference, listed in
@@ -339,7 +353,7 @@ Pages.
     "Download PDF" profile entry. Measured 2026-10-24 locally, `/resume/` mobile 95
     speed, 100 accessibility. The headshot on the page is `public/me-320.webp` (5 KB,
     also the homepage avatar), made with `npx -y sharp-cli@6.1.0 -i public/me.png -o
-    public/me-320.webp resize 320 320`. The favicon is the MKB monogram (see Features).
+    public/me-320.webp resize 320 320`. The favicon is the plain MKB letters (see Features).
 29. **The demo source is public, and a gate proves a stranger can open it.**
     Published 2026-08-05 with Mark. Until then the repository was private while
     every room footer linked files inside it and the section above them was
