@@ -222,6 +222,12 @@ html {
         animation-timeline: --lb, --lb;
         animation-range: contain 0% contain 100%, contain calc(min(0.82, (480 + var(--i) * 50) / 700) * 100%) contain 100%;
       }
+
+      @media (min-width: 2000px), (min-height: 1200px) {
+        .lb-layer {
+          will-change: auto;
+        }
+      }
     }
 
     .lb-name span span {
