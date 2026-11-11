@@ -11,6 +11,7 @@ const run = (args, env = {}) =>
     const child = spawn(process.execPath, [wrangler, ...args], {
       cwd: ROOT,
       stdio: "inherit",
+      windowsHide: true,
       env: { ...process.env, ...env },
     });
     child.on("exit", (code) => {
