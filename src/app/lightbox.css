@@ -146,6 +146,12 @@ html {
     }
   }
 
+  @media (min-width: 2000px), (min-height: 1200px) {
+    .lb-layer {
+      --k: 1;
+    }
+  }
+
   .lb-layer > i {
     display: block;
     width: 100%;

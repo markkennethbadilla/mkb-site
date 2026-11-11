@@ -136,7 +136,10 @@ Components.
   beside its source. Each hero layer is laid out at 1.5 times its shown size
   and scaled back down (`--k` in `src/app/lightbox.css`), so its one texture
   holds enough pixels to stay sharp as the camera moves in, with no repaint
-  while scrolling. The other hero openings, the contact window
+  while scrolling. Viewports 2000 px wide or 1200 px tall and larger keep the
+  layers at shown size (`--k` 1), since five 1.5 times textures at 2560x1440
+  ran the GPU out of tile memory and the hero went blank. The other hero
+  openings, the contact window
   and the not found window are plain arches drawn in code, and no section
   scene exists yet.
 
