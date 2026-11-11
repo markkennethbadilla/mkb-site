@@ -34,7 +34,7 @@ type Status = "idle" | "running" | "done" | "error";
 // The shell already prints room.promise above this component (RoomShell's <h1>/<p>).
 // Repeating it here would be the same sentence twice on one screen, so this room's
 // own big line is a distinct hook pointed at the mechanism, not a restatement.
-const HOOK_LINE = "How sure did it sound - and was it right?";
+const HOOK_LINE = "How sure did it sound, and was it right?";
 
 /**
  * The control names what it takes away, not a difficulty. "Hard" would imply the
@@ -66,7 +66,7 @@ function readGap(gap: number, meanConfidence: number, correct: number, sample: n
   if (meanConfidence < 25 && correct < sample / 2) {
     return "It said it did not know, and it did not know. That is a well-calibrated answer, and you can only tell it apart from a confident wrong one by checking.";
   }
-  return "Stated confidence tracked the result on this run. That is the good outcome, not a missing one - and the only way to know it happened is that something other than the model did the checking.";
+  return "Stated confidence tracked the result on this run. That is the good outcome, not a missing one, and the only way to know it happened is that something other than the model did the checking.";
 }
 
 export default function Room() {

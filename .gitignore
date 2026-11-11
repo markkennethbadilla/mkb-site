@@ -65,3 +65,4 @@ id_ed25519*
 *.pfx
 *.p12
 .logs
+.tsbuildinfo.worker

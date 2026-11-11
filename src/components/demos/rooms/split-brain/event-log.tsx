@@ -34,7 +34,7 @@ function letterOf(node: string): string {
 
 export function EventLog({ events }: { events: EventRow[] }) {
   if (!events.length) {
-    return <p className="text-xs text-muted-foreground">No events yet - start the cluster and tick a node.</p>;
+    return <p className="text-xs text-muted-foreground">No events yet. Start the cluster and tick a node.</p>;
   }
   const ordered = [...events].reverse();
   return (
