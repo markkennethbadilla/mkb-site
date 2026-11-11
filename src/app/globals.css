@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./lightbox.css";
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -40,6 +41,34 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-paper-1: var(--paper-1);
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-paper-4: var(--paper-4);
+  --color-paper-5: var(--paper-5);
+  --color-paper-6: var(--paper-6);
+  --color-glow: var(--glow);
+  --color-glow-soft: var(--glow-soft);
+  --color-ink: var(--ink);
+  --color-lit-ink: var(--lit-ink);
+  --font-display: var(--font-bricolage), var(--font-sans), sans-serif;
+}
+
+html {
+  font-size: min(100%, 18px);
+  scroll-padding-top: 5rem;
+}
+
+@media (max-width: 420px) {
+  html {
+    font-size: min(87.5%, 16px);
+  }
+}
+
+@media (max-width: 340px) {
+  html {
+    font-size: min(75%, 14px);
+  }
 }
 
 /*
@@ -80,25 +109,40 @@
      re-tint. Paired with the darkreader-lock meta in layout.tsx. */
   color-scheme: light dark;
   --tint-hue: 158;
-  --radius: 0.625rem;
-  --background: oklch(0.993 0.008 var(--tint-hue));
-  --foreground: oklch(0.16 0.018 var(--tint-hue));
-  --card: oklch(1 0.005 var(--tint-hue));
-  --card-foreground: oklch(0.16 0.018 var(--tint-hue));
-  --popover: oklch(1 0.005 var(--tint-hue));
-  --popover-foreground: oklch(0.16 0.018 var(--tint-hue));
-  --primary: oklch(0.34 0.075 var(--tint-hue));
+  --radius: 0.75rem;
+  --background: oklch(0.945 0.028 var(--tint-hue));
+  --foreground: oklch(0.2 0.035 var(--tint-hue));
+  --card: oklch(0.992 0.008 var(--tint-hue));
+  --card-foreground: oklch(0.2 0.035 var(--tint-hue));
+  --popover: oklch(0.992 0.008 var(--tint-hue));
+  --popover-foreground: oklch(0.2 0.035 var(--tint-hue));
+  --primary: oklch(0.36 0.085 var(--tint-hue));
   --primary-foreground: oklch(0.985 0.01 var(--tint-hue));
-  --secondary: oklch(0.962 0.014 var(--tint-hue));
-  --secondary-foreground: oklch(0.24 0.04 var(--tint-hue));
-  --muted: oklch(0.962 0.014 var(--tint-hue));
-  --muted-foreground: oklch(0.53 0.03 var(--tint-hue));
-  --accent: oklch(0.95 0.028 var(--tint-hue));
+  --secondary: oklch(0.9 0.04 var(--tint-hue));
+  --secondary-foreground: oklch(0.24 0.05 var(--tint-hue));
+  --muted: oklch(0.915 0.032 var(--tint-hue));
+  --muted-foreground: oklch(0.42 0.04 var(--tint-hue));
+  --accent: oklch(0.88 0.05 var(--tint-hue));
   --accent-foreground: oklch(0.24 0.05 var(--tint-hue));
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.9 0.018 var(--tint-hue));
-  --input: oklch(0.9 0.018 var(--tint-hue));
-  --ring: oklch(0.62 0.11 var(--tint-hue));
+  --border: oklch(0.84 0.035 var(--tint-hue));
+  --input: oklch(0.84 0.035 var(--tint-hue));
+  --ring: oklch(0.52 0.14 70);
+  --paper-1: oklch(0.33 0.075 var(--tint-hue));
+  --paper-2: oklch(0.44 0.085 var(--tint-hue));
+  --paper-3: oklch(0.56 0.09 var(--tint-hue));
+  --paper-4: oklch(0.68 0.085 var(--tint-hue));
+  --paper-5: oklch(0.8 0.07 var(--tint-hue));
+  --paper-6: oklch(0.9 0.05 var(--tint-hue));
+  --glow: oklch(0.86 0.13 78);
+  --glow-soft: oklch(0.965 0.06 88);
+  --ink: oklch(0.4 0.1 var(--tint-hue));
+  --lit-ink: oklch(0.22 0.05 var(--tint-hue));
+  --shade: oklch(0.3 0.06 var(--tint-hue) / 0.16);
+  --shade-deep: oklch(0.3 0.06 var(--tint-hue) / 0.22);
+  --shadow-cut: 0 1px 1px var(--shade), 0 8px 16px -6px var(--shade-deep);
+  --shadow-lift: 0 2px 2px var(--shade), 0 22px 36px -12px var(--shade-deep);
+  --shadow-slot: inset 0 2px 3px var(--shade-deep), inset 0 0 0 1px var(--shade);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -117,24 +161,36 @@
 .dark, .dark [data-tint] {
   /* Same hue, carried through the dark surfaces. A dark theme shows a cast more
      readily than a light one, so chroma here stays a touch lower. */
-  --background: oklch(0.175 0.014 var(--tint-hue));
-  --foreground: oklch(0.975 0.008 var(--tint-hue));
-  --card: oklch(0.208 0.016 var(--tint-hue));
-  --card-foreground: oklch(0.975 0.008 var(--tint-hue));
-  --popover: oklch(0.208 0.016 var(--tint-hue));
-  --popover-foreground: oklch(0.975 0.008 var(--tint-hue));
-  --primary: oklch(0.9 0.035 var(--tint-hue));
-  --primary-foreground: oklch(0.2 0.03 var(--tint-hue));
-  --secondary: oklch(0.272 0.018 var(--tint-hue));
-  --secondary-foreground: oklch(0.975 0.008 var(--tint-hue));
-  --muted: oklch(0.272 0.018 var(--tint-hue));
-  --muted-foreground: oklch(0.715 0.025 var(--tint-hue));
-  --accent: oklch(0.29 0.03 var(--tint-hue));
-  --accent-foreground: oklch(0.975 0.008 var(--tint-hue));
+  --background: oklch(0.165 0.024 var(--tint-hue));
+  --foreground: oklch(0.965 0.012 var(--tint-hue));
+  --card: oklch(0.235 0.034 var(--tint-hue));
+  --card-foreground: oklch(0.965 0.012 var(--tint-hue));
+  --popover: oklch(0.235 0.034 var(--tint-hue));
+  --popover-foreground: oklch(0.965 0.012 var(--tint-hue));
+  --primary: oklch(0.88 0.075 var(--tint-hue));
+  --primary-foreground: oklch(0.18 0.035 var(--tint-hue));
+  --secondary: oklch(0.3 0.045 var(--tint-hue));
+  --secondary-foreground: oklch(0.965 0.012 var(--tint-hue));
+  --muted: oklch(0.275 0.036 var(--tint-hue));
+  --muted-foreground: oklch(0.78 0.035 var(--tint-hue));
+  --accent: oklch(0.33 0.055 var(--tint-hue));
+  --accent-foreground: oklch(0.965 0.012 var(--tint-hue));
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(0.8 0.06 var(--tint-hue) / 14%);
-  --input: oklch(0.8 0.06 var(--tint-hue) / 18%);
-  --ring: oklch(0.64 0.1 var(--tint-hue));
+  --border: oklch(0.8 0.06 var(--tint-hue) / 16%);
+  --input: oklch(0.8 0.06 var(--tint-hue) / 20%);
+  --ring: oklch(0.82 0.15 80);
+  --paper-1: oklch(0.14 0.025 var(--tint-hue));
+  --paper-2: oklch(0.2 0.04 var(--tint-hue));
+  --paper-3: oklch(0.27 0.055 var(--tint-hue));
+  --paper-4: oklch(0.35 0.07 var(--tint-hue));
+  --paper-5: oklch(0.44 0.085 var(--tint-hue));
+  --paper-6: oklch(0.55 0.1 var(--tint-hue));
+  --glow: oklch(0.8 0.15 72);
+  --glow-soft: oklch(0.94 0.09 88);
+  --ink: oklch(0.84 0.1 var(--tint-hue));
+  --lit-ink: oklch(0.2 0.05 var(--tint-hue));
+  --shade: oklch(0.05 0.02 var(--tint-hue) / 0.45);
+  --shade-deep: oklch(0.05 0.02 var(--tint-hue) / 0.6);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);

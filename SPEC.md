@@ -8,41 +8,33 @@ deterministic gates so it physically cannot ship a dangerous change.
 
 ## Features
 
-- **Resume surface** - hero, about, work history, education, skills, projects,
-  contact. All content lives in one file, `src/data/resume.tsx`.
-  Rebuilt 2026-10-24 (Mark, "maximalist design but concise enough for recruiters
-  to read quick"). The hero gives role, name, stack, three checkable figures, an
-  Email me button and the resume link above the fold. Every section below is an
-  editorial block under a numbered coloured rule (`SectionHead` in
-  `src/app/(site)/page.tsx`), with no bordered cards. About is three numbered
-  statements, Work is a timeline on one coloured spine with six picked WeAssist
-  claims, Education carries the certifications, Contact is one big email button.
-  Colour ink uses CSS `light-dark()` so small coloured type passes AA in both themes.
-  The page is server components only. The floating bottom dock, the canvas
-  FlickeringGrid, BlurFade and the Radix tooltips/accordion/avatar were deleted
-  (the dock covered content on phones; together they held mobile speed at 66 to 71).
-  The header is a sticky bar in normal flow (`src/components/navbar.tsx`). The guide
-  renders as plain markup and imports the real console on first pointer, touch or
-  focus (`src/components/demo/guide-lazy.tsx`, next/dynamic). Local mobile Lighthouse
-  after the rebuild, 92 to 94 speed.
-  Stack leads with eight core skills, large, each with its one-line "what it is"
-  printed (no hover-only text), and the rest under one native `<details>` as comma
-  lists per group (`CORE` in `skill-groups.tsx`). The public-agent-provisioning block
-  matches the rooms, in green with its own drawing (`agent-guards` in
-  `room-specimen.tsx`, a guard stopping a tool call). A one-line footer
-  (`src/components/footer.tsx`) closes every site page.
-  The logo is the MKB ligature (Mark 2026-10-25, "more simple but creatively
-  done"), one SVG in `src/lib/logo.ts`: the letters share stems (the M's last stroke
-  is the K's stem, the K's arms meet the B's stem), white on the site green, on a
-  squircle from the pinned `figma-squircle`. The favicon uses thicker strokes.
-  `src/app/icon.tsx` and `src/app/apple-icon.tsx` render it at build through next/og
-  ImageResponse (apple-icon full bleed on a solid square), and the header logo
-  inlines the same SVG. The export writes the icons as `/icon` and
-  `/apple-icon` with no extension, so `public/_headers` sets their Content-Type to
-  image/png (the site sends nosniff). The Magic UI
-  FlickeringGrid is back behind the top of each page (Mark asked for it), loaded by
-  `src/components/grid-backdrop.tsx` only on first interaction or after 6 s, never for
-  reduced motion.
+- **Resume surface** - hero, guide, about, work, projects, skills, education,
+  contact, in that order on `/`. All content lives in one file,
+  `src/data/resume.tsx`. The look is the paper-cut light box (see "Art theme").
+  The hero is a pinned scroll scene (`src/components/hero/light-box.tsx`, markup
+  on the server, `fly.tsx` the one small client island): five cut paper gate
+  layers stand in CSS 3D in front of a warm backlight, and scroll moves the
+  camera through them. The name is the h1, set as cut paper letters, and it is
+  the LCP element. Role, tagline, Email me, the resume link and three checkable
+  figures sit inside the gate opening. With reduced motion or scripts off the
+  hero is one screen tall and shows the same layers as a still shadowbox.
+  After the hero the page is a normal vertical document. Each section is a
+  paper sheet with its own structure: About is three stacked sheets, Work is a
+  strip of cut tabs on one spine beside a paper scene, Projects is the three
+  rooms and the repository as framed shadowboxes, Stack is eight cut tiles and
+  one native `<details>`, Education is a certificate sheet beside its scene,
+  Contact is one lit window with one button. The page is server components
+  except the hero island and the guide, which still loads on first intent
+  (`src/components/demo/guide-lazy.tsx`).
+  The chrome is a floating logo with the resume link and the theme toggle
+  (`src/components/navbar.tsx`) and a one-line footer. The logo is the MKB
+  ligature, one SVG in `src/lib/logo.ts` (letters share stems, white on the site
+  green, squircle from the pinned `figma-squircle`). `src/app/icon.tsx` and
+  `src/app/apple-icon.tsx` render it at build through next/og, written as
+  `/icon` and `/apple-icon` with no extension, so `public/_headers` sets their
+  Content-Type. The share card is `src/app/og-lightbox.png/route.tsx`, a
+  1200x630 PNG made at build with next/og from the name, the role and the gate
+  art, used for both Open Graph and X.
 - **The site guide** (`/#guide`) - a small card under the hero. Ask it something
   in free text and it decides which section of the page answers you, then leaves
   its slot: the page eases to that section, everything else dims, and a small
@@ -55,8 +47,7 @@ deterministic gates so it physically cannot ship a dangerous change.
   followed it landed on a page identical to the one they left. This replaced the gate-harness demo on 2026-08-05. The harness code
   (`src/lib/gates.ts`, `src/components/demo/harness.tsx`, `/api/agent`) is still
   in the repo and still works; it is simply not on the page.
-  The three rooms are editorial blocks, not bordered cards (Mark 2026-10-24, the
-  cards read as AI generated). Each block opens with a small server-rendered SVG of
+  Each room is a framed shadowbox that opens with a small server-rendered SVG of
   what the room does (`src/components/demos/room-specimen.tsx`: twelve payments into
   one balance, stated versus checked confidence per question, three nodes with one
   lease) in the room's hue, then the name large, the capability as the hook, the
@@ -77,6 +68,58 @@ deterministic gates so it physically cannot ship a dangerous change.
   was enforced. The provider chain in use is shown before anything is run. Every
   room carries the same idea as one monospace strip: requests spent, wall clock,
   and whether the numbers came from D1, a model, a cache or a fixed example.
+
+## Art theme
+
+Paper-cut light box, a layered kirigami shadowbox. The site's thesis is that a
+change must pass every deterministic gate. A light box is stacked cut sheets,
+and light only gets through where every sheet allows it.
+
+Genre: a 3D fly-through leads (the hero), with one kinetic type moment (the
+name settles once as cut letters).
+
+| Token | Value | Why |
+|---|---|---|
+| Outline | none, an edge is a cut, shown by the shadow under it | paper has no ink line |
+| Radius | sheets 1.25rem, tabs and chips 0.75rem, buttons full, never above a quarter of the short side | scissor curves, no pills on big sheets |
+| Line cap and join | round | cut curves |
+| Shadow | two stacked soft drops, short and long, straight down, tinted with the hue (`--shadow-cut`, `--shadow-lift`) | a sheet lifted off the one under it |
+| Palette | hue 158, six paper steps `--paper-1` (front, deep green teal) to `--paper-6` (back, pale mint), backlight amber hue 75 (`--glow`) | the logo green, lit from behind |
+| Dark theme | night light box, dark sheets, bright backlight | the box in a dark room |
+| Light theme | daylight paper, pale sheets, soft shadows | the box on a desk |
+| Shading | flat fills, depth from shadow only, no grain or noise | clean cut paper |
+| Perspective | straight on, 1200px, layers on translateZ | a tunnel book seen through its front |
+| Detail | large simple silhouettes | reads at phone size |
+| Type | display Bricolage Grotesque 700 and 800, body Instrument Sans, mono Geist Mono for telemetry | heavy grotesque reads as scissor cut letters |
+| Icons | lucide, stroke 2, round caps | one set |
+| Motion | one settle on load, scroll moves the camera, hovers lift a sheet 2px, 200 to 600 ms, ease out | paper lifts and settles, it never bounces |
+
+Components.
+
+- Sheet (`.sheet`), the card. A paper step with `--shadow-cut`, no border.
+- Button, a full round cut tab in `--ink-fill` with white text, lifts on hover.
+- Chip, a small paper tab, radius 0.75rem.
+- Inputs, an inset slot (`.slot`), a cut-out showing the layer under it.
+- Section head (`.cut-title`), display type with a short amber cut bar.
+- Links, underline in `--ink`, 2px.
+- Focus, a 3px amber ring with offset, on every control.
+- Scrollbar, thin, paper thumb.
+- Footer, the last sheet, one line.
+- Logo, the MKB squircle, floating, with `--shadow-cut`.
+- Guide card and its bubble, sheets, the entity re-tints as before.
+- Share card, the gate layers and backlight with the name and role.
+- Art, one Gemini set from one locked style reference, listed in
+  `USED-ASSETS.md`. Hero layers are alpha masks filled with the paper tokens,
+  so both themes and every room hue colour them. Scenes are raster WebP inside
+  a cut frame.
+
+Pages.
+
+- `/`, the hero fly-through, then sheets per section as described under Features.
+- Not found, a closed gate sheet with the way home and the three rooms.
+- `/demos/<slug>`, the same sheets, slots and type in the room's hue, the
+  specimen drawing in a cut frame, the rail a floating sheet.
+- `/resume/`, the pinned JSON Resume theme, outside the theme on purpose.
 
 ## Routes
 
@@ -204,7 +247,7 @@ deterministic gates so it physically cannot ship a dangerous change.
     completely, and a single page component switching on three slugs fights that
     every time one of them changes.
 19. **The site's chrome lives in a `(site)` route group, not in the root layout.**
-    Rooms need a wider stage and no dock. Hiding the dock with `usePathname`
+    Rooms need a wider stage and their own rail. Hiding the site chrome with `usePathname`
     instead would ship it in the prerendered HTML and remove it on hydration -
     a visible jump on the page a recruiter opens from an email, and the same class
     of hydration branching as decision 12.
