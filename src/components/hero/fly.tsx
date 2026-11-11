@@ -3,7 +3,7 @@
 import { animate, scroll } from "motion";
 import { useEffect, useRef } from "react";
 
-const TRAVEL = 1300;
+const TRAVEL = 1080;
 const FADE_FROM = 520;
 const FADE_TO = 860;
 

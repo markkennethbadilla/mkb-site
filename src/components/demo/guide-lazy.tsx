@@ -1,7 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { type ComponentType, useEffect, useRef, useState } from "react";
 import { SUGGESTIONS } from "@/lib/site-sections";
 
 /**
@@ -11,17 +10,17 @@ import { SUGGESTIONS } from "@/lib/site-sections";
  * scroller, which held the homepage's main thread for seconds on a mid phone and
  * kept mobile speed under its floor. Until a visitor points at, touches or tabs
  * into the guide, this renders the same card as plain markup; the first intent
- * imports the real console (next/dynamic, the maintained route) and hands focus
- * to its input, so nobody types into a dead box.
+ * imports the real console and hands it the chip that was pressed, or focus for
+ * its input, so nobody types into a dead box.
  */
-const AgentConsole = dynamic(() => import("@/components/demo/agent-console"), { ssr: false });
-
 export default function GuideLazy() {
-  const [live, setLive] = useState(false);
+  const [Console, setConsole] = useState<ComponentType<{ first?: string }> | null>(null);
+  const [first, setFirst] = useState<string>();
   const wantFocus = useRef(false);
+  const loading = useRef(false);
 
   useEffect(() => {
-    if (!live || !wantFocus.current) return;
+    if (!Console || !wantFocus.current || first) return;
     const t = setInterval(() => {
       const el = document.getElementById("site-guide-question");
       if (el) {
@@ -30,13 +29,15 @@ export default function GuideLazy() {
       }
     }, 50);
     return () => clearInterval(t);
-  }, [live]);
+  }, [Console, first]);
 
-  if (live) return <AgentConsole />;
+  if (Console) return <Console first={first} />;
 
   const wake = (focus: boolean) => () => {
     wantFocus.current = wantFocus.current || focus;
-    setLive(true);
+    if (loading.current) return;
+    loading.current = true;
+    import("@/components/demo/agent-console").then((m) => setConsole(() => m.default));
   };
 
   return (
@@ -60,6 +61,7 @@ export default function GuideLazy() {
           <button
             key={s}
             type="button"
+            onClick={() => setFirst(s)}
             className="tab px-3 py-1.5 text-xs"
           >
             {s}

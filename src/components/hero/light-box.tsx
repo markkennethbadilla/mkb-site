@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import { DATA } from "@/data/resume";
 import { Fly } from "./fly";
@@ -60,9 +59,9 @@ export function LightBox({ role, tagline }: { role: string; tagline: string }) {
             <a href={`mailto:${DATA.contact.email}`} className="btn-cut">
               Email me <ArrowRight className="size-4" aria-hidden />
             </a>
-            <Link href="/resume" className="btn-cut btn-paper">
+            <a href="/resume/" className="btn-cut btn-paper">
               One-page resume
-            </Link>
+            </a>
           </div>
           <p className="flex items-center gap-1 text-sm font-medium">
             <MapPin className="size-3.5" aria-hidden /> {DATA.location}, remote

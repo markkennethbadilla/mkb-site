@@ -32,7 +32,7 @@ export default function Page() {
         <div className="relative overflow-hidden bg-paper-1 text-white">
           <div
             aria-hidden
-            className="absolute inset-y-0 right-0 w-full [mask-image:linear-gradient(to_top,black_30%,transparent_75%)] sm:w-3/5 sm:[mask-image:linear-gradient(to_left,black_45%,transparent)]"
+            className="absolute inset-y-0 right-0 w-full [mask-image:linear-gradient(to_top,black_30%,transparent_75%)] sm:w-[38rem] sm:[mask-image:linear-gradient(to_left,black_45%,transparent)]"
           >
             <div
               className="absolute -right-28 -bottom-40 size-[26rem] bg-paper-2 dark:bg-paper-3 sm:-right-24 sm:top-1/2 sm:bottom-auto sm:size-[44rem] sm:-translate-y-1/2"

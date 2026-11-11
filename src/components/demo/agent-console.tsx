@@ -35,7 +35,7 @@ type Phase = "parked" | "thinking" | "outbound" | "perched" | "homebound";
 
 const MAX_QUESTION_CHARS = 200;
 
-export default function AgentConsole() {
+export default function AgentConsole({ first }: { first?: string }) {
   const reduced = useReducedMotion();
   const [phase, setPhase] = useState<Phase>("parked");
   const [question, setQuestion] = useState("");
@@ -93,6 +93,14 @@ export default function AgentConsole() {
     },
     [phase, reduced]
   );
+
+  const sentFirst = useRef(false);
+  useEffect(() => {
+    if (!first || sentFirst.current) return;
+    sentFirst.current = true;
+    setQuestion(first);
+    ask(first);
+  }, [first, ask]);
 
   const dismiss = useCallback(async () => {
     // The return trip is the same journey backwards, and it has to be: an instant

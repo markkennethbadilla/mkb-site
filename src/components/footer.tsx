@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { DATA } from "@/data/resume";
 import { Icons } from "@/components/icons";
 
@@ -10,9 +9,9 @@ export default function Footer() {
         <a href={`mailto:${DATA.contact.email}`} className="hover:text-foreground">
           {DATA.contact.email}
         </a>
-        <Link href="/resume" className="hover:text-foreground">
+        <a href="/resume/" className="hover:text-foreground">
           Resume
-        </Link>
+        </a>
         <a href={DATA.contact.social.GitHub.url} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="hover:text-foreground">
           <Icons.github className="size-4" />
         </a>
