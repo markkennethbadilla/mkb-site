@@ -70,7 +70,7 @@ export default function Rail({ room }: { room: DemoRoom }) {
             );
           })}
           <span className="ml-1">
-            <ModeToggle />
+            <ModeToggle className="size-9 rounded-full p-2.5 text-foreground" />
           </span>
         </nav>
       </div>
