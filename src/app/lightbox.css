@@ -138,7 +138,12 @@ html {
     transform: translateZ(calc(var(--i) * -50px));
     filter: drop-shadow(0 12px 14px var(--shade-deep));
     pointer-events: none;
-    will-change: transform, opacity;
+  }
+
+  @media (max-width: 360px) {
+    .lb-layer {
+      --h: max(124svh, 66rem);
+    }
   }
 
   .lb-layer > i {

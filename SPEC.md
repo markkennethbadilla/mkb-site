@@ -468,6 +468,12 @@ move every check to a local Trunk pre-push gate plus the host's build).
   build, against the 0.80 floor set on GitHub's runner (baseline 0.82), so a
   miss on the laptop says more about the laptop than the page. Scores print in
   the deploy output; a failing records-first test or build still stops it. `git commit` runs the gitleaks scan on staged files.
+- Local look with the Worker: `bun run build`, then
+  `node A:/personal-markkennethbadilla/mkb-agentops/scripts/dekit-up.mjs ctl <repo> start worker`
+  (dekit task `worker`, `scripts/dev-worker.mjs`). It applies the local D1
+  migrations, reads the guide key from the vault and serves `out/` plus
+  `/api/*` on http://127.0.0.1:8788, local data only. Stop it before the next
+  build, since it holds `out/` open.
 - Trunk's stock hook actions only warn without a terminal, so both are custom
   actions running `trunk check --ci` (skill `gate-commits-with-trunk`). Install
   them once per clone: `trunk git-hooks sync`.

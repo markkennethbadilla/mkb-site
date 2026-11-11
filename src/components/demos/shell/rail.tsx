@@ -35,13 +35,13 @@ export default function Rail({ room }: { room: DemoRoom }) {
       <div className="sheet mx-auto flex w-full max-w-5xl items-center gap-3 rounded-full px-4 py-1.5">
         <Link
           href="/#projects"
-          className="flex shrink-0 items-center gap-1.5 text-[13px] font-medium text-foreground/80 transition-colors hover:text-foreground"
+          className="flex min-w-0 items-center gap-1.5 text-[13px] font-medium text-foreground/80 transition-colors hover:text-foreground"
         >
           <span aria-hidden className="text-muted-foreground">&larr;</span>
-          <span>{DATA.name}</span>
+          <span className="truncate">{DATA.name}</span>
         </Link>
 
-        <nav aria-label="Exhibition rooms" className="ml-auto flex items-center gap-1">
+        <nav aria-label="Exhibition rooms" className="ml-auto flex shrink-0 items-center gap-1">
           {OPEN_ROOMS.map((r) => {
             const here = r.slug === room.slug;
             return (
