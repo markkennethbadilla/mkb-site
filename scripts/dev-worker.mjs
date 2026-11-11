@@ -16,7 +16,7 @@ const run = (args, env = {}) =>
     child.on("exit", (code) => {
       if (code === 0) {
         console.log(`OK wrangler ${args.join(" ")}`);
-        resolve();
+        resolve(code);
       } else {
         console.error(`FAIL wrangler ${args.join(" ")} exit=${code}`);
         reject(new Error(`exit ${code}`));
