@@ -146,7 +146,7 @@ html {
     }
   }
 
-  @media (min-width: 2000px), (min-height: 1200px) {
+  @media (min-width: 1500px), (min-height: 850px) {
     .lb-layer {
       --k: 1;
     }
@@ -223,7 +223,7 @@ html {
         animation-range: contain 0% contain 100%, contain calc(min(0.82, (480 + var(--i) * 50) / 700) * 100%) contain 100%;
       }
 
-      @media (min-width: 2000px), (min-height: 1200px) {
+      @media (min-width: 1500px), (min-height: 850px) {
         .lb-layer {
           will-change: auto;
         }
