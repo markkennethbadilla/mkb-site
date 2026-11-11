@@ -111,7 +111,7 @@ export default function AgentConsole() {
   return (
     <div
       ref={homeRef}
-      className="rounded-xl border border-border bg-card/40 p-5 sm:p-6 md:p-7 flex flex-col gap-4"
+      className="sheet flex flex-col gap-4 p-5 sm:p-7"
     >
       <div className="flex items-start gap-4">
         {/* The entity's home. While parked it reads as a decorative glyph; the
@@ -141,10 +141,10 @@ export default function AgentConsole() {
               run line, which prints the model or cache hit, the latency and the
               grounding verdict on every answer; repeating them up here would be
               claiming in prose what is demonstrated in fact four inches below. */}
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          <span className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-muted-foreground">
             Live agent, built for this site
           </span>
-          <h2 className="text-lg font-bold tracking-tight">Ask about Mark</h2>
+          <h2 className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">Ask about Mark</h2>
           {/* Both lines used to assert something the guide does not always do.
               "Working out where that lives" claims it is looking for a place on
               the page, but most questions about his pets or what he watches have
@@ -171,8 +171,8 @@ export default function AgentConsole() {
             }}
             disabled={busy}
             className={cn(
-              "rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground",
-              "transition-colors hover:text-foreground hover:border-foreground/40 disabled:opacity-50"
+              "tab px-3 py-1.5 text-xs",
+              "transition-colors hover:text-foreground disabled:opacity-50"
             )}
           >
             {s}
@@ -197,14 +197,14 @@ export default function AgentConsole() {
           placeholder="Ask anything about his work"
           disabled={busy}
           className={cn(
-            "flex-1 rounded-xl border border-border bg-muted/30 px-3.5 py-2.5 text-sm",
+            "slot min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm",
             "outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
           )}
         />
         <button
           type="submit"
           disabled={busy || !question.trim()}
-          className="rounded-xl bg-foreground px-4 py-2.5 text-sm font-medium text-background disabled:opacity-50"
+          className="btn-cut text-sm disabled:opacity-50"
         >
           {busy ? "..." : "Ask"}
         </button>
@@ -218,7 +218,7 @@ export default function AgentConsole() {
         href="https://github.com/markkennethbadilla/mkb-site/blob/main/worker/guide.ts"
         target="_blank"
         rel="noreferrer noopener"
-        className="self-start font-mono text-[10px] text-muted-foreground/70 underline decoration-border underline-offset-4 transition-colors hover:text-foreground"
+        className="self-start font-mono text-[0.6875rem] text-muted-foreground/70 underline decoration-border underline-offset-4 transition-colors hover:text-foreground"
       >
         read the loop that answers you
       </a>

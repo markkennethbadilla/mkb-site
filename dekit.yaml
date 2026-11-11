@@ -1,0 +1,7 @@
+defaults:
+  log:
+    dir: .logs
+tasks:
+  app:
+    cmd: ["cmd", "/c", "bun run dev"]
+    autostart: true

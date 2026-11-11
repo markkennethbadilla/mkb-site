@@ -44,13 +44,13 @@ export default function GuideLazy() {
       onPointerEnter={wake(false)}
       onTouchStart={wake(false)}
       onFocusCapture={wake(true)}
-      className="flex flex-col gap-4 rounded-2xl border border-border p-5"
+      className="sheet flex flex-col gap-4 p-5 sm:p-7"
     >
       <div className="flex flex-col gap-1">
-        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+        <span className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-muted-foreground">
           Live agent, built for this site
         </span>
-        <h2 className="text-lg font-bold tracking-tight">Ask about Mark</h2>
+        <h2 className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">Ask about Mark</h2>
         <p className="text-sm text-muted-foreground">
           Ask it something, and if the answer is on the page it will take you to it.
         </p>
@@ -60,7 +60,7 @@ export default function GuideLazy() {
           <button
             key={s}
             type="button"
-            className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground"
+            className="tab px-3 py-1.5 text-xs"
           >
             {s}
           </button>
@@ -70,9 +70,9 @@ export default function GuideLazy() {
         <input
           aria-label="Ask anything about his work"
           placeholder="Ask anything about his work"
-          className="flex-1 rounded-xl border border-border bg-muted/30 px-3.5 py-2.5 text-sm outline-none"
+          className="slot min-w-0 flex-1 rounded-full px-4 py-2.5 text-sm outline-none"
         />
-        <button type="button" disabled className="rounded-xl bg-foreground px-4 py-2.5 text-sm font-medium text-background disabled:opacity-50">
+        <button type="button" disabled className="btn-cut text-sm disabled:opacity-50">
           Ask
         </button>
       </div>

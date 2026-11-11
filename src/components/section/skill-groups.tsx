@@ -44,15 +44,15 @@ export default function SkillGroups() {
   const core = CORE.map((n) => all.find((i) => i.name === n)).filter((i): i is Item => Boolean(i));
   return (
     <div className="flex flex-col gap-8">
-      <ul className="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 lg:grid-cols-4">
         {core.map((item) => (
           <li key={item.name}>
-            <a href={item.url} target="_blank" rel="noreferrer noopener" className="group flex items-start gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[oklch(0.6_0.12_var(--tint-hue)/0.12)]">
+            <a href={item.url} target="_blank" rel="noreferrer noopener" className="sheet sheet-lift group flex h-full flex-col gap-3 p-4 sm:p-5">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-paper-1 text-white shadow-[var(--shadow-cut)]">
                 <SkillIcon slug={item.icon} className="size-5" />
               </span>
               <span>
-                <span className="block text-lg font-semibold tracking-tight group-hover:underline">{item.name}</span>
+                <span className="block font-display text-xl font-bold tracking-tight group-hover:underline">{item.name}</span>
                 <span className="block text-sm leading-snug text-muted-foreground">{item.blurb}</span>
               </span>
             </a>
@@ -60,15 +60,15 @@ export default function SkillGroups() {
         ))}
       </ul>
 
-      <details className="group/more border-t border-border pt-4">
-        <summary className="cursor-pointer list-none font-mono text-xs text-muted-foreground hover:text-foreground">
+      <details className="slot group/more p-4 sm:p-5">
+        <summary className="tab cursor-pointer list-none bg-card font-mono">
           <span className="group-open/more:hidden">+ {all.length - core.length} more tools</span>
           <span className="hidden group-open/more:inline">- hide the full list</span>
         </summary>
         <dl className="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-2">
           {DATA.resumeSkills.map((group) => (
             <div key={group.group}>
-              <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{group.group}</dt>
+              <dt className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-muted-foreground">{group.group}</dt>
               <dd className="mt-1 text-sm leading-relaxed">
                 {(group.items as readonly Item[])
                   .filter((i) => !CORE.includes(i.name))

@@ -3,6 +3,7 @@ import { withContentCollections } from "@content-collections/next";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  devIndicators: false,
   // Static export: the whole site is prerenderable, so Cloudflare serves plain
   // files with no server runtime. Chosen over the OpenNext Workers adapter
   // because that adapter cannot build from a non-C: drive on Windows (Node's

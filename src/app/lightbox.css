@@ -129,15 +129,15 @@ html {
   }
 
   .lb-layer {
-    --w: max(112vw, 70svh);
-    --h: max(112svh, 64vw);
+    --w: max(140vw, 88svh);
+    --h: max(124svh, 62vw);
     position: absolute;
     top: 50%;
     left: 50%;
     width: var(--w);
     height: var(--h);
     margin: calc(var(--h) / -2) 0 0 calc(var(--w) / -2);
-    transform: translateZ(calc(var(--i) * -90px));
+    transform: translateZ(calc(var(--i) * -50px));
     filter: drop-shadow(0 12px 14px var(--shade-deep));
     pointer-events: none;
     will-change: transform, opacity;
@@ -175,7 +175,7 @@ html {
 
   .lb-name {
     font-family: var(--font-display);
-    font-size: clamp(2.6rem, 4.6vw + 1.4rem, 6.25rem);
+    font-size: clamp(2.4rem, 3.4vw + 1.5rem, 5.75rem);
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 0.9;
