@@ -43,7 +43,7 @@ actions:
       run: trunk check --ci
     - id: block-push-on-findings
       triggers: [{git_hooks: [pre-push]}]
-      run: trunk check --ci --all
+      run: trunk check --ci --upstream origin/main
     # A separate action: Trunk runs `run` without a shell, so `&&` in one line
     # reached trunk check as file arguments and failed the push for that reason.
     - id: repo-checks-on-push
