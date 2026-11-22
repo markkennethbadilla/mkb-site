@@ -1,0 +1,15 @@
+# Tasks: Coverage register for markkennethbadilla.com
+
+- [x] T001 OSV advisories cleared, `block-push-on-osv` on, Renovate config (T02, B05)
+- [x] T002 Turborepo gate: lint, typecheck, test, test:worker, migrate:check, links (T04, T05, T08, T16)
+- [x] T003 `/api/health` with the commit; `scripts/cf.mjs deploy` stamps it (D03)
+- [x] T004 D1 offsite backup with restore proof (V01, V02)
+- [x] T005 Standard logger in every script (R10)
+- [x] T006 Turnstile on the guide and demo run creation (I06)
+- [x] T007 deploymentId and reload-once on a stale build (D04)
+- [x] T008 promptfoo golden set, red team, cost and latency (T11, T12, T13)
+- [x] T009 PostHog client, exceptions, `$ai_generation` (I03, R12, R13, T18)
+- [x] T010 e2e: smoke and axe, text scale, screens, forms, journeys, WebKit, fuzz, ZAP (T06, T07, T10, T14, T15, T17, T19, T21, B16)
+- [x] T011 SPEC five sections, full spec-against-code review (B02, B15)
+- [x] T012 Rollback rehearsed and timed; monitor on `/api/health` (D07, R02, R05, R14)
+- [x] T013 Deploy from main, read back live, demo receipt (B17)

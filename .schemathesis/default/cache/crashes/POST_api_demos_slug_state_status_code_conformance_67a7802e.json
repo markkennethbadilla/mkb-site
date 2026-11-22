@@ -1,0 +1,100 @@
+{
+  "operation": "POST /api/demos/{slug}/state",
+  "method": "POST",
+  "path_template": "/api/demos/{slug}/state",
+  "fingerprint": "67a7802e",
+  "case_id": "JCl2t6",
+  "code_sample": "curl -X POST -H 'Content-Type: application/json' -d '{\"runId\": \"0\"}' http://127.0.0.1:8788/api/demos/split-brain/state",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:8788/api/demos/split-brain/state",
+      "url_template": "http://127.0.0.1:8788/api/demos/{slug}/state",
+      "headers": {
+        "User-Agent": "schemathesis/4.33.4",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "JCl2t6",
+        "Content-Type": "application/json",
+        "Content-Length": "14"
+      },
+      "response": {
+        "status_code": 405,
+        "headers": {
+          "transfer-encoding": "chunked",
+          "content-type": "application/json; charset=utf-8",
+          "cache-control": "no-store",
+          "content-encoding": "gzip"
+        },
+        "body": "{\"error\":\"state is GET only\"}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "status_code_conformance",
+          "status": "failure",
+          "message": "Undocumented status code\n\nReceived: 405\nDocumented: 200, 400, 404, 429"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 7.220000406960025e-05,
+          "mode": "positive"
+        },
+        "components": {
+          "PATH": "positive",
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Enum value",
+            "location": null,
+            "parameter": "slug",
+            "parameter_location": "PATH",
+            "scenario": "enum_value"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [
+          [
+            "path",
+            "slug"
+          ],
+          [
+            "body",
+            "runId"
+          ]
+        ],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "PATH": {
+            "slug": "split-brain"
+          }
+        }
+      },
+      "path": "/api/demos/{slug}/state",
+      "path_parameters": {
+        "slug": "split-brain"
+      },
+      "query": {},
+      "case_headers": {},
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "runId": "0"
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null,
+      "auth_identity": null,
+      "operation": "POST /api/demos/{slug}/state"
+    }
+  ],
+  "aliases": []
+}

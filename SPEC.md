@@ -469,6 +469,17 @@ D1), run by the pre-push gate and before every deploy (Checks below): a malforme
 refused agent call both land whole, and the record sits above the first route in
 the fetch handler.
 
+### Bot and rate limits
+
+- Turnstile (widget `mkb-site guide and demos`, invisible, vault `cloudflare/iammkb2002-turnstile-mkb-site`): the browser asks for one token per guide question and per demo run creation (`src/lib/bot-check.ts`, header `cf-turnstile-response`); `worker/bot-check.ts` verifies it with siteverify before the guide or the room runs. No token or a failed check is `403 {reason:"bot-check"}`, still recorded first. A missing `TURNSTILE_SECRET` in production closes both endpoints (503). On localhost both sides use Cloudflare's always-pass test keys. Proof: `worker/bot-check.test.ts`.
+- Rate limits: `BURST_LIMITER` (6 per 60 s per IP, on every budget `reserve()`: guide, agent, demo run creation) and `DEMO_LIMITER` (60 per 60 s per run id, the shards of one run) in `wrangler.jsonc`, plus the daily ceilings in `worker/budget.ts`.
+
+### Analytics and errors
+
+- `src/lib/analytics.ts` starts posthog-js with everything on (agentops rule 91): autocapture, page views and leaves, session replay with every input recorded as typed except passwords (`maskAllInputs: false`, `maskInputOptions: { password: true }`), console and network recording, exceptions, web vitals, heatmaps, scroll depth.
+- `src/app/error.tsx` and `global-error.tsx` call `captureException`, after first reloading once when the error is a stale chunk from an older deploy (`src/lib/stale-build.ts`).
+- `worker/analytics.ts` sends one `$ai_generation` event per model call (model, tokens, latency, trace id) with `ctx.waitUntil`; proof `worker/analytics.test.ts`.
+
 ## What it reads and writes
 
 - **Reads:**
@@ -563,3 +574,13 @@ Each defect met became a check that fails if it returns:
 ### Security scan
 
 The Trunk pre-push gate runs Opengrep with the pinned JavaScript and TypeScript security rules (mkb-winops spec 060). It scans only files changed since origin/main and blocks a push on a new ERROR or WARNING finding. Fix the finding, or when it is a false positive put `// nosemgrep: <rule-id>` on the line above it, using the short rule id the scan prints. There is no global skip.
+
+## Journeys
+
+| User type | Entry point | Device or return visit | Failure | Path back | e2e test |
+|---|---|---|---|---|---|
+| First-time visitor | `/` (home gallery), then a room | Desktop 1280 wide, first visit | A room run is refused or the Worker answers 500, and the room shows a role=alert message | The "Back to the gallery" link on the room page returns to the home page | `e2e/journeys.spec.ts` "home to a demo room run, then back to the gallery" and "a failing demo endpoint shows an alert and the gallery link still works" |
+| Mobile visitor | `/resume/` | Phone 390 wide, first visit | The page scrolls sideways or the projects block is cut off | Pinch zoom stays allowed and the resume PDF link stays on the page | `e2e/journeys.spec.ts` "reads the resume page and the projects on it without sideways scroll" |
+| Returning visitor | `/` or any room | Same browser, second visit | The chosen dark or light theme is forgotten | The mode toggle in the navbar sets it again | `e2e/journeys.spec.ts` "the chosen theme is remembered on the next visit" |
+| New device or cleared browser | `/demos/split-brain/` deep link | Fresh browser context with no storage | The room opens with no earlier state | The rail links to the other rooms and "Back to the gallery" returns home | `e2e/journeys.spec.ts` "a fresh context opens a deep link and finds the way around" |
+| Visitor asking the site guide | `/` guide box | Any device, any visit | The guide endpoint returns 429 or 5xx and the box shows the refusal text (or "The guide endpoint returned N.") | The question stays in the box and Ask works again for a retry | `e2e/journeys.spec.ts` "a rate-limited guide shows a message and the visitor can ask again" |

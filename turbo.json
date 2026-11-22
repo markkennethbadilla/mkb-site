@@ -4,29 +4,151 @@
   "ui": "stream",
   "tasks": {
     "lint": {
-      "inputs": ["src/**", "worker/**", "scripts/**", "tests/**", "e2e/*.ts", "*.ts", "*.mts", "*.mjs", "eslint-suppressions.json", "package.json"]
+      "inputs": [
+        "src/**",
+        "worker/**",
+        "scripts/**",
+        "tests/**",
+        "e2e/*.ts",
+        "*.ts",
+        "*.mts",
+        "*.mjs",
+        "eslint-suppressions.json",
+        "package.json"
+      ]
     },
     "typecheck": {
-      "inputs": ["src/**", "worker/**", "scripts/**", "e2e/*.ts", "*.ts", "*.mts", "tsconfig.json", "worker/tsconfig.json", "scripts/tsconfig.json", "bun.lock"]
+      "inputs": [
+        "src/**",
+        "worker/**",
+        "scripts/**",
+        "e2e/*.ts",
+        "*.ts",
+        "*.mts",
+        "tsconfig.json",
+        "worker/tsconfig.json",
+        "scripts/tsconfig.json",
+        "bun.lock"
+      ]
     },
     "test": {
-      "inputs": ["src/**", "worker/**", "tests/**", "resume/**", "bun.lock"]
+      "inputs": [
+        "src/**",
+        "worker/**",
+        "tests/**",
+        "resume/**",
+        "bun.lock"
+      ]
     },
     "test:worker": {
-      "inputs": ["src/**", "worker/**", "migrations/**", "wrangler.jsonc", "vitest.config.mts", "bun.lock"]
+      "inputs": [
+        "src/**",
+        "worker/**",
+        "migrations/**",
+        "wrangler.jsonc",
+        "vitest.config.mts",
+        "bun.lock"
+      ]
     },
     "migrate:check": {
-      "inputs": ["migrations/**", "wrangler.jsonc", "scripts/check-migrations.mjs"]
+      "inputs": [
+        "migrations/**",
+        "wrangler.jsonc",
+        "scripts/check-migrations.mjs"
+      ]
     },
     "build": {
-      "inputs": ["src/**", "public/**", "content/**", "resume/**", "scripts/build-resume.mjs", "next.config.mjs", "content-collections.ts", "postcss.config.mjs", "tsconfig.json", "bun.lock"],
-      "outputs": ["out/**", ".next/types/**", "next-env.d.ts", "public/resume/**"]
+      "inputs": [
+        "src/**",
+        "public/**",
+        "content/**",
+        "resume/**",
+        "scripts/build-resume.mjs",
+        "next.config.mjs",
+        "content-collections.ts",
+        "postcss.config.mjs",
+        "tsconfig.json",
+        "bun.lock"
+      ],
+      "outputs": [
+        "out/**",
+        ".next/types/**",
+        "next-env.d.ts",
+        "public/resume/**"
+      ]
     },
     "links": {
-      "dependsOn": ["build"],
-      "inputs": ["package.json"]
+      "dependsOn": [
+        "build"
+      ],
+      "inputs": [
+        "package.json"
+      ]
     },
-    "links:outside": { "dependsOn": ["build"], "cache": false },
-    "backup": { "cache": false }
+    "links:outside": {
+      "dependsOn": [
+        "build"
+      ],
+      "cache": false
+    },
+    "backup": {
+      "cache": false
+    },
+    "e2e": {
+      "dependsOn": [
+        "build"
+      ],
+      "inputs": [
+        "e2e/**",
+        "src/**",
+        "worker/**",
+        "public/**",
+        "migrations/**",
+        "wrangler.jsonc",
+        "playwright.config.ts",
+        "openapi.json",
+        "bun.lock"
+      ]
+    },
+    "fuzz": {
+      "inputs": [
+        "openapi.json",
+        "worker/**",
+        "migrations/**",
+        "e2e/fuzz.spec.ts",
+        "wrangler.jsonc",
+        "playwright.config.ts"
+      ],
+      "dependsOn": [
+        "build",
+        "e2e"
+      ]
+    },
+    "evals": {
+      "inputs": [
+        "worker/guide.ts",
+        "worker/guide-tools.ts",
+        "src/lib/site-sections.ts",
+        "src/lib/public-facts.ts",
+        "evals/**",
+        "ai.config.json",
+        "promptfooconfig.mjs"
+      ]
+    },
+    "e2e:webkit": {
+      "dependsOn": [
+        "build"
+      ],
+      "cache": false
+    },
+    "redteam": {
+      "cache": false
+    },
+    "zap": {
+      "dependsOn": [
+        "build"
+      ],
+      "cache": false
+    }
   }
 }

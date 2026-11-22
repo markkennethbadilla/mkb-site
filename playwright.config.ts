@@ -46,7 +46,12 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${PORT}`,
     trace: "retain-on-failure",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "chromium", testIgnore: /(fuzz|zap)\.spec/, use: { ...devices["Desktop Chrome"] } },
+    { name: "webkit", testMatch: /smoke\.spec/, use: { ...devices["Desktop Safari"] } },
+    { name: "fuzz", testMatch: /fuzz\.spec/ },
+    { name: "zap", testMatch: /zap\.spec/ },
+  ],
   webServer: {
     // wrangler.js is spawned by path rather than through the npx shim, for the
     // reason scripts/cf.mjs already gives. Node on Windows will not spawn a .cmd
@@ -56,7 +61,7 @@ export default defineConfig({
     // If the build here ever fails with EBUSY on ./out, a wrangler dev from an
     // earlier run is still alive and holding the directory open. Kill it; the
     // build cannot replace a folder another process has open on Windows.
-    command: `npm run build && node node_modules/wrangler/bin/wrangler.js d1 migrations apply DEMO_DB --local && node node_modules/wrangler/bin/wrangler.js d1 migrations apply WAREHOUSE_DB --local && node node_modules/wrangler/bin/wrangler.js dev --port ${PORT}`,
+    command: `node node_modules/wrangler/bin/wrangler.js d1 migrations apply DEMO_DB --local && node node_modules/wrangler/bin/wrangler.js d1 migrations apply WAREHOUSE_DB --local && node node_modules/wrangler/bin/wrangler.js dev --port ${PORT}`,
     url: `http://127.0.0.1:${PORT}/`,
     // Build, two migration runs and a Worker boot, all before the first test.
     // Around 25 seconds here with a warm Next cache and several times that

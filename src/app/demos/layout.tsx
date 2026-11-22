@@ -19,6 +19,6 @@ export const metadata: Metadata = {
  */
 export default function DemosLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 pb-24 pt-6 sm:pb-28">{children}</div>
+    <main className="mx-auto w-full max-w-5xl px-6 pb-24 pt-6 sm:pb-28">{children}</main>
   );
 }
