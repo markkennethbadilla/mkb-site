@@ -14,7 +14,7 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] B09 this file
 - [x] B11 n/a: an existing site predating the starter; its mechanisms were copied from markkennethbadilla/site-starter
 - [x] B12 knip.json, knip in `bun run maint`
-- [x] B13 `maintainability-on-push` Trunk action in .trunk/trunk.yaml (`bun run maint`: dependency-cruiser, knip, jscpd, eslint sonarjs), baselines committed in c834168
+- [x] B13 `maintainability-on-push` Trunk action in .trunk/trunk.yaml (`bun run maint`: dependency-cruiser, knip, jscpd, eslint sonarjs); baselines .dependency-cruiser-known-violations.json and eslint-maint-suppressions.json (its own file since 2026-11-22, so pruning the normal lint baseline cannot erase it)
 - [x] B14 n/a: we own this repo
 - [x] B15 specs/alignment.md
 - [x] B16 SPEC.md "## Journeys", walked by e2e/journeys.spec.ts (fresh context row included)

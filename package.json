@@ -27,7 +27,7 @@
     "icons": "node scripts/gen-skill-icons.mjs",
     "favicon": "node scripts/gen-favicon.mjs",
     "gate": "TURBO_TELEMETRY_DISABLED=1 NEXT_TELEMETRY_DISABLED=1 turbo run lint typecheck test test:worker migrate:check links e2e fuzz evals --output-logs=errors-only",
-    "maint": "depcruise --config .dependency-cruiser.cjs --ignore-known .dependency-cruiser-known-violations.json src scripts tests worker && knip --no-progress && jscpd src scripts tests worker --silent && eslint -c eslint.maint.config.mjs src scripts tests worker --cache --cache-location node_modules/.cache/eslint-maint",
+    "maint": "depcruise --config .dependency-cruiser.cjs --ignore-known .dependency-cruiser-known-violations.json src scripts tests worker && knip --no-progress && jscpd src scripts tests worker --silent && eslint -c eslint.maint.config.mjs --suppressions-location eslint-maint-suppressions.json src scripts tests worker --cache --cache-location node_modules/.cache/eslint-maint",
     "links:outside": "lychee --no-progress --exclude /api/ --exclude linkedin.com --root-dir out out",
     "migrate:check": "node scripts/check-migrations.mjs",
     "backup": "node scripts/backup-d1.mjs",

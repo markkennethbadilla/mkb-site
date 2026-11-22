@@ -13,7 +13,7 @@
         "*.ts",
         "*.mts",
         "*.mjs",
-        "eslint-suppressions.json",
+        "eslint-suppressions.json", "eslint-maint-suppressions.json",
         "package.json"
       ]
     },

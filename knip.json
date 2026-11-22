@@ -1,6 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "entry": ["scripts/**/*.mjs"],
+  "entry": [
+    "scripts/**/*.mjs",
+    "promptfooconfig.mjs",
+    "evals/*.mjs"
+  ],
   "ignore": [
     "content-collections.ts",
     "src/mdx-components.tsx",
@@ -16,17 +20,43 @@
     "remark-gfm",
     "shiki",
     "@fontsource/bricolage-grotesque",
-    "vite"
+    "vite",
+    "promptfoo"
   ],
   "ignoreIssues": {
-    "src/lib/spend-cap.ts": ["exports"],
-    "src/lib/utils.ts": ["exports"],
-    "worker/guide-tools.ts": ["exports"],
-    "src/components/ui/button.tsx": ["exports", "types"],
-    "src/components/demos/shell/telemetry.tsx": ["exports", "duplicates"],
-    "src/lib/demos/fetch-json.ts": ["exports"],
-    "src/lib/demos/registry.ts": ["types"],
-    "src/components/demos/rooms/ledger-under-fire/types.ts": ["types"],
-    "src/components/demos/rooms/split-brain/types.ts": ["types"]
-  }
+    "src/lib/spend-cap.ts": [
+      "exports"
+    ],
+    "src/lib/utils.ts": [
+      "exports"
+    ],
+    "worker/guide-tools.ts": [
+      "exports"
+    ],
+    "src/components/ui/button.tsx": [
+      "exports",
+      "types"
+    ],
+    "src/components/demos/shell/telemetry.tsx": [
+      "exports",
+      "duplicates"
+    ],
+    "src/lib/demos/fetch-json.ts": [
+      "exports"
+    ],
+    "src/lib/demos/registry.ts": [
+      "types"
+    ],
+    "src/components/demos/rooms/ledger-under-fire/types.ts": [
+      "types"
+    ],
+    "src/components/demos/rooms/split-brain/types.ts": [
+      "types"
+    ]
+  },
+  "ignoreBinaries": [
+    "uvx",
+    "wsl",
+    "lychee"
+  ]
 }
