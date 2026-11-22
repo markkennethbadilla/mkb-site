@@ -19,7 +19,7 @@ mkdirSync(dir, { recursive: true });
 const proof = { stamp, dir, databases: [] };
 for (const name of DBS) {
   const file = join(dir, `${name}.sql`);
-  if (!skipExport) execFileSync(process.execPath, ["scripts/cf.mjs", "d1", "export", name, "--remote", "--output", file], { stdio: "inherit" });
+  if (!skipExport) execFileSync(process.execPath, ["scripts/cf.mjs", "d1", "export", name, "--remote", "--output", file], { stdio: "inherit", windowsHide: true });
   const bytes = statSync(file).size;
   if (bytes > MAX_BYTES) throw new Error(`${name} export ${bytes} bytes is over the ${MAX_BYTES} ceiling`);
   const sql = readFileSync(file, "utf8");
@@ -40,5 +40,5 @@ for (const name of DBS) {
 writeFileSync(join(dir, "restore-proof.json"), JSON.stringify(proof, null, 2));
 const root = join(dir, "..");
 const old = readdirSync(root).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort().slice(0, -KEEP);
-if (old.length) execFileSync(process.execPath, [RECYCLE, ...old.map((d) => join(root, d))], { stdio: "inherit" });
+if (old.length) execFileSync(process.execPath, [RECYCLE, ...old.map((d) => join(root, d))], { stdio: "inherit", windowsHide: true });
 ok({ dir, databases: proof.databases.map((d) => `${d.name} ${d.bytes} B`) });

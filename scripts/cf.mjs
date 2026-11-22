@@ -32,7 +32,7 @@ if (!existsSync(WRANGLER)) {
 // A deploy stamps the commit so /api/health reads it back (SPEC.md "Run, check and hand over").
 const args = process.argv.slice(2);
 if (args[0] === "deploy") {
-  const commit = execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: ROOT, encoding: "utf8" }).trim();
+  const commit = execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: ROOT, encoding: "utf8", windowsHide: true }).trim();
   args.push("--var", `COMMIT:${commit}`);
 }
 

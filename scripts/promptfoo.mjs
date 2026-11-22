@@ -12,7 +12,7 @@ const env = {
   PROMPTFOO_DISABLE_REMOTE_GENERATION: "true",
 };
 const run = (args) => {
-  const r = spawnSync(process.execPath, ["node_modules/promptfoo/dist/src/entrypoint.js", ...args], { stdio: "inherit", env });
+  const r = spawnSync(process.execPath, ["node_modules/promptfoo/dist/src/entrypoint.js", ...args], { stdio: "inherit", env, windowsHide: true });
   if (r.status !== 0) process.exit(r.status ?? 1);
 };
 if (process.argv[2] === "redteam") {
