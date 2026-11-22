@@ -1,3 +1,3 @@
 # Spec alignment
 
-No full spec-against-code review yet (register B15 open, see specs/coverage.md).
+- 2026-11-22 ALIGN_COMMIT: SPEC.md read in full against worker/, src/lib/, src/components/, scripts/, tests/, e2e/, wrangler.jsonc and public/_headers; regrouped into the five sections; fixed: 6 stale paths (scripts/check-guide.mjs and check-demos.mjs are tests/guide.test.mjs and tests/demos.test.mjs, probe-demos.mjs is under tests/, demo/harness.tsx is demo/agent-console.tsx), the Routes table (added /api/health), the rate-limiter keys (BURST per IP on reserve(), DEMO per run id), Lighthouse floors (0.70, live, from the VPS, rule 73) and a time budget that "only goes down" (rule 113); code fixed where the spec was right: the grounding case in src/lib/grounding.ts (run by tests/guide.test.mjs) still said 300 checks after the 180+ figure change.

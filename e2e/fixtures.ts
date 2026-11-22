@@ -55,4 +55,7 @@ export const ROUTES = [
 ].sort();
 
 /** Each test is a distinct visitor to the edge rate limiter (worker/budget.ts keys on cf-connecting-ip). */
-export const asVisitor = (ip: string) => ({ extraHTTPHeaders: { "cf-connecting-ip": ip } });
+// The run id keeps reruns on the persisted local D1 from sharing one visitor's daily budget.
+const RUN = Date.now().toString(36);
+export const visitor = (ip: string) => (ip.endsWith(`-${RUN}`) ? ip : `${ip}-${RUN}`);
+export const asVisitor = (ip: string) => ({ extraHTTPHeaders: { "cf-connecting-ip": visitor(ip) } });

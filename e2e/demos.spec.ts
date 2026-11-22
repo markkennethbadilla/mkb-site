@@ -1,5 +1,5 @@
 import { type Locator, type Page } from "@playwright/test";
-import { expect, fromSite, test as base } from "./fixtures";
+import { asVisitor, expect, fromSite, test as base } from "./fixtures";
 
 /**
  * The site's whole argument is that the demos run when you press the button, so
@@ -62,7 +62,6 @@ async function tabTo(page: Page, target: Locator, maxTabs = 25): Promise<void> {
  * over the edge. Three keys is what three visitors would look like, which is what
  * the limiter is sized for. It changes no assertion.
  */
-const asVisitor = (ip: string) => ({ extraHTTPHeaders: { "cf-connecting-ip": ip } });
 
 test.describe("Ledger Under Fire", () => {
   test.use(asVisitor("203.0.113.11"));

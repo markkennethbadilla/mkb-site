@@ -3,7 +3,7 @@ import { DatabaseSync } from "node:sqlite";
 
 import type { Page } from "@playwright/test";
 
-import { asVisitor, expect, test } from "./fixtures";
+import { asVisitor, expect, test, visitor } from "./fixtures";
 
 type Row = { path: string; ip: string; body: string };
 
@@ -24,7 +24,7 @@ function rowsFor(ip: string): Row[] {
 }
 
 const stamp = () => `${Date.now()}`.slice(-9);
-const ipOf = () => `198.51.100.${(Number(stamp()) % 250) + 1}`;
+const ipOf = () => visitor(`198.51.100.${(Number(stamp()) % 250) + 1}`);
 
 const ask = async (page: Page, question: string) => {
   await page.goto("/");

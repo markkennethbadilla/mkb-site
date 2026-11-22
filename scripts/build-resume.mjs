@@ -26,7 +26,7 @@ const share = `<link rel="canonical" href="${pageUrl}"><meta property="og:type" 
 // name and label come from resume.json and are escaped; the rule is syntax-only.
 // nosemgrep: html-in-template-string
 // Keyword chips wrap so 200% text never scrolls the page sideways (e2e/text-scale.spec.ts).
-const head = `<head><style>.keywords li{white-space:normal!important;max-width:100%;overflow-wrap:anywhere}@media (prefers-color-scheme:light){.contact a,.profiles a{color:#0066b8}}</style><link rel="icon" type="image/svg+xml" href="/icon.svg"><meta name="description" content="${escapeHtml(name)}, ${escapeHtml(label)}. One-page resume, PDF at /resume/${PDF}."><link rel="alternate" type="application/pdf" href="/resume/${PDF}">${share}`;
+const head = `<head><style>.keywords li{white-space:normal!important;max-width:100%;overflow-wrap:anywhere}.position,.contact,.profiles{min-width:0;overflow-wrap:anywhere}@media (prefers-color-scheme:light){.contact a,.profiles a{color:#0066b8}}</style><link rel="icon" type="image/svg+xml" href="/icon.svg"><meta name="description" content="${escapeHtml(name)}, ${escapeHtml(label)}. One-page resume, PDF at /resume/${PDF}."><link rel="alternate" type="application/pdf" href="/resume/${PDF}">${share}`;
 
 // Three string fixes to the theme's fixed <head> (it has no option for them; a
 // rehype pipeline for three attributes would be more to maintain than this). Each
