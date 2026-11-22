@@ -13,8 +13,8 @@ Target: worktree `coverage` on this laptop (local Worker, local D1), then the li
 | 7 | Cold gate (first six tasks) | `bun run gate` | PASS | 7/7 tasks, 44 s |
 | 8 | OSV advisories | `trunk check --ci --no-fix --all --filter osv-scanner` | PASS | 112 to 0; 7 no-fix ids in osv-scanner.toml |
 | 9 | Chromium suite (smoke+axe, forms, journeys, analytics, demos, text scale, screens) | `bunx playwright test --project=chromium` | PASS | 83/85 on the full run; the 2 failures (per-IP budget reuse, resume header) fixed and rerun: text-scale 10/10, journeys 6/6, forms 6/6 |
-| 10 | WebKit smoke | `bunx playwright test --project=webkit` | WEBKIT_RESULT | WEBKIT_EVIDENCE |
-| 11 | AI golden set, 3 trials | `bun run evals` | PASS | 33/33 (subagent run, promptfoo 0.126.0) |
+| 10 | WebKit smoke | `bunx playwright test --project=webkit` | PASS | 7/7 in 13.9 s after the CSP fix (the first run found the Report-Only CSP without `report-to` and the missing cdnjs host; Playwright pinned to 1.65.1 to use the account's WebKit 2388) |
+| 11 | AI golden set, 3 trials, cost and latency asserts | `bun run evals` | PASS | first run 32/33: one trial said it did not know his current work; fact fixed, rerun 33/33, 0.0032 USD, max latency 3.1 s |
 | 12 | AI red team | `bun run redteam` | PASS | 28/28 |
 | 13 | D1 export and restore proof | `bun run backup` | PASS | 2 databases, 38 tables, counts matched, 24 s, 7.7 MB |
 | 14 | Backup pruning keeps 4 | `scripts/backup-d1.mjs <tmp>/2026-11-22 --restore-only` with 5 dated dirs | PASS | oldest moved to the Recycle Bin, 4 left |

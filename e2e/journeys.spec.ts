@@ -7,6 +7,8 @@ test.describe("first-time visitor on desktop", () => {
     await page.goto("/");
     await page.getByRole("link", { name: /Split-Brain Sandbox/ }).first().click();
     await expect(page).toHaveURL(/\/demos\/split-brain\/?$/);
+    // A click before hydration does nothing; under the full suite the client chunk can still be loading.
+    await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: "Start the cluster" }).click();
     await expect(page.getByText("Store: current holder")).toBeVisible({ timeout: 30_000 });
     await page.getByRole("link", { name: /Back to the gallery/ }).click();
