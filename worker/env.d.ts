@@ -22,4 +22,7 @@ interface Env {
   COMMIT?: string;
   /** Turnstile secret, vault `cloudflare/iammkb2002-turnstile-mkb-site`. */
   TURNSTILE_SECRET?: string;
+  /** Public PostHog ingest key and host, wrangler vars. Absent means no $ai_generation events. */
+  POSTHOG_KEY?: string;
+  POSTHOG_HOST?: string;
 }

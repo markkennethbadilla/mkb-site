@@ -34,6 +34,7 @@ import { extractJsonMiddleware, generateText, Output, wrapLanguageModel } from "
 import { z } from "zod";
 import { handleGuide } from "./guide";
 import { botRefusal } from "./bot-check";
+import { watchGeneration } from "./analytics";
 import { budgetStatus, reserve } from "./budget";
 import { alertIfLimitError, checkOpenRouterKey, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap";
 import { handleDemos } from "./demos/router";
@@ -146,6 +147,7 @@ async function handleAgent(req: Request, env: Env): Promise<Response> {
   const chain = [...discovered.slice(0, MAX_ATTEMPTS), FINAL_FALLBACK];
   const cascade: { model: string; ok: boolean; ms: number; error?: string }[] = [];
   const startedAll = Date.now();
+  const traceId = crypto.randomUUID();
   const capCtx = { project: "mkb-site", keySlug: "openrouter/personal-api-key", notifyToken: env.NOTIFY_TOKEN };
   const capRefused =
     (await checkOpenRouterKey(capCtx, key, "agent-harness run")) ??
@@ -190,6 +192,7 @@ async function handleAgent(req: Request, env: Env): Promise<Response> {
       // produced nothing parseable or nothing that validates, and that throw is
       // caught below as this model failing, which advances the cascade.
       const validated = result.output;
+      watchGeneration(env, { traceId, provider: "openrouter", model, input: prompt, startedAt, usage: result.usage, output: validated });
 
       cascade.push({ model, ok: true, ms: Date.now() - startedAt });
       return json({
@@ -211,6 +214,7 @@ async function handleAgent(req: Request, env: Env): Promise<Response> {
         },
       });
     } catch (e) {
+      watchGeneration(env, { traceId, provider: "openrouter", model, input: prompt, startedAt, error: e });
       if (await alertIfLimitError(capCtx, e, `agent-harness model ${model}`)) break;
       cascade.push({ model, ok: false, ms: Date.now() - startedAt, error: String(e).slice(0, 140) });
     }

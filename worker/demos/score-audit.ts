@@ -61,6 +61,7 @@ import { DEEPSEEK_BASE_URL, GUIDE_CHAIN } from "../../src/lib/guide-models";
 import { QUESTIONS, CAN_QUERY, type Question } from "../../src/lib/demos/score-audit-questions";
 import { guardSql, MAX_ROWS } from "../../src/lib/sql-guard";
 import { json, type DemoEnv } from "./router";
+import { watchGeneration } from "../analytics";
 import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../../src/lib/spend-cap";
 
 export const START_ACTIONS = ["run"] as const;
@@ -215,6 +216,7 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
   if (capRefused) return json({ error: `Budget cap reached (${capRefused}), so no model call was made.` }, 429);
 
   const startedAt = Date.now();
+  const traceId = crypto.randomUUID();
 
   // Independent of the model on purpose - fired now, awaited after the model
   // call resolves, so the verifier's own latency hides behind the (much slower)
@@ -243,8 +245,10 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
       experimental_telemetry: { isEnabled: true, functionId: "score-audit" },
     });
     usage = { inputTokens: result.usage?.inputTokens, outputTokens: result.usage?.outputTokens };
+    watchGeneration(env, { traceId, provider: "deepseek", model: GUIDE_CHAIN[0], input: "score-audit run", startedAt, usage });
     stepsTaken = result.steps.length;
   } catch (e) {
+    watchGeneration(env, { traceId, provider: "deepseek", model: GUIDE_CHAIN[0], input: "score-audit run", startedAt, error: e });
     await alertIfLimitError(capCtx, e, "score-audit run");
     return json({ error: `The model call failed: ${String(e).slice(0, 200)}` }, 502);
   }

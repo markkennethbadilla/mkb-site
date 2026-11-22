@@ -29,6 +29,11 @@ const nextConfig = {
   trailingSlash: true,
   // D04: a tab open across a deploy asks for chunks under its own id; src/lib/stale-build.ts reloads once.
   deploymentId: commit,
+  // Public ingest key (project 660260, shared with Inkpot; events are told apart by $host).
+  env: {
+    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY ?? "phc_zUP2XGwJoLmbcUdNksepW2jHV6rxDcxouqvaS8P6kHQh", // gitleaks:allow (public ingest key)
+    NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com",
+  },
 };
 
 // withContentCollections must be the outermost plugin

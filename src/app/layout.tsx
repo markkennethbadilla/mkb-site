@@ -1,3 +1,4 @@
+import { Analytics } from "@/components/analytics";
 import { ThemeProvider } from "@/components/theme-provider";
 import { DATA } from "@/data/resume";
 import { cn } from "@/lib/utils";
@@ -179,6 +180,7 @@ export default function RootLayout({
             ships a real dark theme, so defaulting to light meant a dark-mode
             user got flashbanged and then reached for an extension - which is
             exactly the thing the darkreader-lock below opts out of. */}
+        <Analytics />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {/* Deliberately thin: html, body, providers, and nothing else. The site's
               measure, background grid and dock moved into (site)/layout.tsx so the

@@ -95,6 +95,8 @@
     }
   ],
   "observability": { "enabled": true },
+  // Public PostHog ingest key (same project as the browser); the Worker sends $ai_generation events with it.
+  "vars": { "POSTHOG_KEY": "phc_zUP2XGwJoLmbcUdNksepW2jHV6rxDcxouqvaS8P6kHQh", "POSTHOG_HOST": "https://us.i.posthog.com" }, // gitleaks:allow (public ingest key)
   "routes": [
     { "pattern": "markkennethbadilla.com", "custom_domain": true },
     { "pattern": "www.markkennethbadilla.com", "custom_domain": true }

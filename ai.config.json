@@ -1,0 +1,7 @@
+{
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "maxOutputTokens": 600,
+  "maxCostUsdPerCall": 0.002,
+  "maxLatencyMsPerCall": 20000
+}

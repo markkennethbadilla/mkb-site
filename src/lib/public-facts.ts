@@ -250,6 +250,11 @@ export const PUBLIC_FACTS: PublicFact[] = [
     terms: ["OST", "OSTs"],
   },
   {
+    id: "demo-rooms",
+    text: "The projects section has three live demo rooms that run for real when you press the button: Ledger Under Fire, Split Brain and ScoreAudit.",
+    terms: ["Ledger", "Under", "Fire", "Split", "Brain", "ScoreAudit"],
+  },
+  {
     id: "this-site",
     text: "This site is built with Next.js as a static export, deployed on Cloudflare Workers, and he wrote the guide you are talking to.",
     terms: ["Next.js", "Next", "Cloudflare", "Workers"],

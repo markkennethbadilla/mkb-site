@@ -495,71 +495,71 @@ the fetch handler.
 
 ### Deploy
 
-`npm run deploy` runs `scripts/gate.mjs --deploy` (records-first test, build,
-Lighthouse mobile and desktop; Checks below), applies any pending D1 migrations to `mkb-site-demo` and
-`mkb-site-warehouse` (remote), then deploys the Worker. A failing check stops the
-deploy before anything reaches Cloudflare. The host is a Cloudflare Worker
-(`mkb-site`, static `out/` through the ASSETS binding) with no Workers Builds git
-connection, so Cloudflare runs no build of its own; this script is the deploy
-path and the host-side check. Wrangler runs through `scripts/cf.mjs` with the
-scoped API token in vault `credentials/cloudflare/iammkb2002-workers-deploy`
-(Workers, KV, D1, routes; expires 2027-11-22), never the Global API Key. Migrations go first so the
-code never runs against a schema it does not expect: on 2026-08-22 the Worker
-shipped reading `split_brain_events.id` while migration 0007 sat unapplied, and
-the Split-Brain Sandbox returned 500 on every run until 2026-10-12.
+`bun run deploy` from the tip of `main` (one deploy at a time, skill coordinate-many-agents):
 
-Before a deploy, the agentops deploy gate (`scripts/deploy-gate.mjs <url> --repo .`)
-must pass. It checks share tags and asset caching. Every page has its own canonical
-link and its own `og:title` and `og:url`: the root layout covers `/`, the demos
-layout covers `/demos/`, each room page covers itself, and `scripts/build-resume.mjs`
-writes them into `/resume/`. `public/_headers` serves `/_next/static/*` as
-`immutable`, because those file names are content hashes. It also sets
-Strict-Transport-Security (1 year, includeSubDomains) and a
-`Content-Security-Policy-Report-Only` (self, inline script and style for Next, `https:` images,
-no third-party script; the site loads no PostHog or Turnstile). Report-Only until a browser
-audit shows no violations, then rename it to `Content-Security-Policy`.
+1. `bun run gate` (Checks below). A failing task stops the deploy before anything reaches Cloudflare.
+2. Pending D1 migrations to `mkb-site-demo` and `mkb-site-warehouse` (remote). Migrations go first so the code never runs against a schema it does not expect: on 2026-08-22 the Worker shipped reading `split_brain_events.id` while migration 0007 sat unapplied, and the Split-Brain Sandbox returned 500 on every run until 2026-10-12.
+3. `scripts/cf.mjs deploy`, which adds `--var COMMIT:<short sha>` so the live commit can be read back.
 
-### Lighthouse gate
+- Host: the Cloudflare Worker `mkb-site` (static `out/` through the ASSETS binding) with no Workers Builds git connection, so this script is the deploy path and the host-side check.
+- Wrangler runs through `scripts/cf.mjs` with the scoped token in vault `credentials/cloudflare/iammkb2002-workers-deploy`, never the Global API Key.
+- Worker secrets (`wrangler secret put` through `scripts/cf.mjs`): `DEEPSEEK_API_KEY`, `OPENROUTER_API_KEY`, `TURNSTILE_SECRET`.
+- Share tags and caching: the agentops deploy gate (`scripts/deploy-gate.mjs <url> --repo .`) passes. Every page has its own canonical link, `og:title` and `og:url` (root layout for `/`, the demos layout, each room page, and `scripts/build-resume.mjs` for `/resume/`). `public/_headers` serves `/_next/static/*` as `immutable` (content-hashed names), sets Strict-Transport-Security (1 year, includeSubDomains) and a `Content-Security-Policy-Report-Only` that allows self, inline script and style for Next, `https:` images, PostHog (`us.i.posthog.com`, `us-assets.i.posthog.com`) and Turnstile (`challenges.cloudflare.com`). Report-Only until a browser audit shows no violations, then rename it to `Content-Security-Policy`.
 
-Lighthouse CI (`@lhci/cli@0.15.1`) runs on `/` and `/resume/`, mobile and
-desktop, median of 3, as the first step of every deploy (Checks below), on the Playwright Chromium (never
-installed Chrome, whose web-app policy installs apps into each temp profile).
+### Live check
+
+- `curl -s https://markkennethbadilla.com/api/health` returns `{"ok":true,"commit":"<sha>"}`; the sha must equal `git rev-parse --short origin/main`. A 503 means D1 did not answer.
+- Uptime Kuma monitor `markkennethbadilla.com (/api/health)` at `https://uptime.elunari.uk` checks it every minute, keyword `"ok":true`, 2 retries, and pages Mark's phone through the ntfy notification `Page Mark's phone (ntfy, loud on down only)` (personal-infra spec 003). That ntfy topic is the one alert channel; down pages loud, recovery silent.
+
+### Rollback
+
+- `node scripts/cf.mjs rollback` (Workers versions: the previous version takes all traffic at once; static assets roll back with it). Rehearsed ROLLBACK_REHEARSAL.
+- A rollback does not undo a D1 migration. Migrations here only add tables or columns, so the older code still runs on the newer schema; a migration that drops or renames something needs its own rollback written first.
+
+### Site down
+
+Check the layers in order, stop at the first that fails:
+
+1. `curl -sI https://markkennethbadilla.com/` and `/api/health`. 5xx from the Worker: `node scripts/cf.mjs tail` for the error, then roll back (above).
+2. Cloudflare status (`https://www.cloudflarestatus.com`) and the Workers dashboard for `mkb-site` (errors, CPU limit).
+3. D1: health 503 means the `select 1` failed. `node scripts/cf.mjs d1 execute mkb-site-demo --remote --command "select 1"`.
+4. A demo or the guide refusing: read the refusal text. `429` is the budget or the rate limiters (by design); `403 bot-check` is Turnstile; `503 The bot check is not configured` means `TURNSTILE_SECRET` is missing.
+5. Paid model down: the guide falls back to its written section line; nothing to do but check the DeepSeek and OpenRouter status pages.
+
+### Backups
+
+- `bun run backup` (`scripts/backup-d1.mjs`) exports both D1 databases to `%USERPROFILE%/cloud/backups/mkb-site/<date>/` (Filen-synced, so offsite), restores each export into a fresh in-memory SQLite (`node:sqlite`) and fails unless every table's row count matches the export; it writes `restore-proof.json` beside the files and keeps the newest 4 dates (older ones go to the Recycle Bin). About 25 s, 7.7 MB on 2026-11-22.
+- It runs weekly in `bun run scheduled` (mkb-winops task `MkbRepoChecks-site-checks`, spec 057). D1 Time Travel (7 days on the free plan) covers a bad write inside the week: `node scripts/cf.mjs d1 time-travel restore mkb-site-demo --timestamp <ISO>`.
+- Restore for real: `node scripts/cf.mjs d1 execute <db> --remote --file <export>.sql` into a new database, point `wrangler.jsonc` at it, deploy.
 
 ### Checks
 
-No GitHub Actions since 2026-10-23 (the Actions budget ran out; Mark's order to
-move every check to a local Trunk pre-push gate plus the host's build).
+`bun run gate` is Turborepo (`turbo.json`): each task runs side by side and replays from cache when its inputs did not change. Tasks: `lint` (ESLint, `--max-warnings` via suppressions baseline), `typecheck` (site, worker, scripts), `test` (node:test over `tests/`), `test:worker` (vitest in workerd against real local D1), `migrate:check` (every migration applied to a fresh database of each binding), `links` (lychee, offline, over `out/`), `e2e` (Playwright smoke, axe, text scale, screens, forms, journeys, analytics, fuzz) and `evals` (promptfoo golden set; runs only when a prompt or the guide changes, by its inputs).
 
-- `git push` runs Trunk's pre-push hook (`.trunk/trunk.yaml`): a gitleaks scan
-  of the whole tree, then (the `block-push-on-osv` action is defined but off: about 110 transitive build-tool advisories across majors remain after the 2026-11-22 bump; Dependabot alerts track them, coverage T02 open), `bun run gate` (`scripts/gate.mjs`): records-first
-  test and `bun run build`. The first failure stops the push.
-- `npm run deploy` runs `scripts/gate.mjs --deploy` first: the same checks plus
-  Lighthouse mobile and desktop, which are report only. On 2026-10-23 this
-  laptop scored `/` at 0.59 to 0.62 mobile on main and 0.69 on the live
-  build, against the 0.80 floor set on GitHub's runner (baseline 0.82), so a
-  miss on the laptop says more about the laptop than the page. Scores print in
-  the deploy output; a failing records-first test or build still stops it. `git commit` runs the gitleaks scan on staged files.
-- Local look with the Worker: `bun run build`, then
-  `node A:/personal-markkennethbadilla/mkb-agentops/scripts/dekit-up.mjs ctl <repo> start worker`
-  (dekit task `worker`, `scripts/dev-worker.mjs`). It applies the local D1
-  migrations, reads the guide key from the vault and serves `out/` plus
-  `/api/*` on http://127.0.0.1:8788, local data only. Stop it before the next
-  build, since it holds `out/` open.
-- Trunk's stock hook actions only warn without a terminal, so both are custom
-  actions running `trunk check --ci` (skill `gate-commits-with-trunk`). Install
-  them once per clone: `trunk git-hooks sync`.
-- A push touching only Markdown, `specs/` or `docs/` skips the gate script.
-  `npm run deploy` always runs it.
-- Limits: `git push --no-verify` skips the push gate, but not the deploy gate.
-  The pre-push hook skips itself on headless Linux and macOS (Trunk 1.25.0).
+- `git push` runs Trunk's pre-push actions (`.trunk/trunk.yaml`): gitleaks, osv-scanner (`block-push-on-osv`; accepted no-fix advisories in `osv-scanner.toml`, each with a reason and a 30-day `ignoreUntil`), Opengrep, `bun run gate`, and `bun run maint`. The first failure stops the push. `git commit` runs gitleaks on staged files.
+- `bun run scheduled`, weekly (mkb-winops spec 057): WebKit smoke crawl, outside links, AI red team, ZAP baseline, D1 backup.
+- Lighthouse: the live site, daily, from mkb-vps-sg (personal-infra `servers/mkb-vps-sg/lighthouse/`), floor 0.70 in every category on every page (agentops rule 73), never in the deploy or the push. `lighthouserc.json` and `lighthouserc.desktop.json` hold the URLs and floors.
+- Local look with the Worker: `bun run build`, then `node A:/personal-markkennethbadilla/mkb-agentops/scripts/dekit-up.mjs ctl <repo> start worker` (dekit task `worker`, `scripts/dev-worker.mjs`): local D1, the guide key from the vault, `out/` plus `/api/*` on http://127.0.0.1:8788. Stop it before the next build, since it holds `out/` open.
+- Install the hooks once per clone: `trunk git-hooks sync`. `git push --no-verify` skips the push gate, but `bun run deploy` always runs `bun run gate`.
 - Time budget: the repo's line in agentops `gate-budgets.json` (rule 0).
-- Lighthouse floor: 0.70 in every category, mobile and desktop, on every page (agentops rule 73), never higher; quote the scores before calling a deploy done.
+- Test records: `specs/001-coverage-register/test-runs/<date>-<topic>/results.md`.
+
+### Regression catalog
+
+Each defect met became a check that fails if it returns:
+
+| Defect | Guard |
+| --- | --- |
+| Quoted table names bypassed the SQL guard and read another visitor's run (2026-08-22) | two D1 databases; `worker/sql-boundary.test.ts`; `tests/guide.test.mjs` HOSTILE_SQL corpus |
+| Worker shipped ahead of migration 0007, Split-Brain 500s for seven weeks | deploy applies migrations first; `migrate:check` in the gate |
+| Free models invented a university and an employer | closed corpus plus `checkGrounding`; `tests/guide.test.mjs` grounding cases |
+| A pooled figure licensed "66 failover drills" | figures bound to their fact; grounding cases in `src/lib/grounding.ts` |
+| Room source links 404'd while the repo was private | `tests/probe-demos.mjs` fetches each source URL |
+| Run-id-keyed limiter never limited run creation | IP-keyed reserve; `tests/demos.test.mjs` asserts reserve() in the router |
+| Arena tables grew forever with no sweep | hourly cron; `worker/demos.test.ts` |
+| A POST answered before it was recorded | `worker/records-first.test.ts` (source order and rows) |
+| Guide and demo endpoints open to scripted abuse | Turnstile; `worker/bot-check.test.ts` |
 
 ### Security scan
 
-The Trunk pre-push gate runs Opengrep with the pinned JavaScript and
-TypeScript security rules (mkb-winops spec 060). It scans only files changed
-since origin/main and blocks a push on a new ERROR or WARNING finding. Fix the
-finding, or when it is a false positive put `// nosemgrep: <rule-id>` on the
-line above it, using the short rule id the scan prints. There is no global
-skip.
+The Trunk pre-push gate runs Opengrep with the pinned JavaScript and TypeScript security rules (mkb-winops spec 060). It scans only files changed since origin/main and blocks a push on a new ERROR or WARNING finding. Fix the finding, or when it is a false positive put `// nosemgrep: <rule-id>` on the line above it, using the short rule id the scan prints. There is no global skip.

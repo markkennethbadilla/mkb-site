@@ -25,6 +25,7 @@ const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 import { buildToolbox, type GuideDecision } from "./guide-tools";
 import { lookup, remember } from "./cache";
 import { reserve } from "./budget";
+import { watchGeneration } from "./analytics";
 import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap";
 // Env is global, generated from wrangler.jsonc by `wrangler types`.
 import { json, refuseForQuota, GUIDE_CHAIN, DEEPSEEK_BASE_URL } from "./models";
@@ -114,6 +115,7 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
   });
 
   const chain = [...GUIDE_CHAIN];
+  const traceId = crypto.randomUUID();
 
   const capCtx = { project: "mkb-site", keySlug: "deepseek/active-personal-api-key", notifyToken: env.NOTIFY_TOKEN };
   const capRefused = await checkRunCap(capCtx, chain[0], GUIDE_SYSTEM_PROMPT.length + parsed.data.question.length, MAX_STEPS * chain.length, "site-guide question");
@@ -128,6 +130,8 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
       rejected: [],
     };
     const startedAt = Date.now();
+    const watch = (extra: { usage?: { inputTokens?: number; outputTokens?: number }; output?: unknown; error?: unknown }) =>
+      watchGeneration(env, { traceId, provider: "deepseek", model, input: parsed.data.question, startedAt, ...extra });
     try {
       const result = await generateText({
         model: deepseek(model),
@@ -164,6 +168,7 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
       if (!decision.section && !decision.answer && !decision.declined) {
         throw new Error("no tool call - the model wrote prose, which is discarded");
       }
+      watch({ usage: result.usage, output: decision.answer ?? (decision.declined ? "decline" : decision.section) });
 
       // The model's own words only survive if they passed the grounding check.
       // Otherwise the written section line stands in - always true, never blank.
@@ -199,6 +204,7 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
         outputTokens: result.usage?.outputTokens ?? null,
       });
     } catch (e) {
+      watch({ error: e });
       await alertIfLimitError(capCtx, e, `site-guide model ${model}`);
       // Try the next model. Nothing has been sent to the browser yet, so this is
       // invisible to the visitor - which is the whole reason the loop is not
