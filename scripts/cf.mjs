@@ -33,6 +33,7 @@ const child = spawn(
   [WRANGLER, ...process.argv.slice(2)],
   {
     stdio: "inherit",
+    windowsHide: true,
     env: {
       ...process.env,
       CLOUDFLARE_API_TOKEN: creds.secret_value,
