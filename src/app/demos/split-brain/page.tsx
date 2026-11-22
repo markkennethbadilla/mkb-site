@@ -8,6 +8,13 @@ const room = roomBySlug("split-brain")!;
 export const metadata: Metadata = {
   title: room.name,
   description: room.promise,
+  alternates: { canonical: `/demos/${room.slug}/` },
+  openGraph: {
+    title: room.name,
+    description: room.promise,
+    url: `/demos/${room.slug}/`,
+    images: [{ url: "/og-lightbox.png", width: 1200, height: 630, alt: room.name }],
+  },
 };
 
 export default function Page() {

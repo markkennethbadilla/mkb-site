@@ -475,6 +475,13 @@ code never runs against a schema it does not expect: on 2026-08-22 the Worker
 shipped reading `split_brain_events.id` while migration 0007 sat unapplied, and
 the Split-Brain Sandbox returned 500 on every run until 2026-10-12.
 
+Before a deploy, the agentops deploy gate (`scripts/deploy-gate.mjs <url> --repo .`)
+must pass. It checks share tags and asset caching. Every page has its own canonical
+link and its own `og:title` and `og:url`: the root layout covers `/`, the demos
+layout covers `/demos/`, each room page covers itself, and `scripts/build-resume.mjs`
+writes them into `/resume/`. `public/_headers` serves `/_next/static/*` as
+`immutable`, because those file names are content hashes.
+
 ## Lighthouse gate
 
 Lighthouse CI (`@lhci/cli@0.15.1`) runs on `/` and `/resume/`, mobile and
