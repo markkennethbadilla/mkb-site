@@ -139,7 +139,8 @@ export const ROOMS: DemoRoom[] = [
         "Not that the safe path would hold at a real company's size. This is a dozen requests against a free database, not a payments system under load.",
     },
     injectionPoint: "reads a balance, awaits, then writes",
-    hue: 90,
+    // Not 90: at exactly 90 deg cos(h) is about 0, opacity mixes compute oklab(.. -5e-10 ..) and Lighthouse's axe cannot parse it.
+    hue: 88,
     motion: "mechanical",
     requestsPerRun: 14,
     rowsPerRun: 60,
