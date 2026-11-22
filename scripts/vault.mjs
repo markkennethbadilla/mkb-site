@@ -24,7 +24,7 @@ const KEYRING = ["-c", "import keyring;print(keyring.get_password('keepassxc/per
  * because every caller is a command-line script and all three want the same
  * behaviour: say which vault and which slug, then stop.
  *
- * @param {string} slug entry title under the `credentials` group, e.g. "cloudflare/global-api-key"
+ * @param {string} slug entry title under the `credentials` group, e.g. "cloudflare/iammkb2002-workers-deploy"
  * @returns {{ secret_value: string, username_or_client_id: string }}
  */
 export function vaultRow(slug) {

@@ -470,7 +470,9 @@ Lighthouse mobile and desktop; Checks below), applies any pending D1 migrations 
 deploy before anything reaches Cloudflare. The host is a Cloudflare Worker
 (`mkb-site`, static `out/` through the ASSETS binding) with no Workers Builds git
 connection, so Cloudflare runs no build of its own; this script is the deploy
-path and the host-side check. Migrations go first so the
+path and the host-side check. Wrangler runs through `scripts/cf.mjs` with the
+scoped API token in vault `credentials/cloudflare/iammkb2002-workers-deploy`
+(Workers, KV, D1, routes; expires 2027-11-22), never the Global API Key. Migrations go first so the
 code never runs against a schema it does not expect: on 2026-08-22 the Worker
 shipped reading `split_brain_events.id` while migration 0007 sat unapplied, and
 the Split-Brain Sandbox returned 500 on every run until 2026-10-12.

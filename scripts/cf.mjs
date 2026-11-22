@@ -17,7 +17,7 @@ import { vaultRow } from "./vault.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-const creds = vaultRow("cloudflare/global-api-key");
+const creds = vaultRow("cloudflare/iammkb2002-workers-deploy");
 
 // Spawn wrangler's JS entrypoint under this same Node, not the npx shim: Node 24
 // on Windows refuses to spawn a .cmd without a shell (EINVAL), and turning the
@@ -35,8 +35,7 @@ const child = spawn(
     stdio: "inherit",
     env: {
       ...process.env,
-      CLOUDFLARE_API_KEY: creds.secret_value,
-      CLOUDFLARE_EMAIL: creds.username_or_client_id,
+      CLOUDFLARE_API_TOKEN: creds.secret_value,
     },
   }
 );
