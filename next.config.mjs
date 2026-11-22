@@ -1,4 +1,7 @@
+import { execSync } from "node:child_process";
 import { withContentCollections } from "@content-collections/next";
+
+const commit = execSync("git rev-parse --short HEAD", { windowsHide: true }).toString().trim();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -24,6 +27,8 @@ const nextConfig = {
   // With trailing slashes there is no file-versus-directory ambiguity left to
   // resolve: out/resume/index.html is the only candidate.
   trailingSlash: true,
+  // D04: a tab open across a deploy asks for chunks under its own id; src/lib/stale-build.ts reloads once.
+  deploymentId: commit,
 };
 
 // withContentCollections must be the outermost plugin
