@@ -12,7 +12,7 @@ const ROLE = DATA.description.slice(0, HERO_BREAK);
 const TAGLINE = DATA.description.slice(HERO_BREAK + 2);
 
 const PROOF = [
-  { n: "300+", label: "checks in the build gate" },
+  { n: "180+", label: "checks in the build gates" },
   { n: "10 wk", label: "to build the operations platform" },
   { n: "55 to 6", label: "permissions rebuilt into six areas" },
 ];

@@ -1,0 +1,8 @@
+{
+  "ignore": ["**/node_modules/**", "**/.next/**", "**/out/**", "**/.content-collections/**", "**/*.md", "**/*.json"],
+  "minLines": 15,
+  "minTokens": 100,
+  "reporters": ["console"],
+  "gitignore": true,
+  "threshold": 0.5
+}

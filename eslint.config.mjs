@@ -22,6 +22,9 @@ const eslintConfig = defineConfig([
         // to silence the directives would not survive the next run.
         '.content-collections/**',
         'worker-configuration.d.ts',
+        // Maintainability gate configs (register B13) lint under eslint.maint.config.mjs.
+        'eslint.maint.config.mjs',
+        '.dependency-cruiser.cjs',
     ]),
 ])
 

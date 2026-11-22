@@ -238,7 +238,7 @@ export const DATA = {
       logoUrl: "/weassist.png",
       start: "March 2026",
       end: "Present",
-      // The three figures folded in here - 55 scattered permissions, 300+ gate checks, the
+      // The three figures folded in here - 55 scattered permissions, 180+ gate checks, the
       // 18-step deploy pipeline - are already published on this site in
       // src/lib/public-facts.ts. Scope and figures are the honest answer to a short tenure.
       // There is no years line anywhere in this file, on purpose.
@@ -251,7 +251,7 @@ export const DATA = {
         "Own AI and data automation end to end.",
         "Built the internal operations platform (Next.js and PostgreSQL) in ten weeks.",
         "Access control rebuilt from 55 scattered permissions into a six-area grid with no bypass role by design.",
-        "Its own gate suite of 300+ checks wired into the build.",
+        "Its own gate suites of 180+ checks wired into the build.",
         "Bad code is uncommittable whether a person or an agent wrote it.",
         "Maintains a self-hosted server (Coolify), with every service behind Cloudflare Tunnel, so we can run anything at one flat rate.",
         "One 18-step zero-downtime deploy pipeline every app shares.",

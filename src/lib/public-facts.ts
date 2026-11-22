@@ -119,9 +119,9 @@ export const PUBLIC_FACTS: PublicFact[] = [
 
   {
     id: "gates",
-    text: "He writes his own static gate suites and wires them into the build, so a change that breaks a rule is uncommittable rather than merely discouraged - and the same bar applies whether a person or an AI agent wrote it. That comes to more than 300 checks he wrote himself.",
+    text: "He writes his own static gate suites and wires them into the build, so a change that breaks a rule is uncommittable rather than merely discouraged - and the same bar applies whether a person or an AI agent wrote it. That comes to more than 180 checks he wrote himself across two suites.",
     terms: ["AI"],
-    figures: [{ value: "300", near: ["checks", "check", "gates", "gate", "static"] }],
+    figures: [{ value: "180", near: ["checks", "check", "gates", "gate", "static"] }],
   },
   {
     id: "gate-bypass",

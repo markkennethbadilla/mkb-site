@@ -35,7 +35,7 @@
         "Killed my own predictive model after a label audit; shipped an explainable rules-based detector instead.",
         "Built desktop AI agents with tool calling for non-technical staff, plus a meeting platform used daily.",
         "Every deploy backs up production, restores it into a scratch database and diffs row counts before anything migrates.",
-        "Wired a 300+ check gate suite into the build, so bad code is uncommittable whether a person or an agent wrote it."
+        "Wired 180+ checks into the build gates, so bad code is uncommittable whether a person or an agent wrote it."
       ]
     },
     {

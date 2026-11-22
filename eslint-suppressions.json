@@ -1,0 +1,59 @@
+{
+  "src/app/(site)/page.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/demo/agent-console.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/demo/entity-overlay.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "sonarjs/cognitive-complexity": {
+      "count": 1
+    }
+  },
+  "src/components/demo/entity.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/mdx/media-container.tsx": {
+    "@next/next/no-img-element": {
+      "count": 1
+    }
+  },
+  "tests/probe-demos.mjs": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "worker/demos/split-brain.ts": {
+    "complexity": {
+      "count": 1
+    },
+    "sonarjs/cognitive-complexity": {
+      "count": 1
+    }
+  },
+  "worker/guide.ts": {
+    "complexity": {
+      "count": 1
+    },
+    "sonarjs/cognitive-complexity": {
+      "count": 1
+    }
+  },
+  "worker/index.ts": {
+    "complexity": {
+      "count": 1
+    }
+  }
+}

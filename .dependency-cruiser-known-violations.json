@@ -1,0 +1,222 @@
+[
+  {
+    "type": "cycle",
+    "from": "worker/demos/ledger-under-fire.ts",
+    "to": "worker/demos/router.ts",
+    "unresolvedTo": "./router",
+    "dependencyTypes": [
+      "local",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "no-circular"
+    },
+    "cycle": [
+      {
+        "name": "worker/demos/router.ts",
+        "dependencyTypes": [
+          "local",
+          "import"
+        ]
+      },
+      {
+        "name": "worker/demos/ledger-under-fire.ts",
+        "dependencyTypes": [
+          "local",
+          "import"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "cycle",
+    "from": "worker/demos/router.ts",
+    "to": "worker/demos/score-audit.ts",
+    "unresolvedTo": "./score-audit",
+    "dependencyTypes": [
+      "local",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "no-circular"
+    },
+    "cycle": [
+      {
+        "name": "worker/demos/score-audit.ts",
+        "dependencyTypes": [
+          "local",
+          "import"
+        ]
+      },
+      {
+        "name": "worker/demos/router.ts",
+        "dependencyTypes": [
+          "local",
+          "import"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "cycle",
+    "from": "worker/demos/router.ts",
+    "to": "worker/demos/split-brain.ts",
+    "unresolvedTo": "./split-brain",
+    "dependencyTypes": [
+      "local",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "no-circular"
+    },
+    "cycle": [
+      {
+        "name": "worker/demos/split-brain.ts",
+        "dependencyTypes": [
+          "local",
+          "import"
+        ]
+      },
+      {
+        "name": "worker/demos/router.ts",
+        "dependencyTypes": [
+          "local",
+          "import"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "dependency",
+    "from": "worker/demos.test.ts",
+    "to": "@cloudflare/vitest-plugin/types",
+    "unresolvedTo": "@cloudflare/vitest-plugin/types",
+    "dependencyTypes": [
+      "unknown"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "not-to-unresolvable"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "worker/demos.test.ts",
+    "to": "cloudflare:test",
+    "unresolvedTo": "cloudflare:test",
+    "dependencyTypes": [
+      "unknown"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "not-to-unresolvable"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "worker/demos.test.ts",
+    "to": "cloudflare:workers",
+    "unresolvedTo": "cloudflare:workers",
+    "dependencyTypes": [
+      "unknown"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "not-to-unresolvable"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "worker/records-first.test.ts",
+    "to": "@cloudflare/vitest-plugin/types",
+    "unresolvedTo": "@cloudflare/vitest-plugin/types",
+    "dependencyTypes": [
+      "unknown"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "not-to-unresolvable"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "worker/records-first.test.ts",
+    "to": "cloudflare:test",
+    "unresolvedTo": "cloudflare:test",
+    "dependencyTypes": [
+      "unknown"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "not-to-unresolvable"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "worker/records-first.test.ts",
+    "to": "cloudflare:workers",
+    "unresolvedTo": "cloudflare:workers",
+    "dependencyTypes": [
+      "unknown"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "not-to-unresolvable"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "worker/records-first.test.ts",
+    "to": "vite/client",
+    "unresolvedTo": "vite/client",
+    "dependencyTypes": [
+      "unknown"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "not-to-unresolvable"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "worker/sql-boundary.test.ts",
+    "to": "@cloudflare/vitest-plugin/types",
+    "unresolvedTo": "@cloudflare/vitest-plugin/types",
+    "dependencyTypes": [
+      "unknown"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "not-to-unresolvable"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "worker/sql-boundary.test.ts",
+    "to": "cloudflare:test",
+    "unresolvedTo": "cloudflare:test",
+    "dependencyTypes": [
+      "unknown"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "not-to-unresolvable"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "worker/sql-boundary.test.ts",
+    "to": "cloudflare:workers",
+    "unresolvedTo": "cloudflare:workers",
+    "dependencyTypes": [
+      "unknown"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "not-to-unresolvable"
+    }
+  }
+]
