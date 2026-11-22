@@ -480,7 +480,11 @@ must pass. It checks share tags and asset caching. Every page has its own canoni
 link and its own `og:title` and `og:url`: the root layout covers `/`, the demos
 layout covers `/demos/`, each room page covers itself, and `scripts/build-resume.mjs`
 writes them into `/resume/`. `public/_headers` serves `/_next/static/*` as
-`immutable`, because those file names are content hashes.
+`immutable`, because those file names are content hashes. It also sets
+Strict-Transport-Security (1 year, includeSubDomains) and a
+`Content-Security-Policy-Report-Only` (self, inline script and style for Next, `https:` images,
+no third-party script; the site loads no PostHog or Turnstile). Report-Only until a browser
+audit shows no violations, then rename it to `Content-Security-Policy`.
 
 ## Lighthouse gate
 
@@ -494,7 +498,7 @@ No GitHub Actions since 2026-10-23 (the Actions budget ran out; Mark's order to
 move every check to a local Trunk pre-push gate plus the host's build).
 
 - `git push` runs Trunk's pre-push hook (`.trunk/trunk.yaml`): a gitleaks scan
-  of the whole tree, then `bun run gate` (`scripts/gate.mjs`): records-first
+  of the whole tree, an osv-scanner dependency scan (`block-push-on-osv`), then `bun run gate` (`scripts/gate.mjs`): records-first
   test and `bun run build`. The first failure stops the push.
 - `npm run deploy` runs `scripts/gate.mjs --deploy` first: the same checks plus
   Lighthouse mobile and desktop, which are report only. On 2026-10-23 this
