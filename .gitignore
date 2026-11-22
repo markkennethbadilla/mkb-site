@@ -67,3 +67,5 @@ id_ed25519*
 .logs
 .tsbuildinfo.worker
 .turbo/
+test-runs/
+redteam.yaml

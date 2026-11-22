@@ -68,7 +68,7 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "current-role",
-    text: "He has been an AI Engineer at WeAssist since March 2026. It is a full-time remote role.",
+    text: "He has been an AI Engineer at WeAssist since March 2026, and it is what he is working on right now: his current, full-time remote job, building AI and data automation.",
     terms: ["WeAssist", "March", "2026", "AI", "Engineer"],
     figures: [{ value: "2026", near: ["weassist", "march", "since", "joined", "role"] }],
   },

@@ -12,7 +12,7 @@ const env = {
   PROMPTFOO_DISABLE_REMOTE_GENERATION: "true",
 };
 const run = (args) => {
-  const r = spawnSync("npx", ["-y", "promptfoo@0.126.0", ...args], { stdio: "inherit", env, shell: true });
+  const r = spawnSync(process.execPath, ["node_modules/promptfoo/dist/src/entrypoint.js", ...args], { stdio: "inherit", env });
   if (r.status !== 0) process.exit(r.status ?? 1);
 };
 if (process.argv[2] === "redteam") {
