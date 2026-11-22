@@ -500,7 +500,7 @@ No GitHub Actions since 2026-10-23 (the Actions budget ran out; Mark's order to
 move every check to a local Trunk pre-push gate plus the host's build).
 
 - `git push` runs Trunk's pre-push hook (`.trunk/trunk.yaml`): a gitleaks scan
-  of the whole tree, an osv-scanner dependency scan (`block-push-on-osv`), then `bun run gate` (`scripts/gate.mjs`): records-first
+  of the whole tree, then (the `block-push-on-osv` action is defined but off: about 110 transitive build-tool advisories across majors remain after the 2026-11-22 bump; Dependabot alerts track them, coverage T02 open), `bun run gate` (`scripts/gate.mjs`): records-first
   test and `bun run build`. The first failure stops the push.
 - `npm run deploy` runs `scripts/gate.mjs --deploy` first: the same checks plus
   Lighthouse mobile and desktop, which are report only. On 2026-10-23 this

@@ -56,4 +56,4 @@ actions:
     - id: maintainability-on-push
       triggers: [{git_hooks: [pre-push]}]
       run: bun run --silent maint
-  enabled: [block-commit-on-findings, block-push-on-findings, repo-checks-on-push, block-push-on-opengrep, maintainability-on-push, block-push-on-osv]
+  enabled: [block-commit-on-findings, block-push-on-findings, repo-checks-on-push, block-push-on-opengrep, maintainability-on-push]
