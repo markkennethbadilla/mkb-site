@@ -33,6 +33,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { extractJsonMiddleware, generateText, Output, wrapLanguageModel } from "ai";
 import { z } from "zod";
 import { handleGuide } from "./guide";
+import { botRefusal } from "./bot-check";
 import { budgetStatus, reserve } from "./budget";
 import { alertIfLimitError, checkOpenRouterKey, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap";
 import { handleDemos } from "./demos/router";
@@ -346,7 +347,7 @@ export default {
     if (url.pathname === "/api/health") return handleHealth(env);
     if (url.pathname === "/api/agent") return handleAgent(req, env);
     if (url.pathname === "/api/models") return handleModels(env);
-    if (url.pathname === "/api/guide") return handleGuide(req, env);
+    if (url.pathname === "/api/guide") return (await botRefusal(req, env)) ?? handleGuide(req, env);
     // One prefix, one router. Every room endpoint goes through worker/demos/router.ts
     // so the request budget is charged in exactly one place - see the docstring
     // there for why three rooms accounting for themselves is three chances to

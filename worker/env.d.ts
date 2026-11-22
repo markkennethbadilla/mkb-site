@@ -20,4 +20,6 @@ interface Env {
   NOTIFY_TOKEN?: string;
   /** Short git commit, set by `npm run deploy` (--var COMMIT). Read back by /api/health. */
   COMMIT?: string;
+  /** Turnstile secret, vault `cloudflare/iammkb2002-turnstile-mkb-site`. */
+  TURNSTILE_SECRET?: string;
 }

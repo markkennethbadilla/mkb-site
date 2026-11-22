@@ -9,6 +9,7 @@ import { SUGGESTIONS, isSectionId, sectionById } from "@/lib/site-sections";
 import { MOCK_MODE, mockRun, type AgentRun } from "@/components/demo/agent-run.mock";
 import { scrollToElement } from "@/lib/smooth-scroll";
 import { cn } from "@/lib/utils";
+import { BOT_HEADER, botToken } from "@/lib/bot-check";
 
 /**
  * The site guide.
@@ -287,14 +288,14 @@ export default function AgentConsole({ first }: { first?: string }) {
 async function liveRun(question: string): Promise<AgentRun> {
   const res = await fetch("/api/guide", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", [BOT_HEADER]: await botToken() },
     body: JSON.stringify({ question }),
   });
   if (!res.ok) {
     throw new Error(
       res.status === 404
         ? "The guide endpoint is not running. Under `next dev` there is no Worker - use `wrangler dev`."
-        : `The guide endpoint returned ${res.status}.`
+        : ((await res.json().catch(() => null)) as { error?: string } | null)?.error ?? `The guide endpoint returned ${res.status}.` // SILENT-OK: a non-JSON body falls back to the status line
     );
   }
   return (await res.json()) as AgentRun;

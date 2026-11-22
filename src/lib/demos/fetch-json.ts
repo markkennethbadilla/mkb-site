@@ -13,6 +13,8 @@
  * open, with nothing on screen saying why.
  */
 
+import { BOT_HEADER, botToken } from "@/lib/bot-check";
+
 /** Carries the server's own error string, verbatim - never rewritten into
  *  something generic on the way up to the component. */
 export class ApiError extends Error {}
@@ -22,10 +24,13 @@ const TIMEOUT_MS = 15_000;
 
 export async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
+  const headers: Record<string, string> = init?.body ? { "content-type": "application/json" } : {};
+  // Run creation is the one call the Worker bot-checks (worker/demos/router.ts START_ACTIONS).
+  if (/^\/api\/demos\/[^/]+\/(start|run)$/.test(path)) headers[BOT_HEADER] = await botToken().catch((e: Error) => { throw new ApiError(e.message); });
   try {
     res = await fetch(path, {
       ...init,
-      headers: init?.body ? { "content-type": "application/json" } : undefined,
+      headers,
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch (e) {

@@ -28,6 +28,7 @@
 
 import { ROOMS } from "../../src/lib/demos/registry";
 import { reserve, limitRun } from "../budget";
+import { botRefusal } from "../bot-check";
 import { json } from "../models";
 import { handle as handleLedger, START_ACTIONS as LEDGER_STARTS } from "./ledger-under-fire";
 import { handle as handleScoreAudit, START_ACTIONS as SCORE_STARTS } from "./score-audit";
@@ -102,6 +103,8 @@ export async function handleDemos(req: Request, env: DemoEnv): Promise<Response>
   // a visitor reading "something went wrong" cannot.
   const run = async (): Promise<Response> => {
     if (handler.starts.includes(action)) {
+      const bot = await botRefusal(req, env);
+      if (bot) return bot;
       // The whole run, charged once, before a single row is written.
       const refusal = await reserve(env, "demo", ip, room.requestsPerRun);
       if (refusal) return json({ error: refusal.detail, reason: refusal.reason }, 429);

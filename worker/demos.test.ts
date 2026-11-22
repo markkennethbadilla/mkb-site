@@ -42,7 +42,7 @@ async function call<T>(method: string, path: string, ip: string, body?: unknown)
   const res = await worker.fetch(
     new Request(`${BASE}${path}`, {
       method,
-      headers: { "cf-connecting-ip": ip, "content-type": "application/json" },
+      headers: { "cf-connecting-ip": ip, "content-type": "application/json", "cf-turnstile-response": "XXXX.DUMMY.TOKEN" },
       body: body === undefined ? undefined : JSON.stringify(body),
     }),
     env

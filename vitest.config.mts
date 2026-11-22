@@ -44,6 +44,8 @@ export default defineConfig({
       wrangler: { configPath: "./wrangler.jsonc" },
       miniflare: {
         bindings: {
+          // Cloudflare's always-pass Turnstile test secret; worker/bot-check.ts never calls out with it.
+          TURNSTILE_SECRET: "1x0000000000000000000000000000000AA",
           // The REAL migrations, read from disk and handed to the test worker, so
           // applyD1Migrations() builds the schema production runs on. Each list is
           // read from the directory its own database declares in wrangler.jsonc,
