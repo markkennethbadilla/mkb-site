@@ -527,7 +527,7 @@ the fetch handler.
 
 ### Rollback
 
-- `node scripts/cf.mjs rollback` (Workers versions: the previous version takes all traffic at once; static assets roll back with it). Rehearsed ROLLBACK_REHEARSAL.
+- `node scripts/cf.mjs rollback` (Workers versions: the previous version takes all traffic at once; static assets roll back with it). Rehearsed 2026-11-22 on the live site: back to the previous version in 4.1 s of command and 5.2 s until `/api/health` answered from it; forward again (`node scripts/cf.mjs rollback <version-id>`, ids from `node scripts/cf.mjs deployments list`) in 3.6 s and 5.7 s. A browser that loaded a page during the rollback can keep that response cached; reload.
 - A rollback does not undo a D1 migration. Migrations here only add tables or columns, so the older code still runs on the newer schema; a migration that drops or renames something needs its own rollback written first.
 
 ### Site down
@@ -573,6 +573,9 @@ Each defect met became a check that fails if it returns:
 | Arena tables grew forever with no sweep | hourly cron; `worker/demos.test.ts` |
 | A POST answered before it was recorded | `worker/records-first.test.ts` (source order and rows) |
 | Guide and demo endpoints open to scripted abuse | Turnstile; `worker/bot-check.test.ts` |
+| A browser navigation to `/api/*` got the static 404 page (Workers Assets answers navigations first) | `run_worker_first: ["/api/*"]` in wrangler.jsonc; `e2e/smoke.spec.ts` navigation case (fails with 404 without it) |
+| The guide said it did not know his current work | current-role fact in `src/lib/public-facts.ts`; `evals/golden/guide.yaml` case "Current work names WeAssist" |
+| The bot check added a 403 the API contract did not list | `openapi.json`; `e2e/fuzz.spec.ts` (Schemathesis ST103) |
 
 ### Security scan
 

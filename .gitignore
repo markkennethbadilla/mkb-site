@@ -69,3 +69,4 @@ id_ed25519*
 .turbo/
 test-runs/
 redteam.yaml
+.schemathesis/

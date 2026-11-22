@@ -18,7 +18,7 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] B14 n/a: we own this repo
 - [x] B15 specs/alignment.md
 - [x] B16 SPEC.md "## Journeys", walked by e2e/journeys.spec.ts (fresh context row included)
-- [x] B17 DEMO_RECEIPT
+- [x] B17 specs/001-coverage-register/receipt-2026-11-22.html (Action and Result pairs on the live site)
 - [x] T01 .trunk/trunk.yaml gitleaks@8.30.1 plus block-commit-on-findings and block-push-on-findings
 - [x] T02 .trunk/trunk.yaml osv-scanner@2.7.1 and `block-push-on-osv` enabled; no-fix advisories in osv-scanner.toml with reasons and ignoreUntil
 - [x] T03 .trunk/trunk.yaml block-push-on-opengrep
@@ -39,7 +39,7 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] T18 e2e/analytics.spec.ts asserts the capture request
 - [x] T19 e2e/fuzz.spec.ts: Schemathesis 4.33.4 against openapi.json, gate task `fuzz`
 - [x] T20 n/a: no roles or tenants
-- [x] T21 e2e/zap.spec.ts, scripts/zap.sh, zap.conf; `bun run zap` in `bun run scheduled`
+- [x] T21 e2e/zap.spec.ts, scripts/zap.sh, zap.conf; `bun run zap` in `bun run scheduled`; run 2026-11-22: FAIL-NEW 0, WARN-NEW 0, PASS 65
 - [x] I01 SPEC.md "Records first (rule 43)", migrations/0008_inbound_requests.sql, worker/records-first.test.ts
 - [x] I02 n/a: no payment, ads or CRM vendor; Turnstile runs on Cloudflare's test keys locally
 - [x] I03 src/lib/analytics.ts (rule 91 options), src/components/analytics.tsx
@@ -52,7 +52,7 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] D04 next.config.mjs `deploymentId`; src/lib/stale-build.ts with tests/stale-build.test.mjs; src/app/error.tsx and global-error.tsx
 - [x] D05 n/a: no sign-in or live sessions
 - [x] D06 n/a: public site
-- [x] D07 SPEC.md "Rollback": ROLLBACK_LINE
+- [x] D07 SPEC.md "Rollback": `node scripts/cf.mjs rollback`, rehearsed 2026-11-22, live in 5.2 s back and 5.7 s forward
 - [x] R01 live, daily from mkb-vps-sg: personal-infra servers/mkb-vps-sg/lighthouse/mkb-site.lighthouserc.json, floor 0.70; scores in the T09 results file
 - [x] R02 Uptime Kuma monitor `markkennethbadilla.com (/api/health)` (personal-infra spec 003)
 - [x] R03 healthchecks.io `mkb-site arena sweep (hourly)` pinged by `scheduled()` in worker/index.ts (secret HC_SWEEP_PING), all channels

@@ -18,10 +18,13 @@ Target: worktree `coverage` on this laptop (local Worker, local D1), then the li
 | 12 | AI red team | `bun run redteam` | PASS | 28/28 |
 | 13 | D1 export and restore proof | `bun run backup` | PASS | 2 databases, 38 tables, counts matched, 24 s, 7.7 MB |
 | 14 | Backup pruning keeps 4 | `scripts/backup-d1.mjs <tmp>/2026-11-22 --restore-only` with 5 dated dirs | PASS | oldest moved to the Recycle Bin, 4 left |
-| 15 | Live commit read-back | `curl -s https://markkennethbadilla.com/api/health` | LIVE_HEALTH | |
-| 16 | Rollback rehearsal | `node scripts/cf.mjs rollback` | ROLLBACK_RESULT | |
-| 17 | Lighthouse live, floor 0.70 | mkb-vps-sg daily task | LH_RESULT | |
+| 15 | Live commit read-back | `curl -s https://markkennethbadilla.com/api/health` | PASS | `{"ok":true,"commit":"dec53ad"}` = origin/main; a browser navigation got 404 (assets first), fixed with `run_worker_first`, guarded in e2e/smoke.spec.ts (fails 404 without it, passes with it) |
+| 16 | Rollback rehearsal | `node scripts/cf.mjs rollback` | PASS | back 5.2 s, forward 5.7 s to live |
+| 17 | Lighthouse live, floor 0.70 | mkb-vps-sg daily task (personal-infra 26246d0) | NOT RUN | first daily run 20:00 UTC tonight; healthchecks.io `manga lighthouse-live (daily)` mails on a miss |
+| 18 | ZAP baseline | `bunx playwright test --project=zap` | PASS | FAIL-NEW 0, WARN-NEW 0, PASS 65 (after `*.sh eol=lf`) |
+| 19 | Uptime monitor on /api/health | Uptime Kuma monitor 3 | PASS | Up, 171 ms, keyword `"ok":true`, ntfy page ticked |
+| 20 | Gate on push | `git push` (Trunk) | PASS | 10/10 turbo tasks, 3m24s cold typical; landed dec53ad with no override |
 
-Totals: TOTALS
+Totals: 20 cases, 19 PASS, 0 FAIL, 0 BLOCKED, 1 NOT RUN (row 17, scheduled tonight).
 
-Ship verdict: VERDICT
+Ship verdict: SHIP. Every gate passes on main; live read-back, rollback and monitor proven.

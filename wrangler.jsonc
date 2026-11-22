@@ -9,7 +9,9 @@
   "assets": {
     "directory": "./out",
     "binding": "ASSETS",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    // A browser navigation to /api/* would otherwise get the static 404 page before the Worker runs.
+    "run_worker_first": ["/api/*"]
   },
   "kv_namespaces": [
     { "binding": "DEMO_KV", "id": "3624d59a2e724d34b883ea23181c7ec2" }

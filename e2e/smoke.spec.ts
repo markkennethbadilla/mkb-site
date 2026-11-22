@@ -2,6 +2,12 @@ import AxeBuilder from "@axe-core/playwright";
 
 import { expect, ROUTES, test } from "./fixtures";
 
+test("a browser navigation to /api/health reaches the Worker, not the static 404 page", async ({ page }) => {
+  const response = await page.goto("/api/health");
+  expect(response?.status()).toBe(200);
+  expect(await response?.json()).toMatchObject({ ok: true });
+});
+
 test("the route list is complete", () => {
   expect(ROUTES).toContain("/");
   expect(ROUTES).toContain("/resume/");
