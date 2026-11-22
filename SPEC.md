@@ -471,7 +471,7 @@ the fetch handler.
 
 ### Bot and rate limits
 
-- Turnstile (widget `mkb-site guide and demos`, invisible, vault `cloudflare/iammkb2002-turnstile-mkb-site`): the browser asks for one token per guide question and per demo run creation (`src/lib/bot-check.ts`, header `cf-turnstile-response`); `worker/bot-check.ts` verifies it with siteverify before the guide or the room runs. No token or a failed check is `403 {reason:"bot-check"}`, still recorded first. A missing `TURNSTILE_SECRET` in production closes both endpoints (503). On localhost both sides use Cloudflare's always-pass test keys. Proof: `worker/bot-check.test.ts`.
+- Turnstile (widget `mkb-site guide and demos`, invisible, vault `cloudflare/iammkb2002-turnstile-mkb-site`): the browser asks for one token per guide question and per demo run creation (`src/lib/bot-check.ts`, header `cf-turnstile-response`); `worker/bot-check.ts` verifies it with siteverify before the guide or the room runs. No token or a failed check is `403 {reason:"bot-check"}`, still recorded first. A missing `TURNSTILE_SECRET` in production closes both endpoints (503). Local runs use Cloudflare's always-pass test keys: the browser picks the test sitekey on localhost and 127.0.0.1, and `scripts/dev-worker.mjs` and `playwright.config.ts` pass `--var TURNSTILE_SECRET:<test secret>` to the local Worker (the local runner rewrites the request host to the route domain, so the Worker cannot tell local from live by host). The e2e fixture (`e2e/fixtures.ts`) also answers PostHog and Turnstile's script locally, so no test depends on a vendor CDN or reaches the real PostHog project. Proof: `worker/bot-check.test.ts`.
 - Rate limits: `BURST_LIMITER` (6 per 60 s per IP, on every budget `reserve()`: guide, agent, demo run creation) and `DEMO_LIMITER` (60 per 60 s per run id, the shards of one run) in `wrangler.jsonc`, plus the daily ceilings in `worker/budget.ts`.
 
 ### Analytics and errors
@@ -500,7 +500,9 @@ the fetch handler.
   | Cloudflare deploy token (Workers, KV, D1, routes; expires 2027-11-22) | `credentials/cloudflare/iammkb2002-workers-deploy` | `scripts/cf.mjs` env only |
   | DeepSeek key | `credentials/deepseek/active-personal-api-key` | Worker secret `DEEPSEEK_API_KEY` |
   | OpenRouter key "portfolio" (1 USD monthly limit) | `credentials/openrouter/personal-api-key` | Worker secret `OPENROUTER_API_KEY` |
-  | PostHog public ingest key | `credentials/posthog/iammkb2002@gmail.com` | client bundle and Worker var (public by design) |
+  | Turnstile secret (widget `mkb-site guide and demos`) | `credentials/cloudflare/iammkb2002-turnstile-mkb-site` | Worker secret `TURNSTILE_SECRET` |
+| healthchecks.io ping for the hourly sweep | `credentials/healthchecks/iammkb2002@gmail.com-ping-mkb-site-sweep` | Worker secret `HC_SWEEP_PING` |
+| PostHog public ingest key | `credentials/posthog/iammkb2002@gmail.com` | client bundle and Worker var (public by design) |
 
 ## How to run, check and hand over
 
@@ -514,7 +516,8 @@ the fetch handler.
 
 - Host: the Cloudflare Worker `mkb-site` (static `out/` through the ASSETS binding) with no Workers Builds git connection, so this script is the deploy path and the host-side check.
 - Wrangler runs through `scripts/cf.mjs` with the scoped token in vault `credentials/cloudflare/iammkb2002-workers-deploy`, never the Global API Key.
-- Worker secrets (`wrangler secret put` through `scripts/cf.mjs`): `DEEPSEEK_API_KEY`, `OPENROUTER_API_KEY`, `TURNSTILE_SECRET`.
+- Worker secrets (`wrangler secret put` through `scripts/cf.mjs`): `DEEPSEEK_API_KEY`, `OPENROUTER_API_KEY`, `TURNSTILE_SECRET`, `HC_SWEEP_PING`.
+- The hourly cron (`scheduled()`) sweeps expired arenas, then pings healthchecks.io `mkb-site arena sweep (hourly)` (`/fail` on an error); a missed or failed hour mails Mark.
 - Share tags and caching: the agentops deploy gate (`scripts/deploy-gate.mjs <url> --repo .`) passes. Every page has its own canonical link, `og:title` and `og:url` (root layout for `/`, the demos layout, each room page, and `scripts/build-resume.mjs` for `/resume/`). `public/_headers` serves `/_next/static/*` as `immutable` (content-hashed names), sets Strict-Transport-Security (1 year, includeSubDomains) and a `Content-Security-Policy-Report-Only` that allows self, inline script and style for Next, `https:` images, PostHog (`us.i.posthog.com`, `us-assets.i.posthog.com`) and Turnstile (`challenges.cloudflare.com`). Report-Only until a browser audit shows no violations, then rename it to `Content-Security-Policy`.
 
 ### Live check
@@ -549,7 +552,7 @@ Check the layers in order, stop at the first that fails:
 
 - `git push` runs Trunk's pre-push actions (`.trunk/trunk.yaml`): gitleaks, osv-scanner (`block-push-on-osv`; accepted no-fix advisories in `osv-scanner.toml`, each with a reason and a 30-day `ignoreUntil`), Opengrep, `bun run gate`, and `bun run maint`. The first failure stops the push. `git commit` runs gitleaks on staged files.
 - `bun run scheduled`, weekly (mkb-winops spec 057): WebKit smoke crawl, outside links, AI red team, ZAP baseline, D1 backup.
-- Lighthouse: the live site, daily, from mkb-vps-sg (personal-infra `servers/mkb-vps-sg/lighthouse/`), floor 0.70 in every category on every page (agentops rule 73), never in the deploy or the push. `lighthouserc.json` and `lighthouserc.desktop.json` hold the URLs and floors.
+- Lighthouse: the live site, daily, from mkb-vps-sg (personal-infra `servers/mkb-vps-sg/lighthouse/`), floor 0.70 in every category on every page (agentops rule 73), never in the deploy or the push. URLs and floors: personal-infra `servers/mkb-vps-sg/lighthouse/mkb-site.lighthouserc.json`; result ping healthchecks.io `manga lighthouse-live (daily)`, email on a miss.
 - Local look with the Worker: `bun run build`, then `node A:/personal-markkennethbadilla/mkb-agentops/scripts/dekit-up.mjs ctl <repo> start worker` (dekit task `worker`, `scripts/dev-worker.mjs`): local D1, the guide key from the vault, `out/` plus `/api/*` on http://127.0.0.1:8788. Stop it before the next build, since it holds `out/` open.
 - Install the hooks once per clone: `trunk git-hooks sync`. `git push --no-verify` skips the push gate, but `bun run deploy` always runs `bun run gate`.
 - Time budget: the repo's line in agentops `gate-budgets.json` (rule 0).
@@ -583,4 +586,4 @@ The Trunk pre-push gate runs Opengrep with the pinned JavaScript and TypeScript 
 | Mobile visitor | `/resume/` | Phone 390 wide, first visit | The page scrolls sideways or the projects block is cut off | Pinch zoom stays allowed and the resume PDF link stays on the page | `e2e/journeys.spec.ts` "reads the resume page and the projects on it without sideways scroll" |
 | Returning visitor | `/` or any room | Same browser, second visit | The chosen dark or light theme is forgotten | The mode toggle in the navbar sets it again | `e2e/journeys.spec.ts` "the chosen theme is remembered on the next visit" |
 | New device or cleared browser | `/demos/split-brain/` deep link | Fresh browser context with no storage | The room opens with no earlier state | The rail links to the other rooms and "Back to the gallery" returns home | `e2e/journeys.spec.ts` "a fresh context opens a deep link and finds the way around" |
-| Visitor asking the site guide | `/` guide box | Any device, any visit | The guide endpoint returns 429 or 5xx and the box shows the refusal text (or "The guide endpoint returned N.") | The question stays in the box and Ask works again for a retry | `e2e/journeys.spec.ts` "a rate-limited guide shows a message and the visitor can ask again" |
+| Visitor asking the site guide | `/` guide box | Any device, any visit | The guide endpoint returns 429 or 5xx and the box shows the refusal text from the server (or "The guide endpoint returned N." when the body has none) | The question stays in the box and Ask works again for a retry | `e2e/journeys.spec.ts` "a rate-limited guide shows a message and the visitor can ask again" |

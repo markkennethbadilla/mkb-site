@@ -69,10 +69,10 @@ test.describe("endpoint failure", () => {
     const input = page.locator("#site-guide-question");
     await input.fill("[TEST] failure path");
     await page.getByRole("button", { name: "Ask", exact: true }).click();
-    await expect(page.getByText("The guide endpoint returned 429.")).toBeVisible();
+    await expect(page.getByText("slow down")).toBeVisible();
     await expect(input).toBeEnabled();
     await page.getByRole("button", { name: "Ask", exact: true }).click();
-    await expect(page.getByText("The guide endpoint returned 429.")).toBeHidden({ timeout: 20_000 });
+    await expect(page.getByText("slow down")).toBeHidden({ timeout: 20_000 });
     await context.close();
   });
 

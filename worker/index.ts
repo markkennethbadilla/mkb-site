@@ -388,6 +388,15 @@ export default {
   },
 
   async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
-    await sweepExpired(env);
+    // Dead-man (coverage R03): healthchecks.io mails when an hourly sweep stops arriving or fails.
+    const ping = (suffix: string) => (env.HC_SWEEP_PING ? fetch(`${env.HC_SWEEP_PING}${suffix}`, { method: "POST" }) : undefined);
+    try {
+      await sweepExpired(env);
+      await ping("");
+    } catch (error) {
+      console.error(`FAIL sweep: ${String(error)}`);
+      await ping("/fail");
+      throw error;
+    }
   },
 } satisfies ExportedHandler<Env>;

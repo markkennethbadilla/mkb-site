@@ -61,7 +61,7 @@ export default defineConfig({
     // If the build here ever fails with EBUSY on ./out, a wrangler dev from an
     // earlier run is still alive and holding the directory open. Kill it; the
     // build cannot replace a folder another process has open on Windows.
-    command: `node node_modules/wrangler/bin/wrangler.js d1 migrations apply DEMO_DB --local && node node_modules/wrangler/bin/wrangler.js d1 migrations apply WAREHOUSE_DB --local && node node_modules/wrangler/bin/wrangler.js dev --port ${PORT}`,
+    command: `node node_modules/wrangler/bin/wrangler.js d1 migrations apply DEMO_DB --local && node node_modules/wrangler/bin/wrangler.js d1 migrations apply WAREHOUSE_DB --local && node node_modules/wrangler/bin/wrangler.js dev --port ${PORT} --var TURNSTILE_SECRET:1x0000000000000000000000000000000AA`,
     url: `http://127.0.0.1:${PORT}/`,
     // Build, two migration runs and a Worker boot, all before the first test.
     // Around 25 seconds here with a warm Next cache and several times that

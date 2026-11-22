@@ -1,27 +1,27 @@
 import { gunzipSync } from "node:zlib";
-import { expect, test } from "@playwright/test";
+import type { Request } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 type Captured = { event: string; properties: Record<string, unknown> };
 
-// PostHog is intercepted: nothing from a test reaches the real project.
+const events = (request: Request): Captured[] => {
+  const body = request.postDataBuffer();
+  if (!body || !/\/(e|i\/v0\/e)\/?(\?|$)/.test(request.url())) return [];
+  let text = (body[0] === 0x1f && body[1] === 0x8b ? gunzipSync(body) : body).toString();
+  if (text.startsWith("data=")) text = Buffer.from(decodeURIComponent(text.slice(5)), "base64").toString();
+  const parsed = JSON.parse(text);
+  return Array.isArray(parsed) ? parsed : (parsed.batch ?? parsed.data ?? [parsed]);
+};
+
+// PostHog drops events from a HeadlessChrome user agent or navigator.webdriver, so this spec presents a normal visitor (UA, webdriver, userAgentData).
+test.use({ userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36" });
+
+// The fixture answers PostHog; reading requests as they leave also sees sendBeacon posts routing can miss.
 test("a visit sends a pageview with the project key", async ({ page }) => {
   const captured: Captured[] = [];
-  await page.route(/^https:\/\/[^/]*\.posthog\.com\//, async (route) => {
-    const request = route.request();
-    const body = request.postDataBuffer();
-    if (body && /\/(e|i\/v0\/e)\/?(\?|$)/.test(request.url())) {
-      const text = (body[0] === 0x1f && body[1] === 0x8b ? gunzipSync(body) : body).toString();
-      const parsed = JSON.parse(text);
-      captured.push(...(Array.isArray(parsed) ? parsed : (parsed.batch ?? parsed.data ?? [parsed])));
-    }
-    const isScript = new URL(request.url()).pathname.endsWith(".js");
-    await route.fulfill(
-      isScript
-        ? { status: 200, contentType: "application/javascript", body: "" }
-        : { status: 200, contentType: "application/json", body: '{"autocapture_opt_out":false}' },
-    );
-  });
+  page.on("request", (request) => captured.push(...events(request)));
 
+  await page.addInitScript(() => { Object.defineProperty(navigator, "webdriver", { get: () => false }); Object.defineProperty(navigator, "userAgentData", { get: () => undefined }); });
   await page.goto("/");
   await expect.poll(() => captured.map((c) => c.event), { timeout: 20_000 }).toContain("$pageview");
   const pageview = captured.find((c) => c.event === "$pageview")!;

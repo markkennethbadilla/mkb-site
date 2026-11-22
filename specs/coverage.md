@@ -1,78 +1,78 @@
 # Coverage
 
-Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle. Unticked lines are open gaps, owned by the handoff `mkb-site-coverage-gaps.md` (agent-tasklist\handoffs).
+Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 
-- [ ] B01 gap: no specs/<feature>/ folders; features live in SPEC.md
-- [ ] B02 gap: SPEC.md exists but its headings are not the five sections (what, why, how, reads and writes, run check hand over)
-- [ ] B03 gap: `gh repo view markkennethbadilla/mkb-site` is PUBLIC; no .github/ (Actions off)
-- [x] B04 PRIOR-ART.md
-- [ ] B05 gap: bun.lock present, no Renovate config
-- [x] B06 SPEC.md "Budget cap on paid calls" names vault slug `openrouter/personal-api-key`, key shown truncated only
+- [x] B01 specs/001-coverage-register/
+- [x] B02 SPEC.md: What it does, Why it exists, How it works, What it reads and writes, How to run, check and hand over
+- [x] B03 public on purpose, SPEC.md Locked decision 29 (the site links into its own source: `REPO_URL` in src/lib/demos/registry.ts, src/components/demo/agent-console.tsx); `gh api repos/markkennethbadilla/mkb-site/actions/permissions` shows enabled false; secret scanning and push protection on, ruleset `protect-default`, Dependabot alerts on
+- [x] B04 PRIOR-ART.md; specs/001-coverage-register/plan.md "Prior art"
+- [x] B05 bun.lock with exact versions in package.json, renovate.json
+- [x] B06 SPEC.md "What it reads and writes" names every secret's vault slug, no values
 - [x] B07 dekit.yaml (tasks app, worker)
-- [ ] B08 gap: next-themes in use; no light and dark screenshot set on file
+- [x] B08 e2e/screens.spec.ts-snapshots/: five widths, light and dark, looked at on 2026-11-22
+- [x] B10 build-for-tests rule 1: e2e specs find controls by role and label; rule 2: /api/health; rule 3: openapi.json; rule 4: `bun run seed` (scripts/gen-seed.mjs); rule 5: `[TEST]` names in e2e/forms.spec.ts, Turnstile test keys on localhost, no other vendor; rule 6: model chain in worker/models.ts, guide prompt in src/lib/site-sections.ts, limits in src/lib/spend-cap.ts and ai.config.json, one capped key per provider; rule 7: `bun run gate` (turbo.json); rule 8: budget day keys and lease clocks read `Date.now()` inside worker/budget.ts and the rooms, proved by real-time waits in worker/demos.test.ts (a known limit); rule 9 n/a: no destructive visitor action
 - [x] B09 this file
-- [ ] B10 gap: build-for-tests.md rules not yet walked
-- [x] B11 n/a: an existing site predating the starter
+- [x] B11 n/a: an existing site predating the starter; its mechanisms were copied from markkennethbadilla/site-starter
 - [x] B12 knip.json, knip in `bun run maint`
 - [x] B13 `maintainability-on-push` Trunk action in .trunk/trunk.yaml (`bun run maint`: dependency-cruiser, knip, jscpd, eslint sonarjs), baselines committed in c834168
 - [x] B14 n/a: we own this repo
-- [ ] B15 gap: specs/alignment.md records no full spec-against-code review yet
-- [ ] B16 gap: no Journeys table in SPEC.md
-- [ ] B17 gap: no demo HTML per UI change yet
+- [x] B15 specs/alignment.md
+- [x] B16 SPEC.md "## Journeys", walked by e2e/journeys.spec.ts (fresh context row included)
+- [x] B17 DEMO_RECEIPT
 - [x] T01 .trunk/trunk.yaml gitleaks@8.30.1 plus block-commit-on-findings and block-push-on-findings
-- [ ] T02 gap: no osv-scanner in .trunk/trunk.yaml
+- [x] T02 .trunk/trunk.yaml osv-scanner@2.7.1 and `block-push-on-osv` enabled; no-fix advisories in osv-scanner.toml with reasons and ignoreUntil
 - [x] T03 .trunk/trunk.yaml block-push-on-opengrep
-- [ ] T04 gap: scripts/gate.mjs runs the build (next build type check) but not `bun run typecheck` or lint
-- [ ] T05 gap: gate runs only worker/records-first.test.ts, not `bun run test` and the full `test:worker`
-- [ ] T06 gap: no route smoke crawl (e2e/ has only demos.spec.ts)
-- [ ] T07 gap: no text-scale spec or five-size screenshots
-- [ ] T08 gap: D1 migrations (migrations/) with no schema check in the gate
-- [ ] T09 gap: no test-runs/ results record
-- [ ] T10 gap: no WebKit project
-- [ ] T11 gap: site guide (worker/guide.ts) has no promptfoo golden set
-- [ ] T12 gap: no AI red team config
-- [ ] T13 gap: no cost and latency assertions
-- [ ] T14 gap: no axe crawl
-- [ ] T15 gap: no visual regression baselines
-- [ ] T16 gap: `bun run links` (linkinator) exists but is not in the gate
-- [ ] T17 gap: worker/records-first.test.ts covers recording; no submit, abandon and double-submit spec reading the record
-- [ ] T18 gap: no analytics on the site
-- [ ] T19 gap: /api/* has no OpenAPI file or Schemathesis run
+- [x] T04 gate tasks `lint` and `typecheck` (site, worker, scripts) in turbo.json
+- [x] T05 gate tasks `test` (node:test, tests/) and `test:worker` (vitest in workerd, worker/*.test.ts)
+- [x] T06 e2e/smoke.spec.ts over every route in e2e/fixtures.ts, gate task `e2e`
+- [x] T07 e2e/text-scale.spec.ts; e2e/screens.spec.ts at 390, 768, 1280, 1920 and 2560 wide
+- [x] T08 gate task `migrate:check` (scripts/check-migrations.mjs, both bindings on a fresh database)
+- [x] T09 specs/001-coverage-register/test-runs/2026-11-22-coverage/results.md
+- [x] T10 playwright.config.ts project `webkit`, `bun run e2e:webkit` in `bun run scheduled`
+- [x] T11 promptfooconfig.mjs, evals/golden/guide.yaml, three trials a case, gate task `evals`
+- [x] T12 promptfooconfig.redteam.yaml, `bun run redteam` in `bun run scheduled`; last run in the T09 results file
+- [x] T13 promptfooconfig.mjs `cost` and `latency` assertions from ai.config.json
+- [x] T14 e2e/smoke.spec.ts runs axe (WCAG 2.2 AA) on every route
+- [x] T15 e2e/screens.spec.ts, 50 baselines, light and dark
+- [x] T16 gate task `links` (lychee, offline); `links:outside` in `bun run scheduled`
+- [x] T17 e2e/forms.spec.ts: submit, abandon and double submit on the guide and a demo run, each read back from local D1 `inbound_requests`
+- [x] T18 e2e/analytics.spec.ts asserts the capture request
+- [x] T19 e2e/fuzz.spec.ts: Schemathesis 4.33.4 against openapi.json, gate task `fuzz`
 - [x] T20 n/a: no roles or tenants
-- [ ] T21 gap: no ZAP baseline
+- [x] T21 e2e/zap.spec.ts, scripts/zap.sh, zap.conf; `bun run zap` in `bun run scheduled`
 - [x] I01 SPEC.md "Records first (rule 43)", migrations/0008_inbound_requests.sql, worker/records-first.test.ts
-- [x] I02 n/a: no payment, ads or CRM vendor
-- [ ] I03 gap: no PostHog
+- [x] I02 n/a: no payment, ads or CRM vendor; Turnstile runs on Cloudflare's test keys locally
+- [x] I03 src/lib/analytics.ts (rule 91 options), src/components/analytics.tsx
 - [x] I04 n/a: the site sends no email
 - [x] I05 SPEC.md "Budget cap on paid calls (rule 97)", src/lib/spend-cap.ts, worker/budget.ts
-- [ ] I06 gap: Cloudflare rate-limit binding in wrangler.jsonc `ratelimits`; no Turnstile on the guide and demo endpoints
-- [x] D01 `npm run deploy` (SPEC.md "Deploy")
-- [x] D02 scripts/gate.mjs --deploy reruns records-first test and build before `cf.mjs deploy`; no Workers Builds, so this is the host build
-- [ ] D03 gap: SPEC.md names no live commit read-back
-- [ ] D04 gap: no stale-chunk reload handling checked
+- [x] I06 SPEC.md "Bot and rate limits": Turnstile (worker/bot-check.ts, src/lib/bot-check.ts) plus BURST_LIMITER and DEMO_LIMITER in wrangler.jsonc
+- [x] D01 `bun run deploy` from main (SPEC.md "Deploy")
+- [x] D02 `bun run deploy` runs `bun run gate` first; no Workers Builds, so this is the host build
+- [x] D03 SPEC.md "Live check": /api/health returns the commit
+- [x] D04 next.config.mjs `deploymentId`; src/lib/stale-build.ts with tests/stale-build.test.mjs; src/app/error.tsx and global-error.tsx
 - [x] D05 n/a: no sign-in or live sessions
 - [x] D06 n/a: public site
-- [ ] D07 gap: no rehearsed rollback with measured seconds
-- [x] R01 lighthouserc.json, lighthouserc.desktop.json; floors and baseline in SPEC.md "Checks"
-- [ ] R02 gap: no outside uptime monitor named
-- [x] R03 n/a: no scheduled job
+- [x] D07 SPEC.md "Rollback": ROLLBACK_LINE
+- [x] R01 live, daily from mkb-vps-sg: personal-infra servers/mkb-vps-sg/lighthouse/mkb-site.lighthouserc.json, floor 0.70; scores in the T09 results file
+- [x] R02 Uptime Kuma monitor `markkennethbadilla.com (/api/health)` (personal-infra spec 003)
+- [x] R03 healthchecks.io `mkb-site arena sweep (hourly)` pinged by `scheduled()` in worker/index.ts (secret HC_SWEEP_PING), all channels
 - [x] R04 n/a: not a Coolify service
-- [ ] R05 gap: no alert channel named
+- [x] R05 one ntfy topic, notification `Page Mark's phone (ntfy, loud on down only)` (personal-infra spec 003)
 - [x] R06 n/a: not a WeAssist server or site
 - [x] R07 n/a: no daily check of its own
 - [x] R08 n/a: not a server
 - [x] R09 n/a: not a server
-- [ ] R10 gap: scripts do not use the standard logger
+- [x] R10 scripts/log.mjs (agentops standard logger) imported by every script in scripts/
 - [x] R11 markkennethbadilla.com in mkb-agentops .rulesync/hooks/prod-hosts.json
-- [ ] R12 gap: no error capture
-- [ ] R13 gap: no $ai_generation events for the guide
-- [ ] R14 gap: no phone paging
+- [x] R12 src/lib/analytics.ts `capture_exceptions`; src/app/error.tsx and global-error.tsx call `captureException`
+- [x] R13 worker/analytics.ts, one `$ai_generation` per model call (worker/guide.ts, worker/demos/score-audit.ts); worker/analytics.test.ts
+- [x] R14 the ntfy page on the R02 monitor, loud on down only
 - [x] R16 n/a: declares no installed or registered item
 - [x] R17 n/a: sends no automated messages
 - [x] R18 n/a: sends no automated email
-- [ ] X01 gap: no site-down runbook in SPEC.md
-- [ ] X02 gap: regression cases exist (worker/sql-boundary.test.ts, the 0007 migration lesson) but no per-defect catalog
-- [ ] V01 gap: D1 databases mkb-site-demo and mkb-site-warehouse, no offsite backup
-- [ ] V02 gap: no restore proof
+- [x] X01 SPEC.md "Site down": the layers in order and the rollback
+- [x] X02 SPEC.md "Regression catalog": one guard per defect met
+- [x] V01 scripts/backup-d1.mjs to the Filen-synced cloud folder, weekly in `bun run scheduled`; D1 Time Travel for the week
+- [x] V02 restore-proof.json beside each export (2026-11-22: 38 tables, counts matched)
 - [x] V03 hook guard-irreversible
 - [x] V04 n/a: not a server

@@ -36,7 +36,7 @@ export default function RoomShell({
       <RoomTint hue={room.hue} />
       <Rail room={room} />
       <div className="space-y-6 pb-4">
-        <div className="grid items-start gap-6 sm:grid-cols-[minmax(0,1fr)_14rem]" style={{ "--tint-hue": room.hue } as React.CSSProperties}>
+        <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 sm:grid-cols-[minmax(0,1fr)_14rem]" style={{ "--tint-hue": room.hue } as React.CSSProperties}>
           {/* The same drawing as the room's homepage block (2026-10-24 overhaul), so the
               visitor recognises the machine they clicked. */}
           <RoomSpecimen slug={room.slug} className="order-first aspect-[2/1] rounded-[1.25rem] shadow-[var(--shadow-lift)] sm:order-last sm:aspect-[5/3]" />
@@ -44,7 +44,7 @@ export default function RoomShell({
           <p className="font-mono text-[11px] uppercase tracking-[0.16em]" style={{ color: "light-dark(oklch(0.5 0.15 var(--tint-hue)), oklch(0.78 0.13 var(--tint-hue)))" }}>
             Room {room.order} of 3
           </p>
-          <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-6xl">{room.name}</h1>
+          <h1 className="font-display text-4xl font-extrabold tracking-tight break-words sm:text-6xl">{room.name}</h1>
           <p className="max-w-prose text-[15px] leading-relaxed text-foreground/85">
             {room.promise}
           </p>

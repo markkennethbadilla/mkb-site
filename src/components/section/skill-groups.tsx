@@ -44,7 +44,7 @@ export default function SkillGroups() {
   const core = CORE.map((n) => all.find((i) => i.name === n)).filter((i): i is Item => Boolean(i));
   return (
     <div className="flex flex-col gap-8">
-      <ul className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 lg:grid-cols-4">
+      <ul className="grid grid-cols-1 gap-4 [overflow-wrap:anywhere] min-[360px]:grid-cols-2 lg:grid-cols-4 [&>li]:min-w-0">
         {core.map((item) => (
           <li key={item.name}>
             <a href={item.url} target="_blank" rel="noreferrer noopener" className="sheet sheet-lift group flex h-full flex-col gap-3 p-4 sm:p-5">

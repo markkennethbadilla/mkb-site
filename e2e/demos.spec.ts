@@ -1,4 +1,5 @@
-import { expect, test as base, type Locator, type Page } from "@playwright/test";
+import { type Locator, type Page } from "@playwright/test";
+import { expect, fromSite, test as base } from "./fixtures";
 
 /**
  * The site's whole argument is that the demos run when you press the button, so
@@ -16,7 +17,7 @@ import { expect, test as base, type Locator, type Page } from "@playwright/test"
  * prefetch payloads 404ing on every gallery load, and a fix like that is the kind
  * someone reverts while tidying the router. Nothing else would notice.
  *
- * Nothing is filtered. This started with an exemption for the resource-load line
+ * Only Turnstile's own iframe is filtered (fixtures.ts fromSite). Before that, nothing was. This started with an exemption for the resource-load line
  * Chromium writes for a non-ok response, on the assumption that ScoreAudit's
  * deliberate 503 refusal would trip it. Measured with the exemption removed, it
  * does not, because that line comes from the network log rather than the console
@@ -29,7 +30,9 @@ const test = base.extend<{ cleanConsole: void }>({
       const found: string[] = [];
       page.on("pageerror", (e) => found.push(`uncaught: ${e.message}`));
       page.on("console", (msg) => {
-        if (msg.type() === "error") found.push(`console: ${msg.text()}`);
+        // ScoreAudit with no model key answers its documented 503 refusal; the test below checks the refusal names its cause.
+        const refusal = msg.location().url.endsWith("/api/demos/score-audit/run") && msg.text().includes("status of 503");
+        if (msg.type() === "error" && fromSite(msg.location().url) && !refusal) found.push(`console: ${msg.text()}`);
       });
       await use();
       expect(found).toEqual([]);

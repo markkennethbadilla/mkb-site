@@ -57,11 +57,11 @@ export default function Page() {
 
       <section id="about" className={WRAP}>
         <h2 className={TITLE}>How I work</h2>
-        <div className="mt-10 grid items-center gap-10 lg:grid-cols-[auto_minmax(0,1fr)]">
-          <div className="frame mx-auto w-44 -rotate-2 sm:w-56">
+        <div className="mt-10 grid grid-cols-[minmax(0,1fr)] items-center gap-10 lg:grid-cols-[auto_minmax(0,1fr)]">
+          <div className="frame mx-auto w-44 max-w-[calc(100%-1.5rem)] -rotate-2 sm:w-56">
             <Image src={DATA.avatarUrl} alt={DATA.name} width={320} height={320} className="aspect-square object-cover" />
           </div>
-          <ol className="grid gap-5 sm:grid-cols-3">
+          <ol className="grid min-w-0 gap-5 [overflow-wrap:anywhere] sm:grid-cols-3">
             {DATA.summaryLede.map(([term, detail], i) => (
               <li key={term} className={`sheet flex flex-col gap-2 p-6 ${LEAN[i % LEAN.length]}`}>
                 <span className="font-display text-6xl font-extrabold leading-none text-ink" aria-hidden>

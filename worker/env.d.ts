@@ -22,6 +22,8 @@ interface Env {
   COMMIT?: string;
   /** Turnstile secret, vault `cloudflare/iammkb2002-turnstile-mkb-site`. */
   TURNSTILE_SECRET?: string;
+  /** healthchecks.io ping URL for the hourly sweep, vault `healthchecks/iammkb2002@gmail.com-ping-mkb-site-sweep`. */
+  HC_SWEEP_PING?: string;
   /** Public PostHog ingest key and host, wrangler vars. Absent means no $ai_generation events. */
   POSTHOG_KEY?: string;
   POSTHOG_HOST?: string;

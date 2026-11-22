@@ -1,12 +1,11 @@
 // Turnstile siteverify for /api/guide and demo run creation (SPEC.md "Bot and rate limits").
 const VERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
-// Cloudflare's published always-pass test secret, used only when the request is to this machine.
+// Cloudflare's published always-pass test secret; local runs pass it with `--var TURNSTILE_SECRET:...`.
 const TEST_SECRET = "1x0000000000000000000000000000000AA";
 
 /** null when the request passes; otherwise the refusal response. Fails closed when the secret is missing in production. */
 export async function botRefusal(req: Request, env: Env): Promise<Response | null> {
-  const host = new URL(req.url).hostname;
-  const secret = env.TURNSTILE_SECRET ?? (host === "localhost" || host === "127.0.0.1" ? TEST_SECRET : undefined);
+  const secret = env.TURNSTILE_SECRET;
   if (!secret) {
     console.error("FAIL bot-check: TURNSTILE_SECRET is not set");
     return Response.json({ error: "The bot check is not configured, so this endpoint is closed." }, { status: 503 });

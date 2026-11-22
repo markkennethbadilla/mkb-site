@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="bg-card shadow-[var(--shadow-lift)]">
       <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-5 py-6 text-sm text-muted-foreground sm:px-8 2xl:max-w-7xl">
         <span className="font-display text-base font-bold text-foreground">{DATA.name}</span>
-        <a href={`mailto:${DATA.contact.email}`} className="hover:text-foreground">
+        <a href={`mailto:${DATA.contact.email}`} className="break-all hover:text-foreground">
           {DATA.contact.email}
         </a>
         <a href="/resume/" className="hover:text-foreground">
