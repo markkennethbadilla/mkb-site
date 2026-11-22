@@ -20,11 +20,11 @@ Target: worktree `coverage` on this laptop (local Worker, local D1), then the li
 | 14 | Backup pruning keeps 4 | `scripts/backup-d1.mjs <tmp>/2026-11-22 --restore-only` with 5 dated dirs | PASS | oldest moved to the Recycle Bin, 4 left |
 | 15 | Live commit read-back | `curl -s https://markkennethbadilla.com/api/health` | PASS | `{"ok":true,"commit":"dec53ad"}` = origin/main; a browser navigation got 404 (assets first), fixed with `run_worker_first`, guarded in e2e/smoke.spec.ts (fails 404 without it, passes with it) |
 | 16 | Rollback rehearsal | `node scripts/cf.mjs rollback` | PASS | back 5.2 s, forward 5.7 s to live |
-| 17 | Lighthouse live, floor 0.70 | mkb-vps-sg daily task (personal-infra 26246d0) | NOT RUN | first daily run 20:00 UTC tonight; healthchecks.io `manga lighthouse-live (daily)` mails on a miss |
+| 17 | Lighthouse live, floor 0.70 | from the mkb-vps-sg container, mkb-site.lighthouserc.json | PASS | first run: Chrome tab crashed on `/` (fixed with `--disable-dev-shm-usage --disable-gpu`, personal-infra d9e480f), then Ledger had no accessibility score (oklab -5e-10 from hue 90; hue 88 in 90bde23). Final: lowest mobile performance 0.75 (`/`), every other category 0.89 or more on all 5 pages, mobile and desktop |
 | 18 | ZAP baseline | `bunx playwright test --project=zap` | PASS | FAIL-NEW 0, WARN-NEW 0, PASS 65 (after `*.sh eol=lf`) |
 | 19 | Uptime monitor on /api/health | Uptime Kuma monitor 3 | PASS | Up, 171 ms, keyword `"ok":true`, ntfy page ticked |
 | 20 | Gate on push | `git push` (Trunk) | PASS | 10/10 turbo tasks, 3m24s cold typical; landed dec53ad with no override |
 
-Totals: 20 cases, 19 PASS, 0 FAIL, 0 BLOCKED, 1 NOT RUN (row 17, scheduled tonight).
+Totals: 20 cases, 20 PASS, 0 FAIL, 0 BLOCKED, 0 NOT RUN.
 
 Ship verdict: SHIP. Every gate passes on main; live read-back, rollback and monitor proven.

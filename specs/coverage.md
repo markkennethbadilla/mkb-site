@@ -53,7 +53,7 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] D05 n/a: no sign-in or live sessions
 - [x] D06 n/a: public site
 - [x] D07 SPEC.md "Rollback": `node scripts/cf.mjs rollback`, rehearsed 2026-11-22, live in 5.2 s back and 5.7 s forward
-- [x] R01 live, daily from mkb-vps-sg: personal-infra servers/mkb-vps-sg/lighthouse/mkb-site.lighthouserc.json, floor 0.70; scores in the T09 results file
+- [x] R01 live, daily from mkb-vps-sg: personal-infra servers/mkb-vps-sg/lighthouse/mkb-site.lighthouserc.json, floor 0.70; 2026-11-22 run: every page and category 0.75 or more (T09 results row 17)
 - [x] R02 Uptime Kuma monitor `markkennethbadilla.com (/api/health)` (personal-infra spec 003)
 - [x] R03 healthchecks.io `mkb-site arena sweep (hourly)` pinged by `scheduled()` in worker/index.ts (secret HC_SWEEP_PING), all channels
 - [x] R04 n/a: not a Coolify service
