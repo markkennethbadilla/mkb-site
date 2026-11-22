@@ -1,0 +1,78 @@
+# Coverage
+
+Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle. Unticked lines are open gaps, owned by the handoff `mkb-site-coverage-gaps.md` (agent-tasklist\handoffs).
+
+- [ ] B01 gap: no specs/<feature>/ folders; features live in SPEC.md
+- [ ] B02 gap: SPEC.md exists but its headings are not the five sections (what, why, how, reads and writes, run check hand over)
+- [ ] B03 gap: `gh repo view markkennethbadilla/mkb-site` is PUBLIC; no .github/ (Actions off)
+- [x] B04 PRIOR-ART.md
+- [ ] B05 gap: bun.lock present, no Renovate config
+- [x] B06 SPEC.md "Budget cap on paid calls" names vault slug `openrouter/personal-api-key`, key shown truncated only
+- [x] B07 dekit.yaml (tasks app, worker)
+- [ ] B08 gap: next-themes in use; no light and dark screenshot set on file
+- [x] B09 this file
+- [ ] B10 gap: build-for-tests.md rules not yet walked
+- [x] B11 n/a: an existing site predating the starter
+- [x] B12 knip.json, knip in `bun run maint`
+- [x] B13 `maintainability-on-push` Trunk action in .trunk/trunk.yaml (`bun run maint`: dependency-cruiser, knip, jscpd, eslint sonarjs), baselines committed in c834168
+- [x] B14 n/a: we own this repo
+- [ ] B15 gap: specs/alignment.md records no full spec-against-code review yet
+- [ ] B16 gap: no Journeys table in SPEC.md
+- [ ] B17 gap: no demo HTML per UI change yet
+- [x] T01 .trunk/trunk.yaml gitleaks@8.30.1 plus block-commit-on-findings and block-push-on-findings
+- [ ] T02 gap: no osv-scanner in .trunk/trunk.yaml
+- [x] T03 .trunk/trunk.yaml block-push-on-opengrep
+- [ ] T04 gap: scripts/gate.mjs runs the build (next build type check) but not `bun run typecheck` or lint
+- [ ] T05 gap: gate runs only worker/records-first.test.ts, not `bun run test` and the full `test:worker`
+- [ ] T06 gap: no route smoke crawl (e2e/ has only demos.spec.ts)
+- [ ] T07 gap: no text-scale spec or five-size screenshots
+- [ ] T08 gap: D1 migrations (migrations/) with no schema check in the gate
+- [ ] T09 gap: no test-runs/ results record
+- [ ] T10 gap: no WebKit project
+- [ ] T11 gap: site guide (worker/guide.ts) has no promptfoo golden set
+- [ ] T12 gap: no AI red team config
+- [ ] T13 gap: no cost and latency assertions
+- [ ] T14 gap: no axe crawl
+- [ ] T15 gap: no visual regression baselines
+- [ ] T16 gap: `bun run links` (linkinator) exists but is not in the gate
+- [ ] T17 gap: worker/records-first.test.ts covers recording; no submit, abandon and double-submit spec reading the record
+- [ ] T18 gap: no analytics on the site
+- [ ] T19 gap: /api/* has no OpenAPI file or Schemathesis run
+- [x] T20 n/a: no roles or tenants
+- [ ] T21 gap: no ZAP baseline
+- [x] I01 SPEC.md "Records first (rule 43)", migrations/0008_inbound_requests.sql, worker/records-first.test.ts
+- [x] I02 n/a: no payment, ads or CRM vendor
+- [ ] I03 gap: no PostHog
+- [x] I04 n/a: the site sends no email
+- [x] I05 SPEC.md "Budget cap on paid calls (rule 97)", src/lib/spend-cap.ts, worker/budget.ts
+- [ ] I06 gap: Cloudflare rate-limit binding in wrangler.jsonc `ratelimits`; no Turnstile on the guide and demo endpoints
+- [x] D01 `npm run deploy` (SPEC.md "Deploy")
+- [x] D02 scripts/gate.mjs --deploy reruns records-first test and build before `cf.mjs deploy`; no Workers Builds, so this is the host build
+- [ ] D03 gap: SPEC.md names no live commit read-back
+- [ ] D04 gap: no stale-chunk reload handling checked
+- [x] D05 n/a: no sign-in or live sessions
+- [x] D06 n/a: public site
+- [ ] D07 gap: no rehearsed rollback with measured seconds
+- [x] R01 lighthouserc.json, lighthouserc.desktop.json; floors and baseline in SPEC.md "Checks"
+- [ ] R02 gap: no outside uptime monitor named
+- [x] R03 n/a: no scheduled job
+- [x] R04 n/a: not a Coolify service
+- [ ] R05 gap: no alert channel named
+- [x] R06 n/a: not a WeAssist server or site
+- [x] R07 n/a: no daily check of its own
+- [x] R08 n/a: not a server
+- [x] R09 n/a: not a server
+- [ ] R10 gap: scripts do not use the standard logger
+- [x] R11 markkennethbadilla.com in mkb-agentops .rulesync/hooks/prod-hosts.json
+- [ ] R12 gap: no error capture
+- [ ] R13 gap: no $ai_generation events for the guide
+- [ ] R14 gap: no phone paging
+- [x] R16 n/a: declares no installed or registered item
+- [x] R17 n/a: sends no automated messages
+- [x] R18 n/a: sends no automated email
+- [ ] X01 gap: no site-down runbook in SPEC.md
+- [ ] X02 gap: regression cases exist (worker/sql-boundary.test.ts, the 0007 migration lesson) but no per-defect catalog
+- [ ] V01 gap: D1 databases mkb-site-demo and mkb-site-warehouse, no offsite backup
+- [ ] V02 gap: no restore proof
+- [x] V03 hook guard-irreversible
+- [x] V04 n/a: not a server
