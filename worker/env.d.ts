@@ -18,4 +18,6 @@ interface Env {
   DEEPSEEK_API_KEY?: string;
   /** Optional bearer for the ops-alert notify endpoint; unset on this personal project (rule 64). */
   NOTIFY_TOKEN?: string;
+  /** Short git commit, set by `npm run deploy` (--var COMMIT). Read back by /api/health. */
+  COMMIT?: string;
 }

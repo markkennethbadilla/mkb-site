@@ -27,6 +27,7 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { r, pick, int, chance, day, stamp, monthStart, q, rows } from "./seed-util.mjs";
+import { ok } from "./log.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "migrations");
@@ -391,3 +392,4 @@ console.log([
   `bank_lines     ${bankLines.length}`,
   `trial balance  ${debits} debits vs ${credits} credits -> ${debits === credits ? "BALANCED" : "UNBALANCED"}`,
 ].join("\n"));
+ok();

@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { create } from "fontkit";
+import { ok } from "./log.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
 const OUT = join(ROOT, "src/app/icon.svg");
@@ -37,3 +38,4 @@ try {
   console.error(`FAIL gen-favicon ${err.stack}`);
   process.exit(1);
 }
+ok();

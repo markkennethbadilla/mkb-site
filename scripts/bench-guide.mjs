@@ -20,6 +20,7 @@ import { SECTION_IDS, buildGuidePrompt } from "../src/lib/site-sections.ts";
 import { FACTS_BRIEF } from "../src/lib/public-facts.ts";
 import { vaultRow } from "./vault.mjs";
 import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap.ts";
+import { ok } from "./log.mjs";
 
 // Optional alert token from the environment; personal project, so the work token is not used (rule 64).
 const capCtx = { project: "mkb-site scripts", keySlug: "deepseek/active-personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
@@ -116,3 +117,4 @@ for (const model of ["deepseek-v4-flash", "deepseek-v4-pro"]) {
     console.log(`  ${correct}/${CASES.length} correct   mean ${mean}ms   median ${sorted[Math.floor(sorted.length / 2)]}ms   max ${sorted[sorted.length - 1]}ms`);
   }
 }
+ok();

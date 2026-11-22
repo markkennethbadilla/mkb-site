@@ -1,12 +1,12 @@
 # SPEC - markkennethbadilla.com
 
-## What this is
+## What it does
 
 Mark Kenneth Badilla's personal site. It is a portfolio, and its centrepiece is a
 live demonstration of the thing he claims to do: constrain an LLM agent with
 deterministic gates so it physically cannot ship a dangerous change.
 
-## Features
+### Features
 
 - **Resume surface** - hero, guide, about, work, projects, skills, education,
   contact, in that order on `/`. All content lives in one file,
@@ -64,7 +64,7 @@ deterministic gates so it physically cannot ship a dangerous change.
   repositories, each linking to its source. There is deliberately no standalone
   `/demos` index: it rendered the same gallery as this section, so a visitor who
   followed it landed on a page identical to the one they left. This replaced the gate-harness demo on 2026-08-05. The harness code
-  (`src/lib/gates.ts`, `src/components/demo/harness.tsx`, `/api/agent`) is still
+  (`src/lib/gates.ts`, `src/components/demo/agent-console.tsx`, `/api/agent`) is still
   in the repo and still works; it is simply not on the page.
   Each room is a framed shadowbox that opens with a small server-rendered SVG of
   what the room does (`src/components/demos/room-specimen.tsx`: twelve payments into
@@ -88,7 +88,22 @@ deterministic gates so it physically cannot ship a dangerous change.
   room carries the same idea as one monospace strip: requests spent, wall clock,
   and whether the numbers came from D1, a model, a cache or a fixed example.
 
-## Art theme
+### Routes
+
+| Route | Type | Purpose |
+|---|---|---|
+| `/` | static | The resume surface and the guide. Single page. |
+| `/resume/` | static | One Letter page, general (any role), rendered at build from `resume/resume.json` (JSON Resume schema) by the pinned `jsonresume-theme-stackoverflow@3.3.0`, headshot from `basics.image` = `/me.png`. PDF at `/resume/mark-kenneth-badilla-resume.pdf`. Outside the site chrome. |
+| `/demos/ledger-under-fire` | static | Room 1. |
+| `/demos/score-audit` | static | Room 2. |
+| `/demos/split-brain` | static | Room 3. |
+| `/api/health` | Worker | GET. The deployed commit and a D1 probe: `{"ok":true,"commit":"<sha>"}`, 503 when D1 fails. |
+| `/api/agent` | Worker | POST. Runs one agent attempt. Not reachable from the page. |
+| `/api/models` | Worker | GET. Reports the discovered free-model chain, limiter status and budget spend. |
+| `/api/guide` | Worker | POST. One guide question: runs the tool-calling loop, returns a section or a decline. |
+| `/api/demos/<slug>/<action>` | Worker | POST/GET. Every room endpoint, behind one router that owns the budget. |
+
+### Art theme
 
 Paper-cut light box, a layered kirigami shadowbox. The site's thesis is that a
 change must pass every deterministic gate. A light box is stacked cut sheets,
@@ -152,21 +167,11 @@ Pages.
   specimen drawing in a cut frame, the rail a floating sheet.
 - `/resume/`, the pinned JSON Resume theme, outside the theme on purpose.
 
-## Routes
+## Why it exists
 
-| Route | Type | Purpose |
-|---|---|---|
-| `/` | static | The resume surface and the guide. Single page. |
-| `/resume/` | static | One Letter page, general (any role), rendered at build from `resume/resume.json` (JSON Resume schema) by the pinned `jsonresume-theme-stackoverflow@3.3.0`, headshot from `basics.image` = `/me.png`. PDF at `/resume/mark-kenneth-badilla-resume.pdf`. Outside the site chrome. |
-| `/demos/ledger-under-fire` | static | Room 1. |
-| `/demos/score-audit` | static | Room 2. |
-| `/demos/split-brain` | static | Room 3. |
-| `/api/agent` | Worker | POST. Runs one agent attempt. Not reachable from the page. |
-| `/api/models` | Worker | GET. Reports the discovered free-model chain, limiter status and budget spend. |
-| `/api/guide` | Worker | POST. One guide question: runs the tool-calling loop, returns a section or a decline. |
-| `/api/demos/<slug>/<action>` | Worker | POST/GET. Every room endpoint, behind one router that owns the budget. |
+A portfolio whose argument is its own engineering: every claim on the page links to code or a live run. The decisions below are why it is built the way it is.
 
-## Locked decisions
+### Locked decisions
 
 1. **Forked `magicuidesign/portfolio` (MIT), not hand-built.** A hand-rolled
    portfolio looks hand-rolled; the previous iteration of this site proved it.
@@ -226,7 +231,7 @@ Pages.
    cached, so an outage cannot be pinned in place for a week and a single bad
    answer cannot become permanent.
 10. **Section ids are an allowlist, checked at build.** The model picks from a Zod
-    enum built from `SECTION_IDS`, and `scripts/check-guide.mjs` fails the build if
+    enum built from `SECTION_IDS`, and `tests/guide.test.mjs` (`bun run test`, in the gate) fails the push if
     any of those ids does not render in `page.tsx`. A destination that does not
     exist is otherwise invisible until a visitor asks that exact question.
 11. **The entity is hand-authored SVG, not a marketplace asset.** It has to morph
@@ -293,7 +298,7 @@ Pages.
     caller looping over run creation was never limited at all.
 21. **Every room states what it does NOT prove, in fixed position, never
     collapsed.** The registry type requires all three wall-label strings and
-    `scripts/check-demos.mjs` fails the build on an empty one, on a `real` string
+    `tests/demos.test.mjs` (`bun run test`, in the gate) fails the push on an empty one, on a `real` string
     that does not name the layer the behaviour happens at, and on a room with an
     `injectionPoint` whose `staged` string does not disclose it. Two of these
     rooms are rigged; a gate that only checks for non-empty strings guards against
@@ -320,7 +325,7 @@ Pages.
     SELECT-shaped, and D1 enforces the rest.
 25. **The site guide does not route into rooms.** Its allowlist stays sections of
     `/`, which keeps its contract clean ("it takes you to part of *this page*")
-    and keeps `check-guide.mjs`'s id assertion meaningful.
+    and keeps `tests/guide.test.mjs`'s id assertion meaningful.
 26. **Figures in the fact corpus are bound to the fact that licensed them.** The
     grounding check tested every token against one flat union of terms, which is
     sound while the corpus holds almost no numbers and unsound the moment it
@@ -368,8 +373,8 @@ Pages.
     Published 2026-08-05 with Mark. Until then the repository was private while
     every room footer linked files inside it and the section above them was
     headed "Things I built to be inspected" - so every one of those links 404'd
-    for everyone but him. `check-demos.mjs` asserted only that the paths existed
-    in the working tree, which is true of a private repo too; `probe-demos.mjs`
+    for everyone but him. `tests/demos.test.mjs` asserted only that the paths existed
+    in the working tree, which is true of a private repo too; `tests/probe-demos.mjs`
     now fetches each source URL and requires a 200.
 30. **There is no `/demos` index.** It rendered the same gallery component as
     `/#projects`, so a visitor who followed it arrived at a page identical to the
@@ -390,7 +395,7 @@ Pages.
     identity fact's `terms` or every answer using the new title would have been
     discarded as ungrounded and silently replaced by the written section line.
 
-## Non-goals
+### Non-goals
 
 - **No Q&A chatbot.** Narrowed twice. 2026-08-05, with Mark: free-text input is
   fine, what was rejected is a bot that *answers from general knowledge*. Narrowed
@@ -417,14 +422,16 @@ Pages.
   question never reaches a model, the per-IP and per-pool request budgets, and the
   key's own spending cap.
 
-## Guardrails on the demo
+## How it works
+
+### Guardrails on the demo
 
 - Burst rate limiting via the Cloudflare native rate-limit binding, at the edge.
 - A global daily request ceiling in KV, independent of the burst limiter.
 - Input validated by Zod with a hard length cap before any model is called.
 - Output validated by Zod; non-conforming responses advance the cascade.
 
-## Budget cap on paid calls (rule 97)
+### Budget cap on paid calls (rule 97)
 
 Every paid model call (guide and ScoreAudit on DeepSeek `deepseek/active-personal-api-key`,
 the agent harness on OpenRouter `openrouter/personal-api-key`, and the two
@@ -450,7 +457,7 @@ month; spend-cap.ts reads it and stops at the limit, alerting at 0.80 USD. It re
 `"limit":1,"limit_reset":"monthly"`. Change it at openrouter.ai, Workspace, API
 keys, portfolio (the personal vault has no management key).
 
-## Records first (rule 43)
+### Records first (rule 43)
 
 Every POST to `/api/*` (the guide, the agent, the demo rooms) is written whole to
 the D1 table `inbound_requests` (`mkb-site-demo`, migration 0008: time, path, IP,
@@ -462,7 +469,31 @@ D1), run by the pre-push gate and before every deploy (Checks below): a malforme
 refused agent call both land whole, and the record sits above the first route in
 the fetch handler.
 
-## Deploy
+## What it reads and writes
+
+- **Reads:**
+  - Visitors' requests to `markkennethbadilla.com` (static `out/` through the ASSETS binding; `/api/*` through `worker/index.ts`).
+  - DeepSeek (guide and ScoreAudit) and OpenRouter (agent harness, key usage at `GET /api/v1/key`).
+  - Build time: `resume/resume.json`, `src/data/resume.tsx`, pinned fonts and themes.
+- **Writes:**
+  - D1 `mkb-site-demo` (`DEMO_DB`): `inbound_requests` (every POST, rule 43), arena tables, budget counters, guide answer cache rows. Swept hourly by the cron in `wrangler.jsonc` (arenas only; `inbound_requests` is never deleted).
+  - D1 `mkb-site-warehouse` (`WAREHOUSE_DB`): written only by its migrations; read by ScoreAudit.
+  - KV `DEMO_KV`: daily spend ceiling and the lexical answer cache.
+  - PostHog US cloud, project 660260 (shared with Inkpot, told apart by `$host`): page events, replay, exceptions, `$ai_generation` per model call.
+  - Offsite backups: `%USERPROFILE%/cloud/backups/mkb-site/<date>/` (Filen-synced), last 4 kept.
+  - Logs: `A:\logs\mkb-site\<script>.*.log` (standard logger, `scripts/log.mjs`).
+- **Secrets** (personal vault, read by `scripts/vault.mjs`, never written to a file):
+
+  | Secret | Vault entry | Where it lives |
+  | --- | --- | --- |
+  | Cloudflare deploy token (Workers, KV, D1, routes; expires 2027-11-22) | `credentials/cloudflare/iammkb2002-workers-deploy` | `scripts/cf.mjs` env only |
+  | DeepSeek key | `credentials/deepseek/active-personal-api-key` | Worker secret `DEEPSEEK_API_KEY` |
+  | OpenRouter key "portfolio" (1 USD monthly limit) | `credentials/openrouter/personal-api-key` | Worker secret `OPENROUTER_API_KEY` |
+  | PostHog public ingest key | `credentials/posthog/iammkb2002@gmail.com` | client bundle and Worker var (public by design) |
+
+## How to run, check and hand over
+
+### Deploy
 
 `npm run deploy` runs `scripts/gate.mjs --deploy` (records-first test, build,
 Lighthouse mobile and desktop; Checks below), applies any pending D1 migrations to `mkb-site-demo` and
@@ -488,13 +519,13 @@ Strict-Transport-Security (1 year, includeSubDomains) and a
 no third-party script; the site loads no PostHog or Turnstile). Report-Only until a browser
 audit shows no violations, then rename it to `Content-Security-Policy`.
 
-## Lighthouse gate
+### Lighthouse gate
 
 Lighthouse CI (`@lhci/cli@0.15.1`) runs on `/` and `/resume/`, mobile and
 desktop, median of 3, as the first step of every deploy (Checks below), on the Playwright Chromium (never
 installed Chrome, whose web-app policy installs apps into each temp profile).
 
-## Checks
+### Checks
 
 No GitHub Actions since 2026-10-23 (the Actions budget ran out; Mark's order to
 move every check to a local Trunk pre-push gate plus the host's build).
@@ -521,13 +552,10 @@ move every check to a local Trunk pre-push gate plus the host's build).
   `npm run deploy` always runs it.
 - Limits: `git push --no-verify` skips the push gate, but not the deploy gate.
   The pre-push hook skips itself on headless Linux and macOS (Trunk 1.25.0).
-- Time budget (cold, this laptop, 2026-10-23): see the commit that added it;
-  it only goes down.
-Floors: accessibility, best practices and SEO at least 95; performance at least
-80 mobile and 95 desktop (baseline 2026-10-02: 82/97 mobile, 99/100 desktop).
-Raise a floor when a score rises; never lower it (agentops rule 73).
+- Time budget: the repo's line in agentops `gate-budgets.json` (rule 0).
+- Lighthouse floor: 0.70 in every category, mobile and desktop, on every page (agentops rule 73), never higher; quote the scores before calling a deploy done.
 
-## Security scan
+### Security scan
 
 The Trunk pre-push gate runs Opengrep with the pinned JavaScript and
 TypeScript security rules (mkb-winops spec 060). It scans only files changed

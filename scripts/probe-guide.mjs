@@ -26,6 +26,7 @@ import { checkGrounding } from "../src/lib/grounding.ts";
 import { FACTS_BRIEF, LICENCE } from "../src/lib/public-facts.ts";
 import { vaultRow } from "./vault.mjs";
 import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap.ts";
+import { ok } from "./log.mjs";
 
 // Optional alert token from the environment; personal project, so the work token is not used (rule 64).
 const capCtx = { project: "mkb-site scripts", keySlug: "deepseek/active-personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
@@ -162,3 +163,4 @@ console.log(
     `\n${blocked} fabricated answers blocked by the grounding check before reaching a visitor`
 );
 process.exit(fail > 0 ? 1 : 0);
+ok();

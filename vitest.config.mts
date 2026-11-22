@@ -32,6 +32,8 @@ export default defineConfig({
     // fail, and a runner that fails when invoked the obvious way is a runner people
     // stop invoking.
     dir: "worker",
+    // The fencing test waits out a real lease; 5 s left no room once the gate runs tasks side by side.
+    testTimeout: 15_000,
   },
   plugins: [
     cloudflareTest(async () => ({

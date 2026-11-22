@@ -1,0 +1,32 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "envMode": "loose",
+  "ui": "stream",
+  "tasks": {
+    "lint": {
+      "inputs": ["src/**", "worker/**", "scripts/**", "tests/**", "e2e/*.ts", "*.ts", "*.mts", "*.mjs", "eslint-suppressions.json", "package.json"]
+    },
+    "typecheck": {
+      "inputs": ["src/**", "worker/**", "scripts/**", "e2e/*.ts", "*.ts", "*.mts", "tsconfig.json", "worker/tsconfig.json", "scripts/tsconfig.json", "bun.lock"]
+    },
+    "test": {
+      "inputs": ["src/**", "worker/**", "tests/**", "resume/**", "bun.lock"]
+    },
+    "test:worker": {
+      "inputs": ["src/**", "worker/**", "migrations/**", "wrangler.jsonc", "vitest.config.mts", "bun.lock"]
+    },
+    "migrate:check": {
+      "inputs": ["migrations/**", "wrangler.jsonc", "scripts/check-migrations.mjs"]
+    },
+    "build": {
+      "inputs": ["src/**", "public/**", "content/**", "resume/**", "scripts/build-resume.mjs", "next.config.mjs", "content-collections.ts", "postcss.config.mjs", "tsconfig.json", "bun.lock"],
+      "outputs": ["out/**", ".next/types/**", "next-env.d.ts", "public/resume/**"]
+    },
+    "links": {
+      "dependsOn": ["build"],
+      "inputs": ["package.json"]
+    },
+    "links:outside": { "dependsOn": ["build"], "cache": false },
+    "backup": { "cache": false }
+  }
+}

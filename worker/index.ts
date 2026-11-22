@@ -327,10 +327,23 @@ export async function recordInbound(req: Request, env: Env, path: string): Promi
     .run();
 }
 
+// Live check (SPEC.md "Run, check and hand over"): the deployed commit and a D1 probe.
+async function handleHealth(env: Env): Promise<Response> {
+  const commit = env.COMMIT ?? "dev";
+  try {
+    await env.DEMO_DB.prepare("select 1").run();
+    return Response.json({ ok: true, commit });
+  } catch (error) {
+    console.error(`FAIL health: ${String(error)}`);
+    return Response.json({ ok: false, commit }, { status: 503 });
+  }
+}
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
     if (req.method === "POST" && url.pathname.startsWith("/api/")) await recordInbound(req, env, url.pathname);
+    if (url.pathname === "/api/health") return handleHealth(env);
     if (url.pathname === "/api/agent") return handleAgent(req, env);
     if (url.pathname === "/api/models") return handleModels(env);
     if (url.pathname === "/api/guide") return handleGuide(req, env);

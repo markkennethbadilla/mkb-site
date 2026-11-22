@@ -9,11 +9,12 @@
 //
 // Usage: node scripts/cf.mjs d1 migrations apply mkb-site-demo --remote
 
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { vaultRow } from "./vault.mjs";
+import { ok } from "./log.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -28,9 +29,16 @@ if (!existsSync(WRANGLER)) {
   process.exit(1);
 }
 
+// A deploy stamps the commit so /api/health reads it back (SPEC.md "Run, check and hand over").
+const args = process.argv.slice(2);
+if (args[0] === "deploy") {
+  const commit = execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: ROOT, encoding: "utf8" }).trim();
+  args.push("--var", `COMMIT:${commit}`);
+}
+
 const child = spawn(
   process.execPath,
-  [WRANGLER, ...process.argv.slice(2)],
+  [WRANGLER, ...args],
   {
     stdio: "inherit",
     windowsHide: true,
@@ -40,4 +48,4 @@ const child = spawn(
     },
   }
 );
-child.on("exit", (code) => process.exit(code ?? 1));
+child.on("exit", (code) => { if (code === 0) ok(); process.exit(code ?? 1); });

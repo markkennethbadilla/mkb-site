@@ -8,6 +8,7 @@ import { execFileSync } from "node:child_process";
 import { render } from "jsonresume-theme-stackoverflow";
 import { chromium } from "@playwright/test";
 import escapeHtml from "escape-html";
+import { ok } from "./log.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
 const PUB = join(ROOT, "public");
@@ -63,3 +64,4 @@ await browser.close();
 // Rule 94: the only delete is the Recycle Bin through agentops recycle.mjs.
 execFileSync(process.execPath, ["A:/personal-markkennethbadilla/mkb-agentops/scripts/recycle.mjs", join(OUT, "print.html")], { stdio: "inherit", windowsHide: true });
 console.log(`resume: ${OUT}`);
+ok();

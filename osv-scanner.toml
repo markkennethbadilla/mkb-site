@@ -1,0 +1,35 @@
+[[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2026-12-22
+reason = "minimatch 9.x and 10.x have no backport, fix only in 11.x major, dev tooling only"
+
+[[IgnoredVulns]]
+id = "GHSA-mrhx-c7xc-m3w5"
+ignoreUntil = 2026-12-22
+reason = "zod 3.25.76 is latest 3.x, fixed only in 4.x, transitive peer range of ai SDK"
+
+[[IgnoredVulns]]
+id = "GHSA-3g3m-2fjr-6pw4"
+ignoreUntil = 2026-12-22
+reason = "glob 13.0.7 is latest 13.x, fixed only in 14.x, linkinator dev tool"
+
+[[IgnoredVulns]]
+id = "GHSA-4qx8-w7c3-pj3p"
+ignoreUntil = 2026-12-22
+reason = "toml has no fixed release, build-time frontmatter parser, no TOML input"
+
+[[IgnoredVulns]]
+id = "GHSA-9j65-hcg3-gc64"
+ignoreUntil = 2026-12-22
+reason = "toml has no fixed release, build-time only"
+
+[[IgnoredVulns]]
+id = "GHSA-9qmh-m7c6-f92p"
+ignoreUntil = 2026-12-22
+reason = "toml has no fixed release, build-time only"
+
+[[IgnoredVulns]]
+id = "GHSA-h895-cgqg-jf52"
+ignoreUntil = 2026-12-22
+reason = "toml has no fixed release, build-time only"
+

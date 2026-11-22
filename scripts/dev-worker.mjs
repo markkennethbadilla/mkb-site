@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { vaultRow } from "./vault.mjs";
+import { ok } from "./log.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const wrangler = join(ROOT, "node_modules", "wrangler", "bin", "wrangler.js");

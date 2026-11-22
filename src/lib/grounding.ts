@@ -246,8 +246,8 @@ export const GROUNDING_CASES: { answer: string; grounded: boolean; why: string }
     why: "18 standing beside the words the fact that licenses it uses. This is the sentence the check has to keep letting through.",
   },
   {
-    answer: "He has written more than 300 static checks and wired them into the build.",
+    answer: "He has written more than 180 static checks and wired them into the build.",
     grounded: true,
-    why: "300 beside 'checks', which is what licenses it.",
+    why: "180 beside 'checks', which is what licenses it.",
   },
 ];

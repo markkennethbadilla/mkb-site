@@ -19,6 +19,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as si from "simple-icons";
+import { ok } from "./log.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -63,3 +64,4 @@ ${entries.join("\n")}
 
 writeFileSync(join(ROOT, "src/lib/skill-icons.ts"), out, "utf8");
 console.log(`wrote src/lib/skill-icons.ts with ${entries.length} icons`);
+ok();
