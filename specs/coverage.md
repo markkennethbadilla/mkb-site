@@ -17,8 +17,10 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] B13 `maintainability-on-push` Trunk action in .trunk/trunk.yaml (`bun run maint`: dependency-cruiser, knip, jscpd, eslint sonarjs); baselines .dependency-cruiser-known-violations.json and eslint-maint-suppressions.json (its own file since 2026-11-22, so pruning the normal lint baseline cannot erase it)
 - [x] B14 n/a: we own this repo
 - [x] B15 specs/alignment.md
-- [x] B16 SPEC.md "## Journeys", walked by e2e/journeys.spec.ts (fresh context row included)
+- [x] B16 specs/001-coverage-register/spec.md "## Journeys", walked by e2e/journeys.spec.ts (fresh context row included)
 - [x] B17 specs/001-coverage-register/receipt-2026-11-22.html (Action and Result pairs on the live site)
+- [x] B18 worker/guide-flow.ts (XState machine), worker/guide-flow.test.ts walks every `getSimplePaths` path against the real handler and fails on an unreached state; the other flows are walked by e2e/journeys.spec.ts and worker/bot-check.test.ts
+- [x] B19 specs/001-coverage-register/spec.md "Quality bar", nine ISO 25010 rows plus outcome and cost, baselines from the 2026-11-22 results file and the retrieval run
 - [x] T01 .trunk/trunk.yaml gitleaks@8.30.1 plus block-commit-on-findings and block-push-on-findings
 - [x] T02 .trunk/trunk.yaml osv-scanner@2.7.1 and `block-push-on-osv` enabled; no-fix advisories in osv-scanner.toml with reasons and ignoreUntil
 - [x] T03 .trunk/trunk.yaml block-push-on-opengrep
@@ -40,6 +42,7 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] T19 e2e/fuzz.spec.ts: Schemathesis 4.33.4 against openapi.json, gate task `fuzz`
 - [x] T20 n/a: no roles or tenants
 - [x] T21 e2e/zap.spec.ts, scripts/zap.sh, zap.conf; `bun run zap` in `bun run scheduled`; run 2026-11-22: FAIL-NEW 0, WARN-NEW 0, PASS 65
+- [x] T23 worker/cache-golden.test.ts: 16 golden queries over the guide cache index, hit@1, hit@5 and MRR each floor 0.9 (baseline 0.938, 0.938, 0.944), in `bun run test:worker`; the guide has no vector or RAG search, its only retrieval is this lexical cache (worker/cache.ts)
 - [x] I01 SPEC.md "Records first (rule 43)", migrations/0008_inbound_requests.sql, worker/records-first.test.ts
 - [x] I02 n/a: no payment, ads or CRM vendor; Turnstile runs on Cloudflare's test keys locally
 - [x] I03 src/lib/analytics.ts (rule 91 options), src/components/analytics.tsx
