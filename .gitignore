@@ -70,3 +70,4 @@ id_ed25519*
 test-runs/
 redteam.yaml
 .schemathesis/
+.eslintcache
