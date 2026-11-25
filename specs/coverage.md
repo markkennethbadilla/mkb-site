@@ -19,7 +19,7 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] B15 specs/alignment.md
 - [x] B16 specs/001-coverage-register/spec.md "## Journeys", walked by e2e/journeys.spec.ts (fresh context row included)
 - [x] B17 specs/001-coverage-register/receipt-2026-11-22.html (Action and Result pairs on the live site)
-- [x] B18 worker/guide-flow.ts (XState machine), worker/guide-flow.test.ts walks every `getSimplePaths` path against the real handler and fails on an unreached state; the other flows are walked by e2e/journeys.spec.ts and worker/bot-check.test.ts
+- [x] B18 worker/flows.ts (XState machines for the guide, demo room and agent endpoint, every Worker flow with branches), worker/flows.test.ts walks every `getSimplePaths` path of each against the real handler, fails on an unreached state and counts one inbound record per request; no contact form exists, so no machine; a valid agent call reaches a paid model and the 410 closed-room branch has no open-room case, both left out of the machines
 - [x] B19 specs/001-coverage-register/spec.md "Quality bar", nine ISO 25010 rows plus outcome and cost, baselines from the 2026-11-22 results file and the retrieval run
 - [x] T01 .trunk/trunk.yaml gitleaks@8.30.1 plus block-commit-on-findings and block-push-on-findings
 - [x] T02 .trunk/trunk.yaml osv-scanner@2.7.1 and `block-push-on-osv` enabled; no-fix advisories in osv-scanner.toml with reasons and ignoreUntil

@@ -31,7 +31,7 @@
     "links:outside": "lychee --no-progress --exclude /api/ --exclude linkedin.com --root-dir out out",
     "migrate:check": "node scripts/check-migrations.mjs",
     "backup": "node scripts/backup-d1.mjs",
-    "scheduled": "TURBO_TELEMETRY_DISABLED=1 turbo run e2e:webkit links:outside redteam zap backup --force --continue --output-logs=errors-only",
+    "scheduled": "TURBO_TELEMETRY_DISABLED=1 turbo run e2e:webkit links:outside redteam zap backup --force --continue --concurrency=1 --output-logs=errors-only",
     "e2e": "playwright test --project=chromium",
     "e2e:webkit": "playwright test --project=webkit",
     "fuzz": "playwright test --project=fuzz",
