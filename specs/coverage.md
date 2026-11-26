@@ -21,6 +21,9 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] B17 specs/001-coverage-register/receipt-2026-11-22.html (Action and Result pairs on the live site)
 - [x] B18 worker/flows.ts (XState machines for the guide, demo room and agent endpoint, every Worker flow with branches), worker/flows.test.ts walks every `getSimplePaths` path of each against the real handler, fails on an unreached state and counts one inbound record per request; no contact form exists, so no machine; a valid agent call reaches a paid model and the 410 closed-room branch has no open-room case, both left out of the machines
 - [x] B19 specs/001-coverage-register/spec.md "Quality bar", nine ISO 25010 rows plus outcome and cost, baselines from the 2026-11-22 results file and the retrieval run
+- [x] B20 .stylelintrc.json (stylelint-declaration-strict-value on colour, background, font and fill), stylelint@18.1.0 in .trunk/trunk.yaml; tokens are the custom properties in src/app/globals.css, every rule uses var()
+- [x] B21 `repo-checks-on-push` Trunk action runs `bun run gate` (unit, worker, e2e, fuzz, evals)
+- [x] B22 src/app/(site)/page.tsx: the portfolio home at /
 - [x] T01 .trunk/trunk.yaml gitleaks@8.30.1 plus block-commit-on-findings and block-push-on-findings
 - [x] T02 .trunk/trunk.yaml osv-scanner@2.7.1 and `block-push-on-osv` enabled; no-fix advisories in osv-scanner.toml with reasons and ignoreUntil
 - [x] T03 .trunk/trunk.yaml block-push-on-opengrep
