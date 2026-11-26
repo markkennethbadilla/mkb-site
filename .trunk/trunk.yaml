@@ -100,6 +100,18 @@ actions:
     - id: maintainability-on-push
       triggers: [{git_hooks: [pre-push]}]
       run: bun run --silent maint
+      # The safe-chain bun shim calls the mise safe-chain shim, which needs these; Trunk passes none.
+      environment:
+        - name: PATH
+          value: ${env.PATH}
+        - name: PATHEXT
+          value: ${env.PATHEXT}
+        - name: MISE_GLOBAL_CONFIG_FILE
+          value: ${env.MISE_GLOBAL_CONFIG_FILE}
+        - name: LOCALAPPDATA
+          value: ${env.LOCALAPPDATA}
+        - name: USERPROFILE
+          value: ${env.USERPROFILE}
     # Coverage register T24: every spec promise is a traced OpenFastTrace item (mkb-agentops spec 145).
     - id: trace-on-push
       triggers: [{git_hooks: [pre-push]}]
