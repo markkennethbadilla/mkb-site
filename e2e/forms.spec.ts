@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { readdirSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 
@@ -24,7 +25,8 @@ function rowsFor(ip: string): Row[] {
 }
 
 const stamp = () => `${Date.now()}`.slice(-9);
-const ipOf = () => visitor(`198.51.100.${(Number(stamp()) % 250) + 1}`);
+// one visitor per test: a millisecond stamp mod 250 alone let two tests share an ip and read each other's rows
+const ipOf = () => visitor(`198.51.100.${(Number(stamp()) % 250) + 1}-${randomUUID().slice(0, 8)}`);
 
 const ask = async (page: Page, question: string) => {
   await page.goto("/");
