@@ -81,7 +81,7 @@
     "dependency-cruiser": "18.8.0",
     "eslint": "9.39.2",
     "eslint-config-next": "16.1.1",
-    "eslint-plugin-sonarjs": "4.2.2",
+    "eslint-plugin-sonarjs": "4.2.3",
     "fontkit": "2.0.4",
     "jscpd": "5.4.3",
     "jsonresume-theme-stackoverflow": "3.3.0",
