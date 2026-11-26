@@ -163,7 +163,7 @@ Sources (rule 62, library.md "Masterpiece galleries").
 
 - Template: * <- magicuidesign/portfolio https://github.com/magicuidesign/portfolio
 - Reference: src/app/(site)/page.tsx <- awesome-developer-portfolios Top 20 https://brittanychiang.com
-  - Taken: the split layout below the hero and guide, a sticky left rail (name, section nav whose bar grows on hover, socials) beside a right column of sections, and list rows (date column, then title, detail and chips) that light up as a sheet on hover. Our paper tokens, type and hero stay.
+  - Taken: the split layout below the hero and guide, a sticky left rail (name, section nav whose bar grows on hover, socials) beside a right column of sections, and list rows (date column, then title, detail and chips) that light up as a sheet on hover. Our paper tokens, type and hero stay. The two columns start at 85rem (1360 px); below it the rail stacks on top. Media queries ignore the root font size, so at the old 64rem the 15rem rail squeezed the column and 200% text overflowed at 1280 px (`e2e/text-scale.spec.ts`).
 
 Pages.
 

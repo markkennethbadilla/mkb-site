@@ -67,14 +67,14 @@ export default function Page() {
         <GuideLazy />
       </section>
 
-      <div className={`${WRAP} grid gap-16 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-20`}>
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+      <div className={`${WRAP} grid grid-cols-[minmax(0,1fr)] gap-16 min-[85rem]:grid-cols-[15rem_minmax(0,1fr)] min-[85rem]:gap-20`}>
+        <aside className="min-[85rem]:sticky min-[85rem]:top-24 min-[85rem]:self-start">
           <div className="frame w-28 -rotate-2 sm:w-36">
             <Image src={DATA.avatarUrl} alt={DATA.name} width={320} height={320} className="aspect-square object-cover" />
           </div>
           <p className="mt-6 font-display text-2xl font-extrabold tracking-tight">{DATA.name}</p>
           <p className="mt-1 text-sm text-muted-foreground">{ROLE}</p>
-          <nav aria-label="Sections" className="mt-8 hidden lg:block">
+          <nav aria-label="Sections" className="mt-8 hidden min-[85rem]:block">
             <ol className="grid gap-3">
               {NAV.map(([id, label], i) => (
                 <li key={id}>
