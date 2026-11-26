@@ -17,11 +17,23 @@ const PROOF = [
   { n: "55 to 6", label: "permissions rebuilt into six areas" },
 ];
 
+const NAV = [
+  ["about", "How I work"],
+  ["work", "Work"],
+  ["projects", "Projects"],
+  ["skills", "Stack"],
+  ["education", "Education"],
+  ["contact", "Contact"],
+] as const;
+
 const WEASSIST_PICK = [1, 8, 10, 7, 2, 3];
-const LEAN = ["sm:-rotate-1", "sm:translate-y-3 sm:rotate-[0.6deg]", "sm:-rotate-[0.5deg]"];
 const GEAR = "url(/art/gate-2.svg) center / 100% 100% no-repeat, radial-gradient(circle closest-side, black 66%, transparent 98%)";
 const WRAP = "mx-auto w-full max-w-6xl px-5 sm:px-8 2xl:max-w-7xl";
-const TITLE = "cut-title text-4xl sm:text-5xl 2xl:text-6xl";
+const TITLE = "cut-title text-3xl sm:text-4xl 2xl:text-5xl";
+// SPEC Art theme "Sources": a row stays flat until hover, then lifts as a lit sheet.
+const ROW = "grid gap-3 rounded-[1.25rem] p-5 transition-[background-color,box-shadow,translate] duration-300 ease-out hover:-translate-y-0.5 hover:bg-card hover:shadow-[var(--shadow-cut)] sm:gap-6 sm:p-6";
+const DATED = `${ROW} sm:grid-cols-[9rem_minmax(0,1fr)]`;
+const DATE = "font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:pt-1.5";
 
 export default function Page() {
   const [weassist, ...earlier] = DATA.work;
@@ -55,102 +67,134 @@ export default function Page() {
         <GuideLazy />
       </section>
 
-      <section id="about" className={WRAP}>
-        <h2 className={TITLE}>How I work</h2>
-        <div className="mt-10 grid grid-cols-[minmax(0,1fr)] items-center gap-10 lg:grid-cols-[auto_minmax(0,1fr)]">
-          <div className="frame mx-auto w-44 max-w-[calc(100%-1.5rem)] -rotate-2 sm:w-56">
+      <div className={`${WRAP} grid gap-16 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-20`}>
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <div className="frame w-28 -rotate-2 sm:w-36">
             <Image src={DATA.avatarUrl} alt={DATA.name} width={320} height={320} className="aspect-square object-cover" />
           </div>
-          <ol className="grid min-w-0 gap-5 [overflow-wrap:anywhere] sm:grid-cols-3">
-            {DATA.summaryLede.map(([term, detail], i) => (
-              <li key={term} className={`sheet flex flex-col gap-2 p-6 ${LEAN[i % LEAN.length]}`}>
-                <span className="font-display text-6xl font-extrabold leading-none text-ink" aria-hidden>
-                  {i + 1}
-                </span>
-                <span className="font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{term}</span>
-                <span className="text-base leading-snug">{detail}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section id="work" className={WRAP}>
-        <h2 className={TITLE}>Work</h2>
-        <div className="mt-10">
-          <article className="sheet relative z-10 p-6 sm:p-9">
-            <header className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <a href={weassist.href} target="_blank" rel="noopener noreferrer" className="ink-link font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-                {weassist.company}
-              </a>
-              <span className="text-lg font-medium">{weassist.title}</span>
-              <span className="tab font-mono sm:ml-auto">{weassist.start} to now</span>
-            </header>
-            <ul className="mt-6 grid gap-x-10 gap-y-3 leading-snug sm:grid-cols-2">
-              {WEASSIST_PICK.map((i) => (
-                <li key={i} className="flex gap-3">
-                  <span aria-hidden className="mt-1.5 size-2.5 shrink-0 rotate-45 rounded-[2px] bg-glow" />
-                  {weassist.description[i]}
+          <p className="mt-6 font-display text-2xl font-extrabold tracking-tight">{DATA.name}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{ROLE}</p>
+          <nav aria-label="Sections" className="mt-8 hidden lg:block">
+            <ol className="grid gap-3">
+              {NAV.map(([id, label], i) => (
+                <li key={id}>
+                  <a
+                    href={`#${id}`}
+                    className="group flex items-center gap-3 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground focus-visible:text-foreground"
+                  >
+                    <span aria-hidden className="h-0.5 w-6 rounded-full bg-current transition-[width] duration-300 ease-out group-hover:w-14 group-focus-visible:w-14" />
+                    {String(i + 1).padStart(2, "0")} {label}
+                  </a>
                 </li>
               ))}
-            </ul>
-          </article>
-          <ol className="mx-3 grid gap-4 sm:mx-8 sm:grid-cols-2">
-            {earlier.map((job) => (
-              <li key={job.title} className="rounded-b-[1.25rem] bg-secondary p-5 pt-7 text-secondary-foreground shadow-[var(--shadow-cut)]">
-                <p className="font-display text-xl font-bold tracking-tight">{job.company}</p>
-                <p className="text-sm font-medium">{job.title}</p>
-                <p className="mt-1 font-mono text-[0.6875rem]">
-                  {job.start} to {job.end}
-                </p>
-                <p className="mt-2 text-sm leading-snug">{job.description[0]}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section id="projects" className={WRAP}>
-        <h2 className={TITLE}>Things I built to be inspected</h2>
-        <div className="mt-10">
-          <Gallery />
-        </div>
-      </section>
-
-      <section id="skills" className={WRAP}>
-        <h2 className={TITLE}>Stack</h2>
-        <div className="mt-10">
-          <SkillGroups />
-        </div>
-      </section>
-
-      <section id="education" className={WRAP}>
-        <h2 className={TITLE}>Education</h2>
-        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-          {DATA.education.map((e) => (
-            <a key={e.school} href={e.href} target="_blank" rel="noopener noreferrer" className="sheet sheet-lift flex items-start gap-4 p-6 sm:p-8">
-              {e.logoUrl ? <Image src={e.logoUrl} alt="" width={56} height={56} className="size-14 shrink-0 rounded-full bg-white object-contain p-1.5 shadow-[var(--shadow-cut)]" /> : null}
-              <span className="min-w-0 break-words">
-                <span className="block font-display text-2xl font-extrabold tracking-tight sm:text-3xl">{e.degree}</span>
-                <span className="mt-1 block text-muted-foreground">{e.school}</span>
-                <span className="tab mt-3 font-mono">
-                  {e.start} to {e.end}
-                </span>
-              </span>
+            </ol>
+          </nav>
+          <div className="mt-8 flex gap-5 text-sm font-semibold">
+            <a href={DATA.contact.social.GitHub.url} target="_blank" rel="noopener noreferrer" className="ink-link inline-flex items-center gap-1.5">
+              <Icons.github className="size-4" /> GitHub
             </a>
-          ))}
-          <ul className="slot grid content-center gap-3 p-5 sm:p-6">
-            {DATA.certifications.map((c) => (
-              <li key={c} className="sheet flex min-w-0 items-start gap-3 rounded-xl p-3.5 text-sm font-medium leading-snug [overflow-wrap:anywhere]">
-                <span aria-hidden className="mt-1 size-2.5 shrink-0 rotate-45 rounded-[2px] bg-glow" />
-                {c}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+            <a href={DATA.contact.social.LinkedIn.url} target="_blank" rel="noopener noreferrer" className="ink-link inline-flex items-center gap-1.5">
+              <Icons.linkedin className="size-4" /> LinkedIn
+            </a>
+          </div>
+        </aside>
 
-      <section id="contact" className={WRAP}>
+        <div className="flex min-w-0 flex-col gap-24 sm:gap-28">
+          <section id="about" className="scroll-mt-24">
+            <h2 className={TITLE}>How I work</h2>
+            <ol className="mt-8 grid gap-2">
+              {DATA.summaryLede.map(([term, detail], i) => (
+                <li key={term} className={`${ROW} sm:grid-cols-[5rem_minmax(0,1fr)]`}>
+                  <span className="font-display text-4xl font-extrabold leading-none text-ink" aria-hidden>
+                    {i + 1}
+                  </span>
+                  <span className="grid gap-1">
+                    <span className="font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{term}</span>
+                    <span className="leading-snug">{detail}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section id="work" className="scroll-mt-24">
+            <h2 className={TITLE}>Work</h2>
+            <ol className="mt-8 grid gap-2">
+              <li className={DATED}>
+                <span className={DATE}>{weassist.start} to now</span>
+                <div className="min-w-0">
+                  <a href={weassist.href} target="_blank" rel="noopener noreferrer" className="ink-link inline-flex items-center gap-1 font-display text-2xl font-extrabold tracking-tight">
+                    {weassist.title}, {weassist.company} <ArrowUpRight className="size-4" aria-hidden />
+                  </a>
+                  <ul className="mt-4 grid gap-2.5 leading-snug">
+                    {WEASSIST_PICK.map((i) => (
+                      <li key={i} className="flex gap-3">
+                        <span aria-hidden className="mt-1.5 size-2.5 shrink-0 rotate-45 rounded-[2px] bg-glow" />
+                        {weassist.description[i]}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+              {earlier.map((job) => (
+                <li key={job.title} className={DATED}>
+                  <span className={DATE}>
+                    {job.start} to {job.end}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-display text-xl font-bold tracking-tight">
+                      {job.title}, {job.company}
+                    </p>
+                    <p className="mt-2 text-sm leading-snug text-muted-foreground">{job.description[0]}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section id="projects" className="scroll-mt-24">
+            <h2 className={TITLE}>Things I built to be inspected</h2>
+            <div className="mt-8">
+              <Gallery />
+            </div>
+          </section>
+
+          <section id="skills" className="scroll-mt-24">
+            <h2 className={TITLE}>Stack</h2>
+            <div className="mt-8">
+              <SkillGroups />
+            </div>
+          </section>
+
+          <section id="education" className="scroll-mt-24">
+            <h2 className={TITLE}>Education</h2>
+            <ol className="mt-8 grid gap-2">
+              {DATA.education.map((e) => (
+                <li key={e.school} className={DATED}>
+                  <span className={DATE}>
+                    {e.start} to {e.end}
+                  </span>
+                  <a href={e.href} target="_blank" rel="noopener noreferrer" className="flex min-w-0 items-start gap-4">
+                    {e.logoUrl ? <Image src={e.logoUrl} alt="" width={48} height={48} className="size-12 shrink-0 rounded-full bg-white object-contain p-1.5 shadow-[var(--shadow-cut)]" /> : null}
+                    <span className="min-w-0 break-words">
+                      <span className="block font-display text-xl font-extrabold tracking-tight">{e.degree}</span>
+                      <span className="mt-1 block text-muted-foreground">{e.school}</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+              {DATA.certifications.map((c) => (
+                <li key={c} className={DATED}>
+                  <span className={DATE}>Certification</span>
+                  <span className="min-w-0 font-medium leading-snug [overflow-wrap:anywhere]">{c}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </div>
+      </div>
+
+      <section id="contact" className={`${WRAP} scroll-mt-24`}>
         <div className="rounded-[2rem] bg-paper-1 px-4 pt-10 shadow-[var(--shadow-lift)] sm:px-10 sm:pt-14">
           <div
             className="mx-auto flex max-w-2xl flex-col items-center rounded-t-[12rem] px-5 pt-24 pb-12 text-center text-lit-ink shadow-[var(--shadow-slot)] sm:pt-28 sm:pb-16"

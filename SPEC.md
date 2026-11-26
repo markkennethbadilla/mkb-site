@@ -159,9 +159,15 @@ Components.
   and the not found window are plain arches drawn in code, and no section
   scene exists yet.
 
+Sources (rule 62, library.md "Masterpiece galleries").
+
+- Template: * <- magicuidesign/portfolio https://github.com/magicuidesign/portfolio
+- Reference: src/app/(site)/page.tsx <- awesome-developer-portfolios Top 20 https://brittanychiang.com
+  - Taken: the split layout below the hero and guide, a sticky left rail (name, section nav whose bar grows on hover, socials) beside a right column of sections, and list rows (date column, then title, detail and chips) that light up as a sheet on hover. Our paper tokens, type and hero stay.
+
 Pages.
 
-- `/`, the hero fly-through, then sheets per section as described under Features.
+- `/`, the hero fly-through and the guide, then the rail and right column: How I work, Work, Projects, Stack, Education, then the contact arch full width.
 - Not found (`src/app/not-found.tsx`), a lit arch window with the way home and the three rooms.
 - `/demos/<slug>`, the same sheets, slots and type in the room's hue, the
   specimen drawing in a cut frame, the rail a floating sheet.
