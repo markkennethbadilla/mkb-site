@@ -554,6 +554,7 @@ Check the layers in order, stop at the first that fails:
 - `bun run scheduled`, weekly (mkb-winops spec 057): WebKit smoke crawl, outside links, AI red team, ZAP baseline, D1 backup.
 - Lighthouse: the live site, daily, from mkb-vps-sg (personal-infra `servers/mkb-vps-sg/lighthouse/`), floor 0.70 in every category on every page (agentops rule 73), never in the deploy or the push. URLs and floors: personal-infra `servers/mkb-vps-sg/lighthouse/mkb-site.lighthouserc.json`; result ping healthchecks.io `manga lighthouse-live (daily)`, email on a miss.
 - Local look with the Worker: `bun run build`, then `node A:/personal-markkennethbadilla/mkb-agentops/scripts/dekit-up.mjs ctl <repo> start worker` (dekit task `worker`, `scripts/dev-worker.mjs`): local D1, the guide key from the vault, `out/` plus `/api/*` on http://127.0.0.1:8788. Stop it before the next build, since it holds `out/` open.
+- Requirements: `specs/requirements.md` (OpenFastTrace, coverage register T24) is traced on every push by Trunk action `trace-on-push`; a new decision or promise adds its item in the same commit.
 - Install the hooks once per clone: `trunk git-hooks sync`. `git push --no-verify` skips the push gate, but `bun run deploy` always runs `bun run gate`.
 - Time budget: the repo's line in agentops `gate-budgets.json` (rule 0).
 - Test records: `specs/001-coverage-register/test-runs/<date>-<topic>/results.md`.

@@ -46,6 +46,7 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] T20 n/a: no roles or tenants
 - [x] T21 e2e/zap.spec.ts, scripts/zap.sh, zap.conf; `bun run zap` in `bun run scheduled`; run 2026-11-22: FAIL-NEW 0, WARN-NEW 0, PASS 65
 - [x] T23 worker/cache-golden.test.ts: 16 golden queries over the guide cache index, hit@1, hit@5 and MRR each floor 0.9 (baseline 0.938, 0.938, 0.944), in `bun run test:worker`; the guide has no vector or RAG search, its only retrieval is this lexical cache (worker/cache.ts)
+- [x] T24 specs/requirements.md (OpenFastTrace, one item per locked decision and SPEC.md section with its tests), traced on every push by Trunk action `trace-on-push`
 - [x] I01 SPEC.md "Records first (rule 43)", migrations/0008_inbound_requests.sql, worker/records-first.test.ts
 - [x] I02 n/a: no payment, ads or CRM vendor; Turnstile runs on Cloudflare's test keys locally
 - [x] I03 src/lib/analytics.ts (rule 91 options), src/components/analytics.tsx

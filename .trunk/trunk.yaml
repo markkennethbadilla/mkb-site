@@ -100,4 +100,8 @@ actions:
     - id: maintainability-on-push
       triggers: [{git_hooks: [pre-push]}]
       run: bun run --silent maint
-  enabled: [gate-clock-start, block-commit-on-findings, block-push-on-findings, repo-checks-on-push, block-push-on-opengrep, block-push-on-osv, maintainability-on-push, gate-clock-end]
+    # Coverage register T24: every spec promise is a traced OpenFastTrace item (mkb-agentops spec 145).
+    - id: trace-on-push
+      triggers: [{git_hooks: [pre-push]}]
+      run: node A:/personal-markkennethbadilla/mkb-agentops/scripts/trace.mjs specs/requirements.md
+  enabled: [gate-clock-start, block-commit-on-findings, block-push-on-findings, repo-checks-on-push, block-push-on-opengrep, block-push-on-osv, maintainability-on-push, trace-on-push, gate-clock-end]
