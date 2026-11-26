@@ -530,6 +530,15 @@ the fetch handler.
 - `node scripts/cf.mjs rollback` (Workers versions: the previous version takes all traffic at once; static assets roll back with it). Rehearsed 2026-11-22 on the live site: back to the previous version in 4.1 s of command and 5.2 s until `/api/health` answered from it; forward again (`node scripts/cf.mjs rollback <version-id>`, ids from `node scripts/cf.mjs deployments list`) in 3.6 s and 5.7 s. A browser that loaded a page during the rollback can keep that response cached; reload.
 - A rollback does not undo a D1 migration. Migrations here only add tables or columns, so the older code still runs on the newer schema; a migration that drops or renames something needs its own rollback written first.
 
+### Deprecation and migration
+
+Register R19. Rule 2 holds: what is replaced is deleted once its dependents moved.
+
+- A removed or renamed page gets a 301 line in `public/_redirects` (Workers static assets read it; the export copies it to `out/`), so links from resumes, job applications and search results keep working; the Routes table above changes in the same commit.
+- A removed API route or demo endpoint moves its callers in the same commit: the page code, the probes in `scripts/`, the e2e tests and the Journeys table.
+- D1 changes add before they remove: a migration adds the new table or column, the code moves to it, and a later migration drops the old one only after the rollback window has passed (see Rollback above).
+- The site has no account holders or subscribers to notify; the public changelog is the commit history. A removal Mark links to elsewhere (a resume, a profile, an application) is replaced there first.
+
 ### Site down
 
 Check the layers in order, stop at the first that fails:

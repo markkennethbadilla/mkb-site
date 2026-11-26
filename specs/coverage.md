@@ -24,6 +24,7 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] B20 .stylelintrc.json (stylelint-declaration-strict-value on colour, background, font and fill), stylelint@18.1.0 in .trunk/trunk.yaml; tokens are the custom properties in src/app/globals.css, every rule uses var()
 - [x] B21 `repo-checks-on-push` Trunk action runs `bun run gate` (unit, worker, e2e, fuzz, evals)
 - [x] B22 src/app/(site)/page.tsx: the portfolio home at /
+- [x] B23 `SPEC.md` "Locked decisions": numbered records, each with its reason and the option rejected (the forked template over a hand-built one, static export over OpenNext, pinned model ids, D1 over KV and more)
 - [x] T01 .trunk/trunk.yaml gitleaks@8.30.1 plus block-commit-on-findings and block-push-on-findings
 - [x] T02 .trunk/trunk.yaml osv-scanner@2.7.1 and `block-push-on-osv` enabled; no-fix advisories in osv-scanner.toml with reasons and ignoreUntil
 - [x] T03 .trunk/trunk.yaml block-push-on-opengrep
@@ -77,6 +78,7 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] R16 n/a: declares no installed or registered item
 - [x] R17 n/a: sends no automated messages
 - [x] R18 n/a: sends no automated email
+- [x] R19 `SPEC.md` "Deprecation and migration": removed pages get a 301 in `public/_redirects`, callers move in the same commit, D1 adds before it removes, links Mark placed elsewhere are replaced first
 - [x] X01 SPEC.md "Site down": the layers in order and the rollback
 - [x] X02 SPEC.md "Regression catalog": one guard per defect met
 - [x] V01 scripts/backup-d1.mjs to the Filen-synced cloud folder, weekly in `bun run scheduled`; D1 Time Travel for the week
