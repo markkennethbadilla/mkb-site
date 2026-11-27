@@ -33,7 +33,7 @@ try {
   const gate = process.argv.includes("--gate") ? ["--port", "8789", "--local-protocol", "https"] : ["--port", "8788"];
   await run(["dev", ...gate, "--var", "TURNSTILE_SECRET:1x0000000000000000000000000000000AA"], {
     CLOUDFLARE_INCLUDE_PROCESS_ENV: "true",
-    DEEPSEEK_API_KEY: vaultRow("deepseek/active-personal-api-key").secret_value,
+    OPENROUTER_API_KEY: vaultRow("openrouter/personal-api-key").secret_value,
   });
 } catch {
   process.exit(1);

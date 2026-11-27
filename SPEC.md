@@ -141,13 +141,18 @@ A portfolio whose argument is its own engineering: every claim on the page links
    network round trip to learn something already known. Its chain is pinned to
    exact versioned ids, never a floating alias, which would repoint both the model
    and the price under a running site.
-4b. **The guide's fallback is an upgrade, deliberately.** `deepseek-v4-flash`
-   first, `deepseek-v4-pro` only when flash returns no usable tool call. This
-   inverts the usual rule that a fallback must be cheaper, because that rule exists
-   to stop a costly path running unwatched - and here the escalation is a single
-   retry, capped by the daily ceiling, made rare by the cache, and backstopped by
-   the key's own limit. The alternative, pro first, costs every visitor six seconds
-   to avoid a retry that happens once in six questions.
+4b. **A decision model answers first; the LLM only when the page has no answer.**
+   `worker/decide.ts` asks Clef-flash (`@cf/cloudflare/clef-flash`, a System One
+   decision model on Workers AI, binding `AI`) three typed questions in one call:
+   which fact answers, which section shows it, and whether the question is about
+   Mark at all. A matched fact is answered with its own text (grounded by
+   construction) and its section; an off-topic question is declined; only an
+   about-Mark question with no matching fact reaches the LLM. Clef-flash ran 8 of 8
+   bench questions right at about 380 ms (`scripts/bench-decide.mjs`), against Jev
+   on OpenRouter at about 850 ms; it costs $0.038 per M input tokens, output free.
+   The LLM fallback is `openai/gpt-oss-120b:nitro` then `openai/gpt-oss-20b:nitro`
+   on OpenRouter (`src/lib/guide-models.ts` holds the bench table): fastest first,
+   cheapest second. DeepSeek measured 2.2 s there and was dropped from the guide.
 5. **Filter free models on modality exclusively, not inclusively.** Google's Lyria
    advertises `output_modalities: ["text","audio"]`, so `includes("text")` accepts
    a music model. A usable chat model emits text and nothing else.
@@ -208,14 +213,15 @@ A portfolio whose argument is its own engineering: every claim on the page links
     catches the discrepancy immediately.
 15. **Anything positioned against the entity is MEASURED, not computed.** It moves
     under a shared layout animation, so motion renders it with a transform and its
-    real centre is not the value passed to `left`. Bubble and minimised pill are
+    real centre is not the value passed to `left`. The entity and the answer are
     positioned with Floating UI (`@floating-ui/react-dom`, `autoUpdate` per
-    animation frame), never hand math. The answer bubble is anchored to the
-    highlighted SECTION, `top-end`, outside the spotlight, for every answer; it
-    flips below only when there is no room above, and shifts on both axes so it
-    is always fully in the viewport (overlapping the section only when neither
-    side fits). It used to hang below the entity, ran off-screen on Contact and
-    covered the section. The pill stays anchored to the entity.
+    animation frame), never hand math. There is no speech bubble: a second floating
+    box read as a separate conversation. The answer and "Ask something else" sit in
+    a caption joined to the spotlight ring (same colour, square on the joined edge),
+    above the section, below it when the top is off screen. The entity hovers beside
+    the section (`right-start`, flipping to below, above or left) and shifts on both
+    axes, so it stays in the viewport and moves back in when the section scrolls
+    part way out.
 
 16. **Demo slugs are permanent.** These URLs go into job applications and will
     outlive several redesigns of this site. A retired room keeps its route and
@@ -365,8 +371,8 @@ A portfolio whose argument is its own engineering: every claim on the page links
   not as an appeal.
 - **No blog until there is real writing.** An empty blog reads worse than none.
 - **No paid infrastructure**, with one named exception. Hosting stays entirely on
-  the Cloudflare free tier. **Inference does not**: the guide runs on Mark's own
-  DeepSeek key, changed 2026-08-05. Free models answered in 6 to 9 seconds, which
+  the Cloudflare free tier. **Inference does not**: the guide's LLM fallback runs on
+  Mark's OpenRouter key (1 USD a month), changed 2026-11-27 from DeepSeek. Free models answered in 6 to 9 seconds, which
   is long enough that a visitor assumes the page is broken, and a demo nobody
   waits for demonstrates nothing. Measured on the real task
   (`scripts/bench-guide.mjs`): `deepseek-v4-flash` 2279 ms mean against
@@ -386,8 +392,9 @@ A portfolio whose argument is its own engineering: every claim on the page links
 
 ### Budget cap on paid calls (rule 97)
 
-Every paid model call (guide and ScoreAudit on DeepSeek `deepseek/active-personal-api-key`,
-the agent harness on OpenRouter `openrouter/personal-api-key`, and the two
+Every paid model call (the guide's LLM fallback and the agent harness on OpenRouter
+`openrouter/personal-api-key`, ScoreAudit on DeepSeek `deepseek/active-personal-api-key`,
+the guide's decision model on Workers AI within the free daily allocation, and the two
 scripts `probe-guide.mjs` and `bench-guide.mjs`) goes through `src/lib/spend-cap.ts`:
 
 - `maxOutputTokens` is always 600 per step.
@@ -437,7 +444,7 @@ the fetch handler.
 
 - **Reads:**
   - Visitors' requests to `markkennethbadilla.com` (static `out/` through the ASSETS binding; `/api/*` through `worker/index.ts`).
-  - DeepSeek (guide and ScoreAudit) and OpenRouter (agent harness, key usage at `GET /api/v1/key`).
+  - OpenRouter (guide fallback and agent harness, key usage at `GET /api/v1/key`), DeepSeek (ScoreAudit), Workers AI (guide decision model, dashboard usage).
   - Build time: `resume/resume.json`, `src/data/resume.tsx`, pinned fonts and themes.
 - **Writes:**
   - D1 `mkb-site-demo` (`DEMO_DB`): `inbound_requests` (every POST, rule 43), arena tables, budget counters, guide answer cache rows. Swept hourly by the cron in `wrangler.jsonc` (arenas only; `inbound_requests` is never deleted).

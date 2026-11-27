@@ -7,6 +7,7 @@ interface __BaseEnv_Env {
 	WAREHOUSE_DB: D1Database;
 	BURST_LIMITER: RateLimit;
 	DEMO_LIMITER: RateLimit;
+	AI: Ai;
 	ASSETS: Fetcher;
 }
 declare namespace Cloudflare {

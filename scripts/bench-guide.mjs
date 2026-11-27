@@ -1,4 +1,4 @@
-// BUDGET-CAP: deepseek/active-personal-api-key 0.10USD-per-run
+// BUDGET-CAP: openrouter/personal-api-key 1USD-monthly (provider key limit), 0.10USD-per-run
 // BUDGET-ALERT: ops-alert
 // Measures the guide's real task on each blessed DeepSeek model, so the model
 // choice is decided by latency and correctness rather than by assumption.
@@ -23,13 +23,14 @@ import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/sp
 import { ok } from "./log.mjs";
 
 // Optional alert token from the environment; personal project, so the work token is not used (rule 64).
-const capCtx = { project: "mkb-site scripts", keySlug: "deepseek/active-personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
+const capCtx = { project: "mkb-site scripts", keySlug: "openrouter/personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
 
-const cred = vaultRow("deepseek/active-personal-api-key");
+const cred = vaultRow("openrouter/personal-api-key");
 
+// Usage: bun scripts/bench-guide.mjs <openrouter model id>...
 const deepseek = createOpenAICompatible({
-  name: "deepseek",
-  baseURL: "https://api.deepseek.com",
+  name: "openrouter",
+  baseURL: "https://openrouter.ai/api/v1",
   apiKey: cred.secret_value,
   supportsStructuredOutputs: false,
 });
@@ -93,7 +94,7 @@ async function run(model, question) {
   };
 }
 
-for (const model of ["deepseek-v4-flash", "deepseek-v4-pro"]) {
+for (const model of process.argv.slice(2)) {
   console.log(`\n=== ${model} ===`);
   const times = [];
   let correct = 0;

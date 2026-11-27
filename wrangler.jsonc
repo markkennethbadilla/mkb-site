@@ -13,6 +13,8 @@
     // A browser navigation to /api/* would otherwise get the static 404 page before the Worker runs.
     "run_worker_first": ["/api/*"]
   },
+  // Workers AI: the guide's decision model (worker/decide.ts, Clef-flash).
+  "ai": { "binding": "AI" },
   "kv_namespaces": [
     { "binding": "DEMO_KV", "id": "3624d59a2e724d34b883ea23181c7ec2" }
   ],

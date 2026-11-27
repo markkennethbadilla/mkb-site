@@ -272,7 +272,6 @@ export default function AgentConsole({ first }: { first?: string }) {
             stage={phase}
             label={sectionById(run.section).label}
             answer={run.answer}
-            meta={<RunMeta run={run} />}
             onDismiss={dismiss}
           />
         )}

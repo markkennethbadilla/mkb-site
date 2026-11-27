@@ -1,12 +1,12 @@
-// BUDGET-CAP: deepseek/active-personal-api-key 0.10USD-per-run
+// BUDGET-CAP: openrouter/personal-api-key 1USD-monthly (provider key limit), 0.10USD-per-run
 // BUDGET-ALERT: ops-alert
 /**
  * POST /api/guide - the site guide's tool-calling loop.
  *
- * A visitor's question goes to a free model with three tools and nothing else.
- * The model decides which section of the page answers it, says so, and the browser
- * carries out the navigation. There is no keyword table anywhere in this path: if
- * the model does not call a tool, the run has no destination and says so.
+ * A visitor's question first goes to a decision model (worker/decide.ts) that picks
+ * the fact and section answering it; only when the page has no answer does it reach
+ * an LLM with three tools and nothing else. If that model calls no tool, the run
+ * has no destination and says so.
  *
  * The guardrails are not the system prompt. Free-text input from strangers is
  * untrusted, and a prompt is a request, not a control. What actually bounds this:
@@ -24,11 +24,12 @@ import { FACTS_BRIEF } from "../src/lib/public-facts";
 const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 import { buildToolbox, type GuideDecision } from "./guide-tools";
 import { lookup, remember } from "./cache";
+import { decide, DECIDE_MODEL } from "./decide";
 import { reserve } from "./budget";
 import { watchGeneration } from "./analytics";
 import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/spend-cap";
 // Env is global, generated from wrangler.jsonc by `wrangler types`.
-import { json, refuseForQuota, GUIDE_CHAIN, DEEPSEEK_BASE_URL } from "./models";
+import { json, refuseForQuota, GUIDE_CHAIN, OPENROUTER_BASE_URL } from "./models";
 
 const MAX_QUESTION_CHARS = 200;
 
@@ -93,7 +94,25 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
     });
   }
 
-  const key = env.DEEPSEEK_API_KEY;
+  // Decision model first: when a fact on the page answers, no LLM runs at all.
+  if (env.AI) {
+    const startedAt = Date.now();
+    try {
+      const d = await decide((input) => env.AI.run(DECIDE_MODEL as keyof AiModels, input as never) as never, parsed.data.question);
+      if (d.kind !== "llm") {
+        const out = d.kind === "decline"
+          ? { section: null, answer: OFF_TOPIC, declined: true, grounded: false }
+          : { section: d.section, answer: d.answer, declined: false, grounded: true };
+        await remember(env.DEMO_DB, parsed.data.question, out);
+        return json({ ...out, steps: [{ tool: "decide", args: d.debug }], model: DECIDE_MODEL, ms: Date.now() - startedAt, totalMs: Date.now() - startedAll });
+      }
+    } catch (e) {
+      // A decision-model outage falls through to the LLM; logged so it is seen.
+      console.error("guide decide FAIL", String(e));
+    }
+  }
+
+  const key = env.OPENROUTER_API_KEY;
   if (!key) return json(degraded("no-key"));
 
   // Inference spend is a separate ceiling, reserved only once there is a key and
@@ -107,9 +126,9 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
   // to learn something already known. The chain is pinned to exact versioned ids -
   // never a floating alias, which would repoint the model and the price under a
   // running site.
-  const deepseek = createOpenAICompatible({
-    name: "deepseek",
-    baseURL: DEEPSEEK_BASE_URL,
+  const llm = createOpenAICompatible({
+    name: "openrouter",
+    baseURL: OPENROUTER_BASE_URL,
     apiKey: key,
     supportsStructuredOutputs: false,
   });
@@ -117,7 +136,7 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
   const chain = [...GUIDE_CHAIN];
   const traceId = crypto.randomUUID();
 
-  const capCtx = { project: "mkb-site", keySlug: "deepseek/active-personal-api-key", notifyToken: env.NOTIFY_TOKEN };
+  const capCtx = { project: "mkb-site", keySlug: "openrouter/personal-api-key", notifyToken: env.NOTIFY_TOKEN };
   const capRefused = await checkRunCap(capCtx, chain[0], GUIDE_SYSTEM_PROMPT.length + parsed.data.question.length, MAX_STEPS * chain.length, "site-guide question");
   if (capRefused) return json(degraded(`budget-cap:${capRefused}`));
 
@@ -131,10 +150,10 @@ export async function handleGuide(req: Request, env: Env): Promise<Response> {
     };
     const startedAt = Date.now();
     const watch = (extra: { usage?: { inputTokens?: number; outputTokens?: number }; output?: unknown; error?: unknown }) =>
-      watchGeneration(env, { traceId, provider: "deepseek", model, input: parsed.data.question, startedAt, ...extra });
+      watchGeneration(env, { traceId, provider: "openrouter", model, input: parsed.data.question, startedAt, ...extra });
     try {
       const result = await generateText({
-        model: deepseek(model),
+        model: llm(model),
         system: GUIDE_SYSTEM_PROMPT,
         prompt: parsed.data.question,
         tools: buildToolbox(decision),

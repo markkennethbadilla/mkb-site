@@ -67,10 +67,10 @@ Tags: PARTIAL, beforePARTIAL
 ### spec:site.d4b
 `req~spec_site.d4b~1`
 
-> The guide's fallback is an upgrade, deliberately.
+> A decision model answers first; the LLM only when the page has no answer.
 
 Rationale:
-the order is config; no test asserts flash before pro
+worker/decide.test.ts asserts the thresholds (answer, in place, decline, hand to LLM); the LLM order is config
 
 Comment:
 spec: site

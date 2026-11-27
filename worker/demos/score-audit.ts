@@ -50,14 +50,14 @@
  * full account of what was allowed and what stops it today.
  *
  * MAX_STEPS is a tool-call budget, not a model cascade: this room always calls
- * GUIDE_CHAIN[0] and nothing else, because falling back to a second model would
+ * AUDIT_MODEL and nothing else, because falling back to a second model would
  * silently answer a different question under the same "the model" label.
  */
 
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText, stepCountIs, tool } from "ai";
 import { z } from "zod";
-import { DEEPSEEK_BASE_URL, GUIDE_CHAIN } from "../../src/lib/guide-models";
+import { DEEPSEEK_BASE_URL, AUDIT_MODEL } from "../../src/lib/guide-models";
 import { QUESTIONS, CAN_QUERY, type Question } from "../../src/lib/demos/score-audit-questions";
 import { guardSql, MAX_ROWS } from "../../src/lib/sql-guard";
 import { json, type DemoEnv } from "./router";
@@ -212,7 +212,7 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
   });
 
   const capCtx = { project: "mkb-site", keySlug: "deepseek/active-personal-api-key", notifyToken: env.NOTIFY_TOKEN };
-  const capRefused = await checkRunCap(capCtx, GUIDE_CHAIN[0], buildSystemPrompt(questions, canQuery).length, MAX_STEPS, "score-audit run");
+  const capRefused = await checkRunCap(capCtx, AUDIT_MODEL, buildSystemPrompt(questions, canQuery).length, MAX_STEPS, "score-audit run");
   if (capRefused) return json({ error: `Budget cap reached (${capRefused}), so no model call was made.` }, 429);
 
   const startedAt = Date.now();
@@ -234,7 +234,7 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
   let stepsTaken = 0;
   try {
     const result = await generateText({
-      model: deepseek(GUIDE_CHAIN[0]),
+      model: deepseek(AUDIT_MODEL),
       system: buildSystemPrompt(questions, canQuery),
       prompt: "Answer every question listed in the system prompt.",
       tools: buildToolbox(db, decision, ids, canQuery),
@@ -245,10 +245,10 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
       experimental_telemetry: { isEnabled: true, functionId: "score-audit" },
     });
     usage = { inputTokens: result.usage?.inputTokens, outputTokens: result.usage?.outputTokens };
-    watchGeneration(env, { traceId, provider: "deepseek", model: GUIDE_CHAIN[0], input: "score-audit run", startedAt, usage });
+    watchGeneration(env, { traceId, provider: "deepseek", model: AUDIT_MODEL, input: "score-audit run", startedAt, usage });
     stepsTaken = result.steps.length;
   } catch (e) {
-    watchGeneration(env, { traceId, provider: "deepseek", model: GUIDE_CHAIN[0], input: "score-audit run", startedAt, error: e });
+    watchGeneration(env, { traceId, provider: "deepseek", model: AUDIT_MODEL, input: "score-audit run", startedAt, error: e });
     await alertIfLimitError(capCtx, e, "score-audit run");
     return json({ error: `The model call failed: ${String(e).slice(0, 200)}` }, 502);
   }
@@ -298,7 +298,7 @@ export async function handle(action: string, req: Request, env: DemoEnv): Promis
   return json({
     preset: parsed.data.preset,
     canQuery,
-    model: GUIDE_CHAIN[0],
+    model: AUDIT_MODEL,
     ms,
     steps: stepsTaken,
     queries: decision.queries.length,

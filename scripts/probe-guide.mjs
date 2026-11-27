@@ -1,4 +1,4 @@
-// BUDGET-CAP: deepseek/active-personal-api-key 0.10USD-per-run
+// BUDGET-CAP: openrouter/personal-api-key 1USD-monthly (provider key limit), 0.10USD-per-run
 // BUDGET-ALERT: ops-alert
 // Proves a free model actually CALLS the guide's tools, and routes to the right
 // section, against real models rather than a stub.
@@ -21,7 +21,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText, stepCountIs, tool } from "ai";
 import { z } from "zod";
 import { SECTION_IDS, buildGuidePrompt } from "../src/lib/site-sections.ts";
-import { GUIDE_CHAIN, DEEPSEEK_BASE_URL } from "../src/lib/guide-models.ts";
+import { GUIDE_CHAIN, OPENROUTER_BASE_URL } from "../src/lib/guide-models.ts";
 import { checkGrounding } from "../src/lib/grounding.ts";
 import { FACTS_BRIEF, LICENCE } from "../src/lib/public-facts.ts";
 import { vaultRow } from "./vault.mjs";
@@ -29,11 +29,11 @@ import { alertIfLimitError, checkRunCap, MAX_OUTPUT_TOKENS } from "../src/lib/sp
 import { ok } from "./log.mjs";
 
 // Optional alert token from the environment; personal project, so the work token is not used (rule 64).
-const capCtx = { project: "mkb-site scripts", keySlug: "deepseek/active-personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
+const capCtx = { project: "mkb-site scripts", keySlug: "openrouter/personal-api-key", notifyToken: process.env.NOTIFY_TOKEN };
 
 const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
 
-const cred = vaultRow("deepseek/active-personal-api-key");
+const cred = vaultRow("openrouter/personal-api-key");
 
 // Points at the provider and the exact chain production uses. It used to discover
 // free OpenRouter models, which stopped testing anything real the moment the guide
@@ -43,8 +43,8 @@ const chain = [...GUIDE_CHAIN];
 console.log(`chain under test: ${chain.join(" then ")}`);
 
 const openrouter = createOpenAICompatible({
-  name: "deepseek",
-  baseURL: DEEPSEEK_BASE_URL,
+  name: "openrouter",
+  baseURL: OPENROUTER_BASE_URL,
   apiKey: cred.secret_value,
   supportsStructuredOutputs: false,
 });
@@ -162,5 +162,5 @@ console.log(
   `\n${pass} passed, ${fail} failed, ${skipped} skipped (rate limits/transport)` +
     `\n${blocked} fabricated answers blocked by the grounding check before reaching a visitor`
 );
-process.exit(fail > 0 ? 1 : 0);
+process.exit(fail > 0 ? 1 : 0);
 ok();

@@ -21,10 +21,12 @@ export const RUN_CAP_USD = 0.1;
 
 /** USD per million tokens, conservative list prices (rounded up). */
 const DEEPSEEK = { in: 0.6, out: 2.5 };
+const GPT_OSS = { in: 0.2, out: 0.8 };
 const UNKNOWN = { in: 3, out: 15 };
 
 export function priceFor(model: string): { in: number; out: number } {
   if (model.endsWith(":free")) return { in: 0, out: 0 };
+  if (model.includes("gpt-oss")) return GPT_OSS;
   return model.includes("deepseek") ? DEEPSEEK : UNKNOWN;
 }
 

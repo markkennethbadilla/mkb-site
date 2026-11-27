@@ -1,32 +1,26 @@
+// BUDGET-CAP: openrouter/personal-api-key 1USD-monthly (provider key limit), 0.10USD-per-run via src/lib/spend-cap.ts
+// BUDGET-ALERT: ops-alert
 /**
- * Which models the guide runs on, and where they live.
+ * Which LLMs the guide falls back to when the decision model (worker/decide.ts) finds no answer on the page.
  *
- * A leaf module with no imports, for the same reason as grounding.ts and
- * public-facts.ts: scripts/probe-guide.mjs has to load this under plain Node to
- * test the chain that actually ships, and Node's ESM loader will not resolve the
- * extensionless relative imports the Worker bundle uses. Anything the probe needs
- * has to be reachable without pulling the Worker in behind it.
+ * A leaf module with no imports, so scripts/probe-guide.mjs can load it under plain Node.
  *
- * The guide runs on Mark's own DeepSeek key rather than free inference. Free
- * models answered in 6 to 9 seconds, which is long enough that a visitor assumes
- * the page is broken. Measured on the real task (scripts/bench-guide.mjs, six
- * representative questions, one round trip each):
+ * Measured on the real task through OpenRouter (scripts/bench-guide.mjs, six
+ * representative questions, one round trip each, 2026-11-27):
  *
- *   deepseek-v4-flash   mean 1342 ms   1594 tokens   6/6 correct
- *   deepseek-v4-pro     mean 2951 ms   1553 tokens   6/6 correct
+ *   openai/gpt-oss-120b:nitro          mean  952 ms  6/6  $0.05 / $0.25 per M
+ *   google/gemini-3.1-flash-lite:nitro mean 1012 ms  6/6  $0.25 / $1.50 per M
+ *   openai/gpt-oss-20b:nitro           mean 1159 ms  6/6  $0.03 / $0.13 per M
+ *   deepseek/deepseek-v4-flash-0731    mean 2173 ms  5/6
+ *   qwen/qwen3.7-flash                 mean 3092 ms  6/6
  *
- * Flash is primary on that evidence. Pro is the fallback, which makes the fallback
- * an UPGRADE - a deliberate inversion of the usual rule, recorded here rather than
- * done quietly. That rule exists to stop a costly path running unwatched; here the
- * escalation is a single retry, fired only when flash returns no usable tool call,
- * bounded by the daily call ceiling, made rare by the similarity cache, and
- * backstopped by the key's own spending cap. Pro first would cost every visitor
- * three seconds to avoid a retry that the benchmark says should not happen.
- *
- * Ids are pinned and exact. A floating alias would repoint both the model and the
- * price under a running site.
+ * `:nitro` routes to the fastest host for the model. Fastest first, cheapest second.
  */
 
-export const GUIDE_CHAIN = ["deepseek-v4-flash", "deepseek-v4-pro"] as const;
+export const GUIDE_CHAIN = ["openai/gpt-oss-120b:nitro", "openai/gpt-oss-20b:nitro"] as const;
 
+export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+
+// The score-audit room's SQL agent was validated on DeepSeek; it keeps that model and key.
+export const AUDIT_MODEL = "deepseek-v4-flash";
 export const DEEPSEEK_BASE_URL = "https://api.deepseek.com";

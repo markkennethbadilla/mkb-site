@@ -28,7 +28,7 @@ export const MAX_ATTEMPTS = 3;
 // The guide's model chain lives in src/lib/guide-models.ts, a leaf module, so the
 // probe can load it under Node and test what actually ships. Re-exported here
 // because the Worker is where callers expect to find it.
-export { GUIDE_CHAIN, DEEPSEEK_BASE_URL } from "../src/lib/guide-models";
+export { GUIDE_CHAIN, OPENROUTER_BASE_URL } from "../src/lib/guide-models";
 
 const CACHE_PREFIX = "openrouter:free-models:v4";
 const CACHE_TTL = 3600;

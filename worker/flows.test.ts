@@ -50,7 +50,7 @@ async function walk(machine: AnyStateMachine, cases: Record<string, Case>) {
 }
 
 const is = (n: number) => (s: number) => s === n;
-const guide = (body: unknown, headers: Record<string, string> = TOKEN): Call => ({ path: "/api/guide", body, headers, env: { DEEPSEEK_API_KEY: undefined } });
+const guide = (body: unknown, headers: Record<string, string> = TOKEN): Call => ({ path: "/api/guide", body, headers, env: { OPENROUTER_API_KEY: undefined, AI: undefined } });
 
 it("every simple path of the guide flow reaches its state on the real handler", () =>
   walk(guideFlow, {
