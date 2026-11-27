@@ -474,7 +474,8 @@ Tags: PARTIAL, beforePARTIAL
 
 > Rebuilt in our own code from the once-ui `magic-portfolio` demo (studied, never copied): a quiet neutral page, one cyan wash at the top, a floating pill nav, tight bold type, hairline cards.
 > | Radius | cards 1rem, pills and buttons full |
-> | Motion | hovers only: a card rises 2px and its border takes the accent, 200 ms ease out |
+> | Motion | hovers only: a card rises 2px and its border takes the accent, 200 ms ease out; the theme icon spins in on change (reduced motion: none) |
+> | Feedback | everything clickable shows the pointer cursor (`globals.css` base layer, since Tailwind v4 dropped it on buttons); the theme toggle cycles follow system, light, dark with a Monitor, Sun or Moon icon for the current choice and says both current and next in its name |
 
 Rationale:
 section What it does: its lines are held by the repo gate and the deploy gate as a whole; per-line tracing is the next mapping
@@ -492,7 +493,7 @@ Tags: PARTIAL, beforePARTIAL
 `req~spec_site.s32~1`
 
 > - `maxOutputTokens` is always 600 per step.
-> - Turnstile (widget `mkb-site guide and demos`, invisible, vault `cloudflare/iammkb2002-turnstile-mkb-site`): the browser asks for one token per guide question and per demo run creation (`src/lib/bot-check.ts`, header `cf-turnstile-response`); `worker/bot-check.ts` verifies it with siteverify before the guide or the room runs. No token or a failed check is `403 {reason:"bot-check"}`, still recorded first. A missing `TURNSTILE_SECRET` in production closes both endpoints (503). Local runs use Cloudflare's always-pass test keys: the browser picks the test sitekey on localhost and 127.0.0.1, and `scripts/dev-worker.mjs` and `playwright.config.ts` pass `--var TURNSTILE_SECRET:<test secret>` to the local Worker (the local runner rewrites the request host to the route domain, so the Worker cannot tell local from live by host). The e2e fixture (`e2e/fixtures.ts`) also answers PostHog and Turnstile's script locally, so no test depends on a vendor CDN or reaches the real PostHog project. Proof: `worker/bot-check.test.ts`.
+> - Turnstile (widget `mkb-site guide and demos`, invisible, vault `cloudflare/iammkb2002-turnstile-mkb-site`): the browser asks for one token per guide question and per demo run creation (`src/lib/bot-check.ts`, header `cf-turnstile-response`); one reused widget fetches a token a second after page load and the next one right after each use, so a request never waits on the challenge (a prefetched token older than 240 s of its 300 s life is skipped); `worker/bot-check.ts` verifies it with siteverify before the guide or the room runs. No token or a failed check is `403 {reason:"bot-check"}`, still recorded first. A missing `TURNSTILE_SECRET` in production closes both endpoints (503). Local runs use Cloudflare's always-pass test keys: the browser picks the test sitekey on localhost and 127.0.0.1, and `scripts/dev-worker.mjs` and `playwright.config.ts` pass `--var TURNSTILE_SECRET:<test secret>` to the local Worker (the local runner rewrites the request host to the route domain, so the Worker cannot tell local from live by host). The e2e fixture (`e2e/fixtures.ts`) also answers PostHog and Turnstile's script locally, so no test depends on a vendor CDN or reaches the real PostHog project. Proof: `worker/bot-check.test.ts`.
 
 Rationale:
 section How it works: its lines are held by the repo gate and the deploy gate as a whole; per-line tracing is the next mapping

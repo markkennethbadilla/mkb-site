@@ -33,7 +33,12 @@ test.describe("returning visitor", () => {
   test("the chosen theme is remembered on the next visit", async ({ page, context }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto("/");
-    await page.getByRole("button", { name: "Switch to dark mode" }).first().click();
+    const toggle = page.getByRole("button", { name: /^Theme: / }).first();
+    await expect(toggle).toHaveAccessibleName("Theme: follow system. Switch to light");
+    await toggle.click();
+    await expect(toggle).toHaveAccessibleName("Theme: light. Switch to dark");
+    await toggle.click();
+    await expect(toggle).toHaveAccessibleName("Theme: dark. Switch to follow system");
     await expect(page.locator("html")).toHaveClass(/dark/);
     const next = await context.newPage();
     await next.goto("/demos/split-brain/");

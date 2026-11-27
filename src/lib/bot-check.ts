@@ -26,27 +26,61 @@ function load(): Promise<Turnstile> {
   return ready;
 }
 
-export async function botToken(): Promise<string> {
-  const ts = await load();
-  const local = ["localhost", "127.0.0.1"].includes(location.hostname);
-  const el = document.createElement("div");
-  // Visible only when Cloudflare needs an interaction (appearance interaction-only).
-  el.style.cssText = "position:fixed;bottom:1rem;right:1rem;z-index:60";
-  document.body.appendChild(el);
-  try {
-    return await new Promise<string>((resolve, reject) => {
-      const id = ts.render(el, {
-        sitekey: local ? TEST_KEY : SITE_KEY,
-        execution: "execute",
-        appearance: "interaction-only",
-        callback: resolve,
-        "error-callback": () => reject(new Error("The bot check failed. Reload the page and try again.")),
-      });
+// One widget, reused; a token is fetched ahead so a guarded request never waits on the challenge.
+let id: string | undefined;
+let pend: { res: (t: string) => void; rej: (e: Error) => void } | undefined;
+let queue: Promise<unknown> = Promise.resolve();
+let next: Promise<string> | undefined;
+let at = 0;
+
+function fresh(): Promise<string> {
+  const run = queue.catch(() => undefined).then(async () => { // SILENT-OK: the earlier run's error already reached its caller
+    const ts = await load();
+    return new Promise<string>((res, rej) => {
+      pend = { res, rej };
+      if (id === undefined) {
+        const el = document.createElement("div");
+        // Visible only when Cloudflare needs an interaction (appearance interaction-only).
+        el.style.cssText = "position:fixed;bottom:1rem;right:1rem;z-index:60";
+        document.body.appendChild(el);
+        id = ts.render(el, {
+          sitekey: ["localhost", "127.0.0.1"].includes(location.hostname) ? TEST_KEY : SITE_KEY,
+          execution: "execute",
+          appearance: "interaction-only",
+          callback: (t: string) => pend?.res(t),
+          "error-callback": () => pend?.rej(new Error("The bot check failed. Reload the page and try again.")),
+        });
+      } else ts.reset(id);
       ts.execute(id);
     });
-  } finally {
-    el.remove();
-  }
+  });
+  queue = run;
+  return run;
+}
+
+function prefetch() {
+  at = Date.now();
+  const p = fresh();
+  next = p;
+  p.catch((e: Error) => {
+    console.warn("bot-check prefetch failed:", e.message);
+    if (next === p) next = undefined;
+  });
+}
+
+export async function botToken(): Promise<string> {
+  // Tokens live 300 s; reuse a prefetched one only well inside that.
+  const p = next && Date.now() - at < 240_000 ? next : fresh();
+  next = undefined;
+  const t = await p;
+  prefetch();
+  return t;
+}
+
+// Warm up as soon as this loads (the guide imports it on first intent), so the first guarded request is instant.
+if (typeof window !== "undefined") {
+  if (document.readyState === "complete") prefetch();
+  else window.addEventListener("load", () => setTimeout(prefetch, 1000), { once: true });
 }
 
 export const BOT_HEADER = "cf-turnstile-response";

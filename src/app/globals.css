@@ -223,6 +223,17 @@ html {
     @apply border-border;
   }
 
+  /* Tailwind v4 dropped the pointer cursor on buttons; restore it on everything clickable. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  label[for],
+  select,
+  input[type="checkbox"],
+  input[type="radio"] {
+    cursor: pointer;
+  }
+
   /* Tailwind Typography derives link colour from the prose body colour, which
      here is muted-foreground - so links inside prose came out lighter than the
      text around them and effectively disappeared against the tinted background.
