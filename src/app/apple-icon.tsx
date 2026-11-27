@@ -15,10 +15,10 @@ export default function AppleIcon() {
         height: 180,
         alignItems: "center",
         justifyContent: "center",
-        background: "#def3e6",
-        color: "#034026",
-        fontFamily: "Bricolage Grotesque",
-        fontWeight: 800,
+        background: "#121417",
+        color: "#bdeefb",
+        fontFamily: "Geist",
+        fontWeight: 700,
         fontSize: 78,
         letterSpacing: -2.3,
       }}
@@ -29,10 +29,10 @@ export default function AppleIcon() {
       ...size,
       fonts: [
         {
-          name: "Bricolage Grotesque",
-          weight: 800,
+          name: "Geist",
+          weight: 700,
           style: "normal",
-          data: readFileSync(join(process.cwd(), "node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff")),
+          data: readFileSync(join(process.cwd(), "node_modules/@fontsource/geist-sans/files/geist-sans-latin-700-normal.woff")),
         },
       ],
     },

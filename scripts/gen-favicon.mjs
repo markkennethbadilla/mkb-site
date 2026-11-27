@@ -5,12 +5,12 @@ import { ok } from "./log.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
 const OUT = join(ROOT, "src/app/icon.svg");
-const LIGHT = "oklch(0.33 0.075 158)";
-const DARK = "oklch(0.88 0.075 158)";
+const LIGHT = "oklch(0.17 0.006 215)";
+const DARK = "oklch(0.8 0.11 215)";
 
 console.log("START gen-favicon");
 try {
-  const font = create(readFileSync(join(ROOT, "node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff")));
+  const font = create(readFileSync(join(ROOT, "node_modules/@fontsource/geist-sans/files/geist-sans-latin-700-normal.woff")));
   const run = font.layout("MKB");
   const track = -0.03 * font.unitsPerEm;
   let pen = 0;

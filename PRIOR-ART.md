@@ -9,7 +9,7 @@ descriptions.
 | Candidate | License | Verdict |
 |---|---|---|
 | [`magicuidesign/portfolio`](https://github.com/magicuidesign/portfolio) (1.4k stars) | **MIT** | **ADOPTED.** Dark, well-typed, content-driven from a single `src/data/resume.tsx`. Plainer than the best-looking option, but the only strong candidate whose licence permits unrestricted use. |
-| [`once-ui-system/magic-portfolio`](https://github.com/once-ui-system/magic-portfolio) (1.3k stars) | **CC BY-NC 4.0** | Rejected on licence. Best-looking free option, but NonCommercial is the wrong footing for a professional site, and the attribution clause forces a credit link. |
+| [`once-ui-system/magic-portfolio`](https://github.com/once-ui-system/magic-portfolio) (1.4k stars) | not a factor | **LOOK ADOPTED.** Best-looking free option. Its design is rebuilt in our own code (no code copied), so its licence decides nothing. See SPEC "Look". |
 | Kinetic Studio (Astro, paid) | Commercial | Rejected. The strongest visual of the set, but shaped as an agency site ("Services", "Process", "Start a Project") and would need gutting anyway. |
 | chronark.com | n/a | Rejected. Beautifully restrained but far too sparse; no surface to host live demos. |
 | Stardrive (Astro boilerplate) | n/a | Rejected. A SaaS product landing page, not a portfolio. |

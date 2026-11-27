@@ -48,7 +48,7 @@ export default function SkillGroups() {
         {core.map((item) => (
           <li key={item.name}>
             <a href={item.url} target="_blank" rel="noreferrer noopener" className="sheet sheet-lift group flex h-full flex-col gap-3 p-4 sm:p-5">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-paper-1 text-white shadow-[var(--shadow-cut)]">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-border bg-muted text-foreground shadow-[var(--shadow-cut)]">
                 <SkillIcon slug={item.icon} className="size-5" />
               </span>
               <span>

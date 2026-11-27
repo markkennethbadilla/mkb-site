@@ -153,7 +153,7 @@ export default function AgentConsole({ first }: { first?: string }) {
           <span className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-muted-foreground">
             Live agent, built for this site
           </span>
-          <h2 className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">Ask about Mark</h2>
+          <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Ask about Mark</h2>
           {/* Both lines used to assert something the guide does not always do.
               "Working out where that lives" claims it is looking for a place on
               the page, but most questions about his pets or what he watches have

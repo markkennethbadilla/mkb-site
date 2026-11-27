@@ -44,7 +44,7 @@ export default function RoomShell({
           <p className="font-mono text-[11px] uppercase tracking-[0.16em]" style={{ color: "light-dark(oklch(0.5 0.15 var(--tint-hue)), oklch(0.78 0.13 var(--tint-hue)))" }}>
             Room {room.order} of 3
           </p>
-          <h1 className="font-display text-4xl font-extrabold tracking-tight break-words sm:text-6xl">{room.name}</h1>
+          <h1 className="font-display text-4xl font-semibold tracking-tight break-words sm:text-6xl">{room.name}</h1>
           <p className="max-w-prose text-[15px] leading-relaxed text-foreground/85">
             {room.promise}
           </p>

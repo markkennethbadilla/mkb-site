@@ -1,0 +1,109 @@
+/* Component look, rebuilt from the magic-portfolio reference (SPEC "Look"): hairline borders, soft shadows, pill buttons, tight bold type. */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+  border-radius: 0.4rem;
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+@layer components {
+  .sheet {
+    background: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-cut);
+  }
+
+  .sheet-lift {
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out;
+  }
+
+  .sheet-lift:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklch, var(--ink) 40%, var(--border));
+    box-shadow: var(--shadow-lift);
+  }
+
+  .slot {
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+  }
+
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--foreground);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  .btn-cut {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    padding: 0.55rem 1.25rem;
+    font-weight: 600;
+    transition: opacity 200ms ease-out;
+  }
+
+  .btn-cut:hover {
+    opacity: 0.85;
+  }
+
+  .btn-paper {
+    background: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+  }
+
+  .cut-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  .ink-link {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
+  }
+
+  .ink-link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .frame {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .frame > img,
+  .frame > .frame-in {
+    display: block;
+    width: 100%;
+  }
+
+  /* The cyan wash behind the top of the page, the reference's one signature moment. */
+  .glow-wash {
+    background: radial-gradient(ellipse 60% 70% at 50% 0%, var(--glow-soft) 0%, transparent 70%);
+  }
+}

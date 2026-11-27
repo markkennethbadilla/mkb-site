@@ -8,51 +8,36 @@ deterministic gates so it physically cannot ship a dangerous change.
 
 ### Features
 
-- **Resume surface** - hero, guide, about, work, projects, skills, education,
+- **Resume surface** - hero, guide, about, work, education, skills, projects,
   contact, in that order on `/`. All content lives in one file,
-  `src/data/resume.tsx`. The look is the paper-cut light box (see "Art theme").
-  The hero is a pinned scroll scene (`src/components/hero/light-box.tsx`, a
-  server component with no script; the motion is a CSS scroll-driven animation
-  in `src/app/lightbox.css`, a named view timeline on `.lb` driving `lb-fly` and
-  `lb-fade` on each layer, so it runs on the compositor in step with the sticky
-  pin; each layer is promoted with `will-change` and carries its shadow and mask
-  on inner elements, so it is rastered once and never again while scrolling;
-  measured over the pin at 1280x640, raster tasks went from 3988 to 185 and GPU
-  time from 633 ms to 154 ms against the old script-driven version; the pin sits
-  behind `@supports (animation-timeline: view())`, so a browser without
-  scroll-driven animations gets the one-screen still): five cut paper gate
-  layers (two art sheets, `gate-1` leaves in front and `gate-4` behind it, then
-  three arch openings drawn as code geometry) stand in CSS 3D in front of a
-  warm backlight, and scroll moves the camera through them; the pin is 260svh
-  tall and every layer has passed or faded out exactly as it ends. The name is the h1, set as cut paper letters, and it is
-  the LCP element. Role, tagline, Email me, the resume link and the location sit inside the gate
-  opening, and three checkable figures sit on a proof strip under it with the
-  cut gear (`gate-2`) as decor. With reduced motion or scripts off the
-  hero is one screen tall and shows the same layers as a still shadowbox.
-  After the hero the page is a normal vertical document. Each section is a
-  paper sheet with its own structure: About is a framed portrait beside three leaning sheets, Work is the current
-  role sheet over a strip of cut tabs for the earlier roles, Projects is the three
-  rooms and the repository as framed shadowboxes, Stack is eight cut tiles and
-  one native `<details>`, Education is a degree sheet beside the certificate list in a slot,
-  Contact is one lit arch window with one button. The page is server components
-  except the guide, which still loads on first intent
-  (`src/components/demo/guide-lazy.tsx`).
-  The chrome is one floating pill at the top right with the resume link and the
-  theme toggle (`src/components/navbar.tsx`) and a one-line footer. There is no
-  site logo. The favicon is the plain letters MKB in Bricolage Grotesque 800,
-  the hero name face, with no background: `src/app/icon.svg`, real font outlines
+  `src/data/resume.tsx`. The look follows once-ui magic-portfolio (see "Look").
+  The hero is centered under a cyan wash: a badge pill that jumps to the guide,
+  the name as the h1 (the LCP element), the role and tagline in grey, Email me
+  and the resume as pill buttons, an avatar chip that jumps to About, and three
+  checkable figures in a hairline row. Then the guide card, then the about split:
+  a round portrait, place and quick links in a side column that stays in view,
+  beside the intro (three numbered points), Work Experience (company, dates on
+  the right, title in the accent colour, bullets for the current role), Studies
+  with the certifications, and Technical skills. Projects is the three rooms and
+  the repository as large cards, Contact is a gradient box with one button.
+  The page is server components except the guide, which loads on first intent
+  (`src/components/demo/guide-lazy.tsx`), and the clock in the top bar.
+  The chrome is a top bar (`src/components/navbar.tsx`): "Cebu City" on the left, a
+  centered floating pill with Home, About, Work, Projects, Resume and the theme
+  toggle, and the live Manila time on the right; plus a one-line footer. There is no
+  site logo. The favicon is the plain letters MKB in Geist 700,
+  the site face, with no background: `src/app/icon.svg`, real font outlines
   written by `bun run favicon` (`scripts/gen-favicon.mjs`, pinned `fontkit`
-  reading the pinned `@fontsource/bricolage-grotesque` 800 file), filled
-  `--paper-1` green and swapped to a pale mint under
+  reading the pinned `@fontsource/geist-sans` 700 file), filled
+  near black and swapped to the cyan accent under
   `prefers-color-scheme: dark` so it reads on light and dark tab strips. Run
   the script again when the font pin changes. The Apple touch icon
   (`src/app/apple-icon.tsx`, next/og at build, same font file) is the same
-  letters on the site background colour, because iOS fills a transparent icon
+  letters in pale cyan on near black, because iOS fills a transparent icon
   with black; it is written as `/apple-icon` with no extension, so
   `public/_headers` sets its Content-Type. The share card is `src/app/og-lightbox.png/route.tsx`, a
-  1200x630 PNG made at build with next/og from the name, the role and nested
-  arch sheets, set in Bricolage Grotesque from the pinned
-  `@fontsource/bricolage-grotesque` files, used for both Open Graph and X.
+  1200x630 PNG made at build with next/og in the hero look (cyan wash, role pill, name, address),
+  set in Geist from the pinned `@fontsource/geist-sans` files, used for both Open Graph and X.
   `/resume/` links `/icon.svg` as its favicon (`scripts/build-resume.mjs`).
 - **The site guide** (`/#guide`) - a small card under the hero. Ask it something
   in free text and it decides which section of the page answers you, then leaves
@@ -103,72 +88,33 @@ deterministic gates so it physically cannot ship a dangerous change.
 | `/api/guide` | Worker | POST. One guide question: runs the tool-calling loop, returns a section or a decline. |
 | `/api/demos/<slug>/<action>` | Worker | POST/GET. Every room endpoint, behind one router that owns the budget. |
 
-### Art theme
+### Look
 
-Paper-cut light box, a layered kirigami shadowbox. The site's thesis is that a
-change must pass every deterministic gate. A light box is stacked cut sheets,
-and light only gets through where every sheet allows it.
-
-Genre: a 3D fly-through leads (the hero), with one kinetic type moment (the
-name settles once as cut letters).
-
-| Token | Value | Why |
-|---|---|---|
-| Outline | none, an edge is a cut, shown by the shadow under it | paper has no ink line |
-| Radius | sheets 1.25rem, tabs and chips 0.75rem, buttons full, never above a quarter of the short side | scissor curves, no pills on big sheets |
-| Line cap and join | round | cut curves |
-| Shadow | two stacked soft drops, short and long, straight down, tinted with the hue (`--shadow-cut`, `--shadow-lift`) | a sheet lifted off the one under it |
-| Palette | hue 158, six paper steps `--paper-1` (front, deep green teal) to `--paper-6` (back, pale mint), backlight amber hue 75 (`--glow`) | paper green, lit from behind |
-| Dark theme | night light box, dark sheets, bright backlight | the box in a dark room |
-| Light theme | daylight paper, pale sheets, soft shadows | the box on a desk |
-| Shading | flat fills, depth from shadow only, no grain or noise | clean cut paper |
-| Perspective | straight on, 1200px, layers on translateZ | a tunnel book seen through its front |
-| Detail | large simple silhouettes | reads at phone size |
-| Type | display Bricolage Grotesque 700 and 800, body Instrument Sans, mono Geist Mono for telemetry | heavy grotesque reads as scissor cut letters |
-| Icons | lucide, stroke 2, round caps | one set |
-| Motion | one settle on load, scroll moves the camera, hovers lift a sheet 2px, 200 to 600 ms, ease out | paper lifts and settles, it never bounces |
-
-Components.
-
-- Sheet (`.sheet`), the card. A paper step with `--shadow-cut`, no border.
-- Button (`.btn-cut`), a full round cut tab in `--primary`, lifts on hover, with a paper variant (`.btn-paper`).
-- Chip, a small paper tab, radius 0.75rem.
-- Inputs, an inset slot (`.slot`), a cut-out showing the layer under it.
-- Section head (`.cut-title`), display type with a short amber cut bar.
-- Links, underline in `--ink`, 2px.
-- Focus, a 3px amber ring with offset, on every control.
-- Scrollbar, thin, paper thumb.
-- Footer, the last sheet, one line.
-- Top bar, one floating paper pill at the top right with the resume link and the theme toggle, with `--shadow-cut`. No logo.
-- Guide card and its bubble, sheets, the entity re-tints as before.
-- Share card, nested arch sheets and the backlight with the name and role.
-- Art, one Gemini set from one locked style reference, listed in
-  `USED-ASSETS.md`. Art assets are SVG, only photos and OG cards are raster.
-  Hero layers are vector masks filled with the paper tokens,
-  so both themes and every room hue colour them. The set holds three sheets
-  (`gate-1`, `gate-2`, `gate-4`), each traced from its Gemini sheet to paths
-  (alpha upscaled 4x, `vtracer` 0.6.11 spline mode, `svgo` 4.0.0) and looked at
-  beside its source. Each hero layer is laid out at 1.5 times its shown size
-  and scaled back down (`--k` in `src/app/lightbox.css`), so its one texture
-  holds enough pixels to stay sharp as the camera moves in, with no repaint
-  while scrolling. Viewports 1500 px wide or 850 px tall and larger keep the
-  layers at shown size (`--k` 1) and drop `will-change`, since five pinned
-  textures at 1920x1080 and 2560x1440 ran the GPU out of tile memory and parts of the hero
-  went blank, so there the browser redraws the layers as they grow. The other hero
-  openings, the contact window
-  and the not found window are plain arches drawn in code, and no section
-  scene exists yet.
+Rebuilt in our own code from the once-ui `magic-portfolio` demo (studied, never copied): a quiet neutral page, one cyan wash at the top, a floating pill nav, tight bold type, hairline cards.
 
 Sources (rule 62, library.md "Masterpiece galleries").
 
-- Template: * <- magicuidesign/portfolio https://github.com/magicuidesign/portfolio
-- Reference: src/app/(site)/page.tsx <- awesome-developer-portfolios Top 20 https://brittanychiang.com
-  - Taken: the split layout below the hero and guide, a sticky left rail (name, section nav whose bar grows on hover, socials) beside a right column of sections, and list rows (date column, then title, detail and chips) that light up as a sheet on hover. Our paper tokens, type and hero stay. The two columns start at 85rem (1360 px); below it the rail stacks on top. Media queries ignore the root font size, so at the old 64rem the 15rem rail squeezed the column and 200% text overflowed at 1280 px (`e2e/text-scale.spec.ts`).
+- Template: * <- once-ui magic-portfolio https://github.com/once-ui-system/magic-portfolio
+- Reference: src/app/(site)/page.tsx <- awesome-developer-portfolios and the Once UI showcase https://magic-portfolio-demo.vercel.app
+  - Taken: the top bar (place on the left, a centered pill of icon links and the theme toggle, a live clock on the right), the centered hero (badge pill, huge tight headline, grey lead, avatar chip), the about split (round avatar and place on the left, name, role, social pills, intro, then Work Experience with company, dates on the right and the title in the accent colour, Studies, Technical skills), large project cards, the gradient call-to-action box and the one-line footer.
+  - The two-column about split starts at 64rem wide (1024 px) with the side column at a fixed 14rem; below that it stacks. Media queries ignore the root font size, so `e2e/text-scale.spec.ts` (200% text at 1280 px) guards that the right column never overflows.
+
+| Token | Value |
+|---|---|
+| Palette | neutral greys with a trace of hue 215 (`--tint-hue`), accent cyan at hue 215 (`--ink`, `--glow`, `--ring`); rooms still re-tint through `--tint-hue` |
+| Surfaces | page near white or near black, cards white or one step up, 1px `--border` hairlines |
+| Radius | cards 1rem, pills and buttons full |
+| Shadow | soft and short (`--shadow-cut`), one deeper lift on hover and on the nav pill (`--shadow-lift`) |
+| Type | Geist for everything (headings 700, tracking -0.035em), Geist Mono for telemetry |
+| Icons | lucide, stroke 2 |
+| Motion | hovers only: a card rises 2px and its border takes the accent, 200 ms ease out |
+
+Components (`src/app/theme.css`): `.sheet` hairline card, `.sheet-lift` hover rise, `.slot` input well, `.tab` pill chip, `.btn-cut` solid pill button and `.btn-paper` outline pill, `.cut-title` heading, `.ink-link` underline link, `.frame` round avatar, `.glow-wash` the top wash.
 
 Pages.
 
-- `/`, the hero fly-through and the guide, then the rail and right column: How I work, Work, Projects, Stack, Education, then the contact arch full width.
-- Not found (`src/app/not-found.tsx`), a lit arch window with the way home and the three rooms.
+- `/`, the centered hero with three proof figures, the guide, the about split (About, Work Experience, Studies and certifications, Technical skills), Projects, then the gradient contact box.
+- Not found (`src/app/not-found.tsx`), the way home and the three rooms.
 - `/demos/<slug>`, the same sheets, slots and type in the room's hue, the
   specimen drawing in a cut frame, the rail a floating sheet.
 - `/resume/`, the pinned JSON Resume theme, outside the theme on purpose.
@@ -181,9 +127,9 @@ A portfolio whose argument is its own engineering: every claim on the page links
 
 1. **Forked `magicuidesign/portfolio` (MIT), not hand-built.** A hand-rolled
    portfolio looks hand-rolled; the previous iteration of this site proved it.
-2. **Rejected `once-ui-system/magic-portfolio` despite it looking better.** It is
-   CC BY-NC 4.0 - non-commercial with mandatory attribution, which is the wrong
-   licence for a professional site, and the attribution clause forces a credit link.
+2. **The look follows once-ui `magic-portfolio`, rebuilt in our own code.** It was
+   the best-looking free portfolio. Nothing is copied from it, so its licence never
+   decides anything: a template or reference is studied, then built here.
 3. **Static export, not the OpenNext Workers adapter.** OpenNext cannot build from
    a non-`C:` drive on Windows (Node's ESM loader rejects an `a:` URL scheme), and
    every route here prerenders anyway. A Worker handles only `/api/*`.

@@ -3,19 +3,12 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { DATA } from "@/data/resume";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist_Mono, Instrument_Sans } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const instrument = Instrument_Sans({
+const geist = Geist({
   subsets: ["latin"],
   variable: "--font-sans",
-  weight: ["400", "500", "600", "700"],
-});
-
-const bricolage = Bricolage_Grotesque({
-  subsets: ["latin"],
-  variable: "--font-bricolage",
-  weight: ["700", "800"],
 });
 
 const geistMono = Geist_Mono({
@@ -171,8 +164,7 @@ export default function RootLayout({
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased relative",
-          instrument.variable,
-          bricolage.variable,
+          geist.variable,
           geistMono.variable
         )}
       >

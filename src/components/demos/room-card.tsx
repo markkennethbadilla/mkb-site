@@ -21,7 +21,7 @@ export default function RoomCard({ room, featured }: { room: DemoRoom; featured?
 
       <div className="flex flex-col p-1 sm:p-2">
         {featured ? <p className="tab mb-3 self-start bg-glow font-semibold text-lit-ink">Start here</p> : null}
-        <h3 className={cn("ink-link font-display font-extrabold tracking-tight", featured ? "text-3xl sm:text-5xl" : "text-2xl sm:text-3xl")}>
+        <h3 className={cn("ink-link font-display font-semibold tracking-tight", featured ? "text-3xl sm:text-5xl" : "text-2xl sm:text-3xl")}>
           {room.name}
         </h3>
         <p className={cn("mt-3 leading-snug", featured ? "text-lg sm:text-xl" : "text-base")}>{room.capability}</p>

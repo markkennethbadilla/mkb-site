@@ -5,17 +5,12 @@ import { OPEN_ROOMS } from "@/lib/demos/registry";
 export default function NotFound() {
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-3xl flex-col justify-center gap-8 px-5 py-28 sm:px-8">
-      <div className="rounded-[2rem] bg-paper-1 px-4 pt-8 shadow-[var(--shadow-lift)] sm:px-10 sm:pt-12">
-        <div
-          className="mx-auto flex max-w-md flex-col items-center rounded-t-[10rem] px-5 pt-16 pb-10 text-center text-lit-ink shadow-[var(--shadow-slot)]"
-          style={{ background: "radial-gradient(ellipse 70% 60% at 50% 55%, var(--glow-soft) 0%, var(--glow) 100%)" }}
-        >
-          <p className="font-display text-7xl font-extrabold leading-none tracking-tight sm:text-8xl">404</p>
-          <h1 className="mt-2 font-display text-2xl font-extrabold tracking-tight">Page not found</h1>
-          <Link href="/" className="btn-cut mt-6 bg-paper-1 text-white">
-            <Home className="size-4" aria-hidden /> Go home
-          </Link>
-        </div>
+      <div className="sheet glow-wash flex flex-col items-center px-6 py-16 text-center">
+        <p className="cut-title text-7xl sm:text-8xl">404</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Page not found</h1>
+        <Link href="/" className="btn-cut mt-6">
+          <Home className="size-4" aria-hidden /> Go home
+        </Link>
       </div>
       <div>
         <p className="font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Looking for a demo?</p>

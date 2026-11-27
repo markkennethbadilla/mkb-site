@@ -19,7 +19,7 @@
     "content-collections",
     "remark-gfm",
     "shiki",
-    "@fontsource/bricolage-grotesque",
+    "@fontsource/geist-sans",
     "vite",
     "promptfoo"
   ],

@@ -51,7 +51,7 @@ export default function GuideLazy() {
         <span className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-muted-foreground">
           Live agent, built for this site
         </span>
-        <h2 className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">Ask about Mark</h2>
+        <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Ask about Mark</h2>
         <p className="text-sm text-muted-foreground">
           Ask it something, and if the answer is on the page it will take you to it.
         </p>
