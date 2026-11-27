@@ -31,7 +31,7 @@ const PILL = "tab h-9 gap-2 px-3.5 hover:bg-muted";
 export default function Page() {
   const [weassist, ...earlier] = DATA.work;
   return (
-    <main className="flex flex-col gap-24 pb-16 sm:gap-32">
+    <main className="flex flex-col gap-24 pb-16 [overflow-wrap:anywhere] sm:gap-32">
       <section id="hero" className="glow-wash relative pt-36 pb-4 sm:pt-44">
         <div className={`${WRAP} flex flex-col items-center text-center`}>
           <a href="#guide" className="inline-flex items-center gap-2 rounded-full border border-border bg-accent/70 py-1 pr-3.5 pl-1 text-sm">

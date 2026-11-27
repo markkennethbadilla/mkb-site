@@ -29,20 +29,20 @@ export default function Navbar() {
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-center justify-between gap-3 p-3 text-sm sm:p-5">
       <span className="hidden min-w-24 text-muted-foreground md:block">Cebu City</span>
-      <nav aria-label="Main" className="sheet pointer-events-auto mx-auto flex items-center gap-0.5 rounded-full p-1 shadow-[var(--shadow-lift)] md:mx-0">
-        <Link href="/" aria-label="Home" className="inline-flex size-9 items-center justify-center rounded-full hover:bg-muted">
+      <nav aria-label="Main" className="sheet pointer-events-auto mx-auto flex min-w-0 max-w-full items-center gap-0.5 overflow-x-auto rounded-full p-1 shadow-[var(--shadow-lift)] [scrollbar-width:none] md:mx-0">
+        <Link href="/" aria-label="Home" className="inline-flex size-9 shrink-0 items-center justify-center rounded-full hover:bg-muted">
           <HomeIcon className="size-4" aria-hidden />
         </Link>
         <span aria-hidden className="mx-1 h-5 w-px bg-border" />
         {LINKS.map(({ href, label, Icon }) => (
-          <a key={href} href={href} className="inline-flex h-9 items-center gap-1.5 rounded-full px-2.5 font-medium hover:bg-muted sm:px-3">
+          <a key={href} href={href} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-2.5 font-medium hover:bg-muted sm:px-3">
             <Icon className="size-4" aria-hidden />
             <span className="hidden sm:inline">{label}</span>
             <span className="sr-only sm:hidden">{label}</span>
           </a>
         ))}
         <span aria-hidden className="mx-1 h-5 w-px bg-border" />
-        <ModeToggle className="size-9 rounded-full p-2.5 text-foreground" />
+        <ModeToggle className="size-9 shrink-0 rounded-full p-2.5 text-foreground" />
       </nav>
       <span className="hidden min-w-24 text-right text-muted-foreground md:block">
         <Clock />
