@@ -22,7 +22,7 @@ function Clock() {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
-  return <span className="tabular-nums">{now}</span>;
+  return <span data-clock className="tabular-nums">{now}</span>;
 }
 
 export default function Navbar() {

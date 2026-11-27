@@ -18,7 +18,7 @@ for (const route of ROUTES) {
         await page.emulateMedia({ colorScheme: scheme, reducedMotion: "reduce" });
         await page.goto(route, { waitUntil: "load" });
         await page.evaluate(() => document.fonts.ready);
-        await expect(page).toHaveScreenshot(name, { fullPage: true, maxDiffPixelRatio: 0.01, animations: "disabled" });
+        await expect(page).toHaveScreenshot(name, { fullPage: true, maxDiffPixelRatio: 0.01, animations: "disabled", mask: [page.locator("[data-clock]")] });
       });
     }
   }

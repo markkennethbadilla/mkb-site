@@ -95,7 +95,7 @@ Rebuilt in our own code from the once-ui `magic-portfolio` demo (studied, never 
 Sources (rule 62, library.md "Masterpiece galleries").
 
 - Template: * <- once-ui magic-portfolio https://github.com/once-ui-system/magic-portfolio
-- Reference: src/app/(site)/page.tsx <- awesome-developer-portfolios and the Once UI showcase https://magic-portfolio-demo.vercel.app
+- Reference: * <- awesome-developer-portfolios and the Once UI showcase https://magic-portfolio-demo.vercel.app
   - Taken: the top bar (place on the left, a centered pill of icon links and the theme toggle, a live clock on the right), the centered hero (badge pill, huge tight headline, grey lead, avatar chip), the about split (round avatar and place on the left, name, role, social pills, intro, then Work Experience with company, dates on the right and the title in the accent colour, Studies, Technical skills), large project cards, the gradient call-to-action box and the one-line footer.
   - The two-column about split starts at 64rem wide (1024 px) with the side column at a fixed 14rem; below that it stacks. Media queries ignore the root font size, so `e2e/text-scale.spec.ts` (200% text at 1280 px) guards that the right column never overflows.
 
