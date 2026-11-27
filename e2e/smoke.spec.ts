@@ -47,3 +47,8 @@ test("an unknown address gets the 404 page, never a crash", async ({ page }) => 
   const response = await page.goto("/no-such-page/");
   expect(response?.status()).toBe(404);
 });
+
+test("the bot check warms on idle, before any click, so the first guide answer never waits on it", async ({ page }) => {
+  await page.goto("/", { waitUntil: "load" });
+  await expect.poll(() => page.evaluate(() => Boolean((window as { __ts?: unknown }).__ts)), { timeout: 8000 }).toBe(true);
+});

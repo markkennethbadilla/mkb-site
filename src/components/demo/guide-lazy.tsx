@@ -19,6 +19,17 @@ export default function GuideLazy() {
   const wantFocus = useRef(false);
   const loading = useRef(false);
 
+  // Warm the small self-prefetching bot check on idle, so a first click never waits on Turnstile.
+  useEffect(() => {
+    const warm = () => void import("@/lib/bot-check");
+    if (!("requestIdleCallback" in window)) {
+      const t = setTimeout(warm, 1500);
+      return () => clearTimeout(t);
+    }
+    const t = requestIdleCallback(warm, { timeout: 3000 });
+    return () => cancelIdleCallback(t);
+  }, []);
+
   useEffect(() => {
     if (!Console || !wantFocus.current || first) return;
     const t = setInterval(() => {

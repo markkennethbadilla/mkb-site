@@ -77,7 +77,7 @@ export async function botToken(): Promise<string> {
   return t;
 }
 
-// Warm up as soon as this loads (the guide imports it on first intent), so the first guarded request is instant.
+// Warm up as soon as this loads (guide-lazy imports it on idle), so the first guarded request is instant.
 if (typeof window !== "undefined") {
   if (document.readyState === "complete") prefetch();
   else window.addEventListener("load", () => setTimeout(prefetch, 1000), { once: true });
