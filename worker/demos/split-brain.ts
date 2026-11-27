@@ -1,3 +1,4 @@
+// inbound: recorded in worker/index.ts
 /**
  * POST /api/demos/split-brain/{start,tick,partition} and GET .../state.
  *

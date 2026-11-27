@@ -19,8 +19,8 @@ export default function AppleIcon() {
         color: "#bdeefb",
         fontFamily: "Geist",
         fontWeight: 700,
-        fontSize: 78,
-        letterSpacing: -2.3,
+        fontSize: 60,
+        letterSpacing: -1.8,
       }}
     >
       MKB

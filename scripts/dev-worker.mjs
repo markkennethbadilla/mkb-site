@@ -29,7 +29,9 @@ const run = (args, env = {}) =>
 try {
   await run(["d1", "migrations", "apply", "DEMO_DB", "--local"], { CI: "true" });
   await run(["d1", "migrations", "apply", "WAREHOUSE_DB", "--local"], { CI: "true" });
-  await run(["dev", "--port", "8788", "--var", "TURNSTILE_SECRET:1x0000000000000000000000000000000AA"], {
+  // --gate: https on 8789 for the deploy gate's --resolve run (spec 136); e2e keeps http on 8788.
+  const gate = process.argv.includes("--gate") ? ["--port", "8789", "--local-protocol", "https"] : ["--port", "8788"];
+  await run(["dev", ...gate, "--var", "TURNSTILE_SECRET:1x0000000000000000000000000000000AA"], {
     CLOUDFLARE_INCLUDE_PROCESS_ENV: "true",
     DEEPSEEK_API_KEY: vaultRow("deepseek/active-personal-api-key").secret_value,
   });

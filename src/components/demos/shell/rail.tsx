@@ -50,7 +50,7 @@ export default function Rail({ room }: { room: DemoRoom }) {
                 href={`/demos/${r.slug}`}
                 aria-current={here ? "page" : undefined}
                 className={cn(
-                  "rounded-md px-2 py-1 text-[11px] transition-colors",
+                  "inline-flex min-h-7 min-w-7 items-center justify-center rounded-md px-2 py-1 text-[11px] transition-colors",
                   here
                     ? "bg-accent font-medium text-accent-foreground"
                     : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"

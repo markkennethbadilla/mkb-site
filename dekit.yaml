@@ -8,3 +8,6 @@ tasks:
   worker:
     cmd: ["node", "scripts/dev-worker.mjs"]
     autostart: false
+  worker-gate:
+    cmd: ["node", "scripts/dev-worker.mjs", "--gate"]
+    autostart: false

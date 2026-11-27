@@ -8,7 +8,7 @@ Against the coverage register in mkb-agentops, skill cover-the-whole-lifecycle.
 - [x] B04 PRIOR-ART.md; specs/001-coverage-register/plan.md "Prior art"
 - [x] B05 bun.lock with exact versions in package.json, renovate.json
 - [x] B06 SPEC.md "What it reads and writes" names every secret's vault slug, no values
-- [x] B07 dekit.yaml (tasks app, worker)
+- [x] B07 dekit.yaml (tasks app, worker, worker-gate for the deploy gate's --resolve run)
 - [x] B08 e2e/screens.spec.ts-snapshots/: five widths, light and dark, looked at on 2026-11-22
 - [x] B10 build-for-tests rule 1: e2e specs find controls by role and label; rule 2: /api/health; rule 3: openapi.json; rule 4: `bun run seed` (scripts/gen-seed.mjs); rule 5: `[TEST]` names in e2e/forms.spec.ts, Turnstile test keys on localhost, no other vendor; rule 6: model chain in worker/models.ts, guide prompt in src/lib/site-sections.ts, limits in src/lib/spend-cap.ts and ai.config.json, one capped key per provider; rule 7: `bun run gate` (turbo.json); rule 8: budget day keys and lease clocks read `Date.now()` inside worker/budget.ts and the rooms, proved by real-time waits in worker/demos.test.ts (a known limit); rule 9 n/a: no destructive visitor action
 - [x] B09 this file

@@ -1,3 +1,4 @@
+// inbound: none (gate samples only; this module never serves a request)
 /**
  * A small, real gate engine.
  *
