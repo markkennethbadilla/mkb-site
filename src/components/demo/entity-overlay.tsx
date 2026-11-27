@@ -84,16 +84,16 @@ export default function EntityOverlay({
   const live: typeof autoUpdate = (ref, floating, update) =>
     autoUpdate(ref, floating, update, { animationFrame: true });
 
-  // Beside the section when there is room, below or above it otherwise; shift keeps it inside the viewport.
+  // Perched on the caption's outer corner, so it is next to the section and never covers the answer; shift keeps it inside the viewport.
   const entity = useFloating({
     strategy: "fixed",
-    placement: "right-start",
+    placement: "top-end",
     transform: false,
-    elements: { reference: target, floating: entityEl },
+    elements: { reference: captionEl, floating: entityEl },
     whileElementsMounted: live,
     middleware: [
-      offset(RING_X + 10),
-      flip({ padding: 16, fallbackPlacements: ["bottom-end", "top-end", "left-start"] }),
+      offset(6),
+      flip({ padding: 16, fallbackPlacements: ["bottom-end", "left", "right"] }),
       shift({ padding: 16, crossAxis: true }),
     ],
   });
@@ -145,7 +145,7 @@ export default function EntityOverlay({
       <motion.div
         ref={setEntityEl}
         layoutId="site-guide-entity"
-        className="pointer-events-auto"
+        className="pointer-events-auto z-10"
         style={entity.floatingStyles}
         transition={{ type: "spring", stiffness: 110, damping: 19, mass: 1.2 }}
       >
