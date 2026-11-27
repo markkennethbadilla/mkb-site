@@ -21,10 +21,10 @@ Tags: PARTIAL, beforePARTIAL
 ### spec:site.d2
 `req~spec_site.d2~1`
 
-> Rejected `once-ui-system/magic-portfolio` despite it looking better.
+> The look follows once-ui `magic-portfolio`, rebuilt in our own code.
 
 Rationale:
-a decision record; nothing refuses a later switch
+a decision record; the look is judged by eye and held by the approved screens (e2e/screens.spec.ts)
 
 Comment:
 spec: site
@@ -472,9 +472,9 @@ Tags: PARTIAL, beforePARTIAL
 ### spec:site.s31
 `req~spec_site.s31~1`
 
-> on inner elements, so it is rastered once and never again while scrolling;
-> | Radius | sheets 1.25rem, tabs and chips 0.75rem, buttons full, never above a quarter of the short side | scissor curves, no pills on big sheets |
-> | Motion | one settle on load, scroll moves the camera, hovers lift a sheet 2px, 200 to 600 ms, ease out | paper lifts and settles, it never bounces |
+> Rebuilt in our own code from the once-ui `magic-portfolio` demo (studied, never copied): a quiet neutral page, one cyan wash at the top, a floating pill nav, tight bold type, hairline cards.
+> | Radius | cards 1rem, pills and buttons full |
+> | Motion | hovers only: a card rises 2px and its border takes the accent, 200 ms ease out |
 
 Rationale:
 section What it does: its lines are held by the repo gate and the deploy gate as a whole; per-line tracing is the next mapping
