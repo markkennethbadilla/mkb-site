@@ -98,7 +98,8 @@ export default function EntityOverlay({
     ],
   });
 
-  // Joined to the top edge of the spotlight ring; below it when the top is off screen.
+  // Joined to the top edge of the spotlight ring, always on that side, clamped sideways only:
+  // it scrolls with its section and never covers the section's content. Only the entity stays in view.
   const caption = useFloating({
     strategy: "fixed",
     placement: "top-start",
@@ -107,11 +108,9 @@ export default function EntityOverlay({
     whileElementsMounted: live,
     middleware: [
       offset({ mainAxis: RING_Y, crossAxis: -RING_X }),
-      flip({ padding: 16, fallbackPlacements: ["bottom-start"] }),
-      shift({ padding: 16, crossAxis: true }),
+      shift({ padding: 16, crossAxis: false }),
     ],
   });
-  const captionBelow = caption.placement.startsWith("bottom");
 
   return createPortal(
     <div className="fixed inset-0 z-50 pointer-events-none">
@@ -158,6 +157,7 @@ export default function EntityOverlay({
         role="status"
         initial={{ opacity: 0 }}
         animate={{ opacity: arrived ? 1 : 0 }}
+        exit={{ opacity: 0, transition: { duration: reduced ? 0 : 0.15 } }}
         transition={{ delay: reduced || !arrived ? 0 : 0.14, duration: reduced ? 0 : 0.3, ease: "easeOut" }}
         style={{
           ...caption.floatingStyles,
@@ -166,7 +166,7 @@ export default function EntityOverlay({
         }}
         className={cn(
           "flex flex-wrap items-center gap-x-3 gap-y-1.5 border-2 border-primary/70 bg-popover px-3.5 py-2.5 shadow-lg",
-          captionBelow ? "rounded-b-2xl border-t-0" : "rounded-t-2xl border-b-0"
+          "rounded-t-2xl border-b-0"
         )}
       >
         <span className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</span>

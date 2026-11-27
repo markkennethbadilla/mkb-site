@@ -218,7 +218,8 @@ A portfolio whose argument is its own engineering: every claim on the page links
     animation frame), never hand math. There is no speech bubble: a second floating
     box read as a separate conversation. The answer and "Ask something else" sit in
     a caption joined to the spotlight ring (same colour, square on the joined edge),
-    above the section, below it when the top is off screen. The entity perches on the
+    always above the section (never flipped or pinned); it scrolls with the section
+    (clamped sideways only) and fades out there on dismiss. The entity perches on the
     caption's outer corner (`top-end` of the caption, flipping below or to a side),
     paints above it and shifts on both axes, so it stays in the viewport, never hides
     the answer, and moves back in when the section scrolls part way out.
