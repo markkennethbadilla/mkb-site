@@ -11,7 +11,7 @@ deterministic gates so it physically cannot ship a dangerous change.
 - **Resume surface** - hero, guide, about, work, education, skills, projects,
   contact, in that order on `/`. All content lives in one file,
   `src/data/resume.tsx`. The look follows once-ui magic-portfolio (see "Look").
-  The hero is centered under a cyan wash: a badge pill that jumps to the guide,
+  The hero is centered under a green wash: a badge pill that jumps to the guide,
   the name as the h1 (the LCP element), the role and tagline in grey, Email me
   and the resume as pill buttons, an avatar chip that jumps to About, and three
   checkable figures in a hairline row. Then the guide card, then the about split:
@@ -29,14 +29,14 @@ deterministic gates so it physically cannot ship a dangerous change.
   the site face, with no background: `src/app/icon.svg`, real font outlines
   written by `bun run favicon` (`scripts/gen-favicon.mjs`, pinned `fontkit`
   reading the pinned `@fontsource/geist-sans` 700 file), filled
-  near black and swapped to the cyan accent under
+  near black and swapped to the green accent under
   `prefers-color-scheme: dark` so it reads on light and dark tab strips. Run
   the script again when the font pin changes. The Apple touch icon
   (`src/app/apple-icon.tsx`, next/og at build, same font file) is the same
-  letters in pale cyan on near black, because iOS fills a transparent icon
+  letters in pale green on near black, because iOS fills a transparent icon
   with black; it is written as `/apple-icon` with no extension, so
   `public/_headers` sets its Content-Type. The share card is `src/app/og-lightbox.png/route.tsx`, a
-  1200x630 PNG made at build with next/og in the hero look (cyan wash, role pill, name, address),
+  1200x630 PNG made at build with next/og in the hero look (green wash, role pill, name, address),
   set in Geist from the pinned `@fontsource/geist-sans` files, used for both Open Graph and X.
   `/resume/` links `/icon.svg` as its favicon (`scripts/build-resume.mjs`).
 - **The site guide** (`/#guide`) - a small card under the hero. Ask it something
@@ -90,7 +90,7 @@ deterministic gates so it physically cannot ship a dangerous change.
 
 ### Look
 
-Rebuilt in our own code from the once-ui `magic-portfolio` demo (studied, never copied): a quiet neutral page, one cyan wash at the top, a floating pill nav, tight bold type, hairline cards.
+Rebuilt in our own code from the once-ui `magic-portfolio` demo (studied, never copied): a quiet neutral page, one green wash at the top, a floating pill nav, tight bold type, hairline cards.
 
 Sources (rule 62, library.md "Masterpiece galleries").
 
@@ -101,7 +101,7 @@ Sources (rule 62, library.md "Masterpiece galleries").
 
 | Token | Value |
 |---|---|
-| Palette | neutral greys with a trace of hue 215 (`--tint-hue`), accent cyan at hue 215 (`--ink`, `--glow`, `--ring`); rooms still re-tint through `--tint-hue` |
+| Palette | neutral greys with a trace of hue 150 (green, his favourite colour) (`--tint-hue`), accent green at hue 150 (`--ink`, `--glow`, `--ring`); rooms still re-tint through `--tint-hue` |
 | Surfaces | page near white or near black, cards white or one step up, 1px `--border` hairlines |
 | Radius | cards 1rem, pills and buttons full |
 | Shadow | soft and short (`--shadow-cut`), one deeper lift on hover and on the nav pill (`--shadow-lift`) |
@@ -152,7 +152,7 @@ A portfolio whose argument is its own engineering: every claim on the page links
    on OpenRouter at about 850 ms; it costs $0.038 per M input tokens, output free.
    The LLM fallback is `openai/gpt-oss-120b:nitro` then `openai/gpt-oss-20b:nitro`
    on OpenRouter (`src/lib/guide-models.ts` holds the bench table): fastest first,
-   cheapest second. DeepSeek measured 2.2 s there and was dropped from the guide.
+   cheapest second. DeepSeek measured 2.2 s there and was dropped from the guide. Answers stay true to the page: `tests/facts-on-page.test.mjs` fails any fact term the page does not render (a short, named off-page list aside), and every cached answer carries the hash of the fact list (`corpusId` in `worker/cache.ts`), so editing any fact retires every older cached answer at once.
 5. **Filter free models on modality exclusively, not inclusively.** Google's Lyria
    advertises `output_modalities: ["text","audio"]`, so `includes("text")` accepts
    a music model. A usable chat model emits text and nothing else.
@@ -523,7 +523,7 @@ Check the layers in order, stop at the first that fails:
 - `git push` runs Trunk's pre-push actions (`.trunk/trunk.yaml`): gitleaks, Stylelint (`.stylelintrc.json`: a colour, background, font or fill must be a `var()` token from `src/app/globals.css`, never a literal), osv-scanner (`block-push-on-osv`; accepted no-fix advisories in `osv-scanner.toml`, each with a reason and a 30-day `ignoreUntil`), Opengrep, `bun run gate`, and `bun run maint`. The first failure stops the push. `git commit` runs gitleaks on staged files.
 - `bun run scheduled`, weekly (mkb-winops spec 057): WebKit smoke crawl, outside links, AI red team, ZAP baseline, D1 backup.
 - Lighthouse: the live site, daily, from mkb-vps-sg (personal-infra `servers/mkb-vps-sg/lighthouse/`), floor 0.70 in every category on every page (agentops rule 73), never in the deploy or the push. URLs and floors: personal-infra `servers/mkb-vps-sg/lighthouse/mkb-site.lighthouserc.json`; result ping healthchecks.io `manga lighthouse-live (daily)`, email on a miss.
-- Local look with the Worker: `bun run build`, then `node A:/personal-markkennethbadilla/mkb-agentops/scripts/dekit-up.mjs ctl <repo> start worker` (dekit task `worker`, `scripts/dev-worker.mjs`): local D1, the guide key from the vault, `out/` plus `/api/*` on http://127.0.0.1:8788. Stop it before the next build, since it holds `out/` open. Deploy gate before a deploy: dekit task `worker-gate` (same, https on 8789), then `node A:/personal-markkennethbadilla/mkb-agentops/scripts/deploy-gate.mjs https://markkennethbadilla.com --repo . --resolve 127.0.0.1:8789 --reviewed`. A file that holds POST handler text only in a string carries `inbound: none (<why>)`; a room module behind `worker/index.ts` (which records every `/api/*` POST first) carries `inbound: recorded in worker/index.ts`.
+- Local look with the Worker: `bun run build`, then `node A:/personal-markkennethbadilla/mkb-agentops/scripts/dekit-up.mjs ctl <repo> start worker` (dekit task `worker`, `scripts/dev-worker.mjs`): local D1, the guide key from the vault, `out/` plus `/api/*` on http://127.0.0.1:8788. Stop it before the next build, since it holds `out/` open. Deploy gate before a deploy: dekit task `worker-gate` (same, https on 8789), then `node A:/personal-markkennethbadilla/mkb-agentops/scripts/deploy-gate.mjs https://markkennethbadilla.com --repo . --resolve 127.0.0.1:8789 --reviewed`. A file that holds POST handler text only in a string carries `inbound: none (<why>)`; a room module behind `worker/index.ts` (which records every `/api/*` POST first) carries `inbound: recorded in worker/index.ts`. A palette or colour change moves under 1 percent of pixels, so it passes the approved-screens tolerance unseen: refresh the baselines with `bunx playwright test e2e/screens.spec.ts --update-snapshots=all` and look at them.
 - Requirements: `specs/requirements.md` (OpenFastTrace, coverage register T24) is traced on every push by Trunk action `trace-on-push`; a new decision or promise adds its item in the same commit.
 - Install the hooks once per clone: `trunk git-hooks sync`. `git push --no-verify` skips the push gate, but `bun run deploy` always runs `bun run gate`.
 - Time budget: the repo's line in agentops `gate-budgets.json` (rule 0).

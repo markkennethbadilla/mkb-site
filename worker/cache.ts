@@ -135,6 +135,19 @@ type CacheRow = { token_key: string; tokens: string; payload: string };
  * answer plus how it was matched, so the response can say so honestly rather than
  * passing it off as a fresh run.
  */
+// Every cached answer carries the hash of the fact list it was made from, so editing any fact retires every older answer at once.
+// The text arrives from worker/guide.ts so this module stays import-free for tests/guide.test.mjs under plain Node.
+let corpusText = "";
+let corpusP: Promise<string> | undefined;
+export function setCorpus(text: string) {
+  corpusText = text;
+  corpusP = undefined;
+}
+const corpusId = () =>
+  (corpusP ??= crypto.subtle
+    .digest("SHA-256", new TextEncoder().encode(corpusText))
+    .then((b) => [...new Uint8Array(b).slice(0, 8)].map((x) => x.toString(16).padStart(2, "0")).join("")));
+
 export async function lookup(
   db: D1Database | undefined,
   question: string
@@ -158,8 +171,10 @@ export async function lookup(
     return null;
   }
 
+  const tag = `"corpus":"${await corpusId()}"`;
   let best: { row: CacheRow; score: number } | null = null;
   for (const row of rows) {
+    if (!row.payload.includes(tag)) continue;
     const score = similarity(tokens, row.tokens.split(" "));
     if (score >= HIT_THRESHOLD && (!best || score > best.score)) best = { row, score };
   }
@@ -203,7 +218,7 @@ export async function remember(
          VALUES (?1, ?2, ?3, datetime('now'))
          ON CONFLICT (token_key) DO UPDATE SET payload = ?3, created_at = datetime('now')`
       )
-      .bind(key, tokens.join(" "), JSON.stringify(value))
+      .bind(key, tokens.join(" "), JSON.stringify({ ...value, corpus: await corpusId() }))
       .run();
   } catch {
     // Failing to cache is not worth failing the answer the visitor already has.

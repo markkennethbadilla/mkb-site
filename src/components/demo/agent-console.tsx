@@ -7,7 +7,11 @@ import EntityOverlay from "@/components/demo/entity-overlay";
 import RunMeta from "@/components/demo/run-meta";
 import { SUGGESTIONS, isSectionId, sectionById } from "@/lib/site-sections";
 import { MOCK_MODE, mockRun, type AgentRun } from "@/components/demo/agent-run.mock";
-import { scrollToElement } from "@/lib/smooth-scroll";
+import { scrollToElement, TRAVEL_MS } from "@/lib/smooth-scroll";
+
+// A smooth scroll cut off by another never settles its promise; the trip counts as done after its travel time.
+const travel = (el: HTMLElement, reduced: boolean) =>
+  Promise.race([scrollToElement(el, { reduced }), new Promise((r) => setTimeout(r, reduced ? 50 : TRAVEL_MS + 400))]);
 import { cn } from "@/lib/utils";
 import { botHeaders } from "@/lib/bot-check";
 
@@ -51,6 +55,7 @@ export default function AgentConsole({ first }: { first?: string }) {
   // instead of fly.
   const parkedHere = phase !== "outbound" && phase !== "perched";
 
+  const tripRef = useRef(0);
   const ask = useCallback(
     async (text: string) => {
       const trimmed = text.trim().slice(0, MAX_QUESTION_CHARS);
@@ -81,10 +86,12 @@ export default function AgentConsole({ first }: { first?: string }) {
         // Order matters. The entity and the spotlight go up FIRST so they are
         // already in flight while the page moves under them; the bubble waits for
         // the scroll to finish, so arriving is a separate beat from travelling.
+        const trip = ++tripRef.current;
         setTarget(el);
         setPhase("outbound");
-        await scrollToElement(el, { reduced: Boolean(reduced) });
-        setPhase("perched");
+        await travel(el, Boolean(reduced));
+        // A click-away during the flight started the trip home; this flight no longer owns the phase.
+        if (tripRef.current === trip) setPhase("perched");
       } catch (e) {
         // Name the cause. "Something went wrong" here would be especially bad on a
         // site whose argument is that failures should say what failed.
@@ -107,8 +114,10 @@ export default function AgentConsole({ first }: { first?: string }) {
     // The return trip is the same journey backwards, and it has to be: an instant
     // snap home after a 1.4s flight out makes the flight feel like a gimmick
     // rather than travel. The entity flies back with the page, then re-parks.
+    const trip = ++tripRef.current;
     setPhase("homebound");
-    if (homeRef.current) await scrollToElement(homeRef.current, { reduced: Boolean(reduced) });
+    if (homeRef.current) await travel(homeRef.current, Boolean(reduced));
+    if (tripRef.current !== trip) return;
     setPhase("parked");
     setTarget(null);
     setRun(null);

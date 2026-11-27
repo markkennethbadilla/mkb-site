@@ -214,8 +214,8 @@ export const PUBLIC_FACTS: PublicFact[] = [
 
   {
     id: "location",
-    text: "He is based in Cebu City, Philippines, and works remotely. His timezone is APAC.",
-    terms: ["Cebu", "City", "Philippines", "APAC"],
+    text: "He is based in Cebu City, Philippines, and works remotely.",
+    terms: ["Cebu", "City", "Philippines"],
   },
   {
     id: "availability",
@@ -224,8 +224,8 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "contact",
-    text: "The best ways to reach him are LinkedIn and email; both are in the contact section of this page.",
-    terms: ["LinkedIn"],
+    text: "Email is the best way to reach him, at markkennethbadilla@gmail.com in the contact section. His LinkedIn and GitHub are linked near the top of the page and in the footer.",
+    terms: ["LinkedIn", "GitHub"],
   },
   {
     id: "colour",
@@ -251,8 +251,8 @@ export const PUBLIC_FACTS: PublicFact[] = [
   },
   {
     id: "demo-rooms",
-    text: "The projects section has three live demo rooms that run for real when you press the button: Ledger Under Fire, Split Brain and ScoreAudit.",
-    terms: ["Ledger", "Under", "Fire", "Split", "Brain", "ScoreAudit"],
+    text: "The projects section has three live demo rooms that run for real when you press the button: Ledger Under Fire, Split-Brain and ScoreAudit.",
+    terms: ["Ledger", "Under", "Fire", "Split-Brain", "ScoreAudit"],
   },
   {
     id: "this-site",

@@ -5,8 +5,12 @@ import { ok } from "./log.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
 const OUT = join(ROOT, "src/app/icon.svg");
-const LIGHT = "oklch(0.17 0.006 215)";
-const DARK = "oklch(0.8 0.11 215)";
+// Same hue as --tint-hue in src/app/globals.css.
+const HUE = 150;
+const LIGHT_BG = `oklch(0.98 0.004 ${HUE})`;
+const LIGHT = `oklch(0.17 0.006 ${HUE})`;
+const DARK_BG = `oklch(0.17 0.006 ${HUE})`;
+const DARK = `oklch(0.8 0.11 ${HUE})`;
 
 console.log("START gen-favicon");
 try {
@@ -23,11 +27,13 @@ try {
   const maxX = Math.max(...glyphs.map((p) => p.bbox.maxX));
   const minY = Math.min(...glyphs.map((p) => p.bbox.minY));
   const maxY = Math.max(...glyphs.map((p) => p.bbox.maxY));
-  const side = Math.max(maxX - minX, maxY - minY);
+  // Full-bleed square, mark inside the centre 80 percent (deploy gate icon-full-bleed).
+  const side = Math.max(maxX - minX, maxY - minY) * 1.25;
   const view = [(minX + maxX - side) / 2, (minY + maxY - side) / 2, side, side].map((n) => Math.round(n)).join(" ");
   const svg = [
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + view + '">',
-    "<style>path{fill:" + LIGHT + "}@media (prefers-color-scheme:dark){path{fill:" + DARK + "}}</style>",
+    "<style>rect{fill:" + LIGHT_BG + "}path{fill:" + LIGHT + "}@media (prefers-color-scheme:dark){rect{fill:" + DARK_BG + "}path{fill:" + DARK + "}}</style>",
+    '<rect x="' + view.split(" ")[0] + '" y="' + view.split(" ")[1] + '" width="' + view.split(" ")[2] + '" height="' + view.split(" ")[3] + '"/>',
     '<path d="' + glyphs.map((p) => p.toSVG()).join("") + '"/>',
     "</svg>",
     "",

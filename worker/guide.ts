@@ -22,8 +22,9 @@ import { buildGuidePrompt, sectionById } from "../src/lib/site-sections";
 import { FACTS_BRIEF } from "../src/lib/public-facts";
 
 const GUIDE_SYSTEM_PROMPT = buildGuidePrompt(FACTS_BRIEF);
+setCorpus(FACTS_BRIEF);
 import { buildToolbox, type GuideDecision } from "./guide-tools";
-import { lookup, remember } from "./cache";
+import { lookup, remember, setCorpus } from "./cache";
 import { decide, DECIDE_MODEL } from "./decide";
 import { reserve } from "./budget";
 import { watchGeneration } from "./analytics";

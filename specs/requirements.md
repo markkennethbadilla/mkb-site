@@ -472,7 +472,7 @@ Tags: PARTIAL, beforePARTIAL
 ### spec:site.s31
 `req~spec_site.s31~1`
 
-> Rebuilt in our own code from the once-ui `magic-portfolio` demo (studied, never copied): a quiet neutral page, one cyan wash at the top, a floating pill nav, tight bold type, hairline cards.
+> Rebuilt in our own code from the once-ui `magic-portfolio` demo (studied, never copied): a quiet neutral page, one green wash at the top, a floating pill nav, tight bold type, hairline cards.
 > | Radius | cards 1rem, pills and buttons full |
 > | Motion | hovers only: a card rises 2px and its border takes the accent, 200 ms ease out; the theme icon spins in on change (reduced motion: none) |
 > | Feedback | everything clickable shows the pointer cursor (`globals.css` base layer, since Tailwind v4 dropped it on buttons); the theme toggle cycles follow system, light, dark with a Monitor, Sun or Moon icon for the current choice and says both current and next in its name |

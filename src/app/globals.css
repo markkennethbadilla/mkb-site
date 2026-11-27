@@ -100,7 +100,7 @@ html {
 @property --tint-hue {
   syntax: "<number>";
   inherits: true;
-  initial-value: 215;
+  initial-value: 150;
 }
 
 :root, [data-tint] {
@@ -108,7 +108,7 @@ html {
      (form controls, scrollbars) matches and extensions have no reason to
      re-tint. Paired with the darkreader-lock meta in layout.tsx. */
   color-scheme: light dark;
-  --tint-hue: 215;
+  --tint-hue: 150;
   --radius: 0.75rem;
   --background: oklch(0.99 0.003 var(--tint-hue));
   --foreground: oklch(0.17 0.006 var(--tint-hue));
