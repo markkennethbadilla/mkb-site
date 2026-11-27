@@ -15,17 +15,16 @@ const post = (path: string, ip: string, token?: string) =>
       headers: { "cf-connecting-ip": ip, "content-type": "application/json", ...(token ? { "cf-turnstile-response": token } : {}) },
       body: JSON.stringify({ question: "[TEST] what does he build?" }),
     }),
-    env,
+    { ...env, AI: undefined, OPENROUTER_API_KEY: undefined } as unknown as Env,
   );
 
 describe("bot check (I06)", () => {
-  it("refuses the guide and a demo run without a token, and still records both (rule 43)", async () => {
+  it("lets the guide and a demo run through without a token (Turnstile is optional) and records both (rule 43)", async () => {
     const ip = `bot-${crypto.randomUUID()}`;
     const guide = await post("/api/guide", ip);
     const demo = await post("/api/demos/ledger-under-fire/start", ip);
-    expect(guide.status).toBe(403);
-    expect(demo.status).toBe(403);
-    expect(((await guide.json()) as { reason: string }).reason).toBe("bot-check");
+    expect(guide.status).toBe(200);
+    expect(demo.status).not.toBe(403);
     const { results } = await env.DEMO_DB.prepare("SELECT path FROM inbound_requests WHERE ip = ?1").bind(ip).all();
     expect(results.map((r) => r.path)).toEqual(["/api/guide", "/api/demos/ledger-under-fire/start"]);
   });

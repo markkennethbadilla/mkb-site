@@ -58,23 +58,25 @@ function fresh(): Promise<string> {
   return run;
 }
 
+let minted: string | undefined;
+
 function prefetch() {
   at = Date.now();
+  minted = undefined;
   const p = fresh();
   next = p;
-  p.catch((e: Error) => {
+  p.then((t) => { if (next === p) minted = t; }, (e: Error) => {
     console.warn("bot-check prefetch failed:", e.message);
     if (next === p) next = undefined;
   });
 }
 
-export async function botToken(): Promise<string> {
-  // Tokens live 300 s; reuse a prefetched one only well inside that.
-  const p = next && Date.now() - at < 240_000 ? next : fresh();
-  next = undefined;
-  const t = await p;
-  prefetch();
-  return t;
+// Never waits: the server treats the token as optional, so a request goes out at once with one only if it is already minted.
+export function botHeaders(): Record<string, string> {
+  // Tokens live 300 s; use a prefetched one only well inside that.
+  const t = minted && Date.now() - at < 240_000 ? minted : undefined;
+  if (t || !next) prefetch();
+  return t ? { [BOT_HEADER]: t } : {};
 }
 
 // Warm up as soon as this loads (guide-lazy imports it on idle), so the first guarded request is instant.
@@ -83,4 +85,4 @@ if (typeof window !== "undefined") {
   else window.addEventListener("load", () => setTimeout(prefetch, 1000), { once: true });
 }
 
-export const BOT_HEADER = "cf-turnstile-response";
+const BOT_HEADER = "cf-turnstile-response";

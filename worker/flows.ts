@@ -7,8 +7,7 @@ export const guideFlow = setup({
   id: "guide",
   initial: "idle",
   states: {
-    idle: { on: { NO_TOKEN: "refused", BAD_BODY: "invalid", VALID_UNCACHED: "degraded", VALID_CACHED: "cached" } },
-    refused: { on: { VALID_UNCACHED: "degraded", VALID_CACHED: "cached" } },
+    idle: { on: { NO_TOKEN: "degraded", BAD_BODY: "invalid", VALID_UNCACHED: "degraded", VALID_CACHED: "cached" } },
     invalid: { type: "final" },
     degraded: { type: "final" },
     cached: { type: "final" },
@@ -22,8 +21,7 @@ export const demoFlow = setup({
   id: "demo",
   initial: "idle",
   states: {
-    idle: { on: { UNKNOWN_ROOM: "notFound", NO_ACTION: "notFound", NO_RUN_ID: "needsRun", START_NO_TOKEN: "refused", START_WITH_TOKEN: "started" } },
-    refused: { on: { START_WITH_TOKEN: "started" } },
+    idle: { on: { UNKNOWN_ROOM: "notFound", NO_ACTION: "notFound", NO_RUN_ID: "needsRun", START_NO_TOKEN: "started", START_WITH_TOKEN: "started" } },
     notFound: { type: "final" },
     needsRun: { type: "final" },
     started: { type: "final" },

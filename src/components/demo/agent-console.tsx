@@ -9,7 +9,7 @@ import { SUGGESTIONS, isSectionId, sectionById } from "@/lib/site-sections";
 import { MOCK_MODE, mockRun, type AgentRun } from "@/components/demo/agent-run.mock";
 import { scrollToElement } from "@/lib/smooth-scroll";
 import { cn } from "@/lib/utils";
-import { BOT_HEADER, botToken } from "@/lib/bot-check";
+import { botHeaders } from "@/lib/bot-check";
 
 /**
  * The site guide.
@@ -287,7 +287,7 @@ export default function AgentConsole({ first }: { first?: string }) {
 async function liveRun(question: string): Promise<AgentRun> {
   const res = await fetch("/api/guide", {
     method: "POST",
-    headers: { "content-type": "application/json", [BOT_HEADER]: await botToken() },
+    headers: { "content-type": "application/json", ...botHeaders() },
     body: JSON.stringify({ question }),
   });
   if (!res.ok) {

@@ -54,7 +54,7 @@ const guide = (body: unknown, headers: Record<string, string> = TOKEN): Call => 
 
 it("every simple path of the guide flow reaches its state on the real handler", () =>
   walk(guideFlow, {
-    NO_TOKEN: { call: guide({ question: "[TEST] qzxv" }, {}), ok: is(403) },
+    NO_TOKEN: { call: guide({ question: "[TEST] qzxv" }, {}), ok: is(200) },
     BAD_BODY: { call: guide({ question: "" }), ok: is(400) },
     VALID_UNCACHED: { call: guide({ question: "[TEST] qzxv wkjh plmn" }), ok: is(200) },
     VALID_CACHED: {
@@ -69,7 +69,7 @@ it("every simple path of the demo room flow reaches its state on the real handle
     UNKNOWN_ROOM: { call: { path: "/api/demos/nope/start" }, ok: is(404) },
     NO_ACTION: { call: { path: `/api/demos/${ROOM}` }, ok: is(404) },
     NO_RUN_ID: { call: { path: `/api/demos/${ROOM}/bogus-action` }, ok: is(400) },
-    START_NO_TOKEN: { call: { path: `/api/demos/${ROOM}/start` }, ok: is(403) },
+    START_NO_TOKEN: { call: { path: `/api/demos/${ROOM}/start` }, ok: (s) => s !== 403 && s < 500 },
     START_WITH_TOKEN: { call: { path: `/api/demos/${ROOM}/start`, headers: TOKEN }, ok: (s) => s !== 403 && s < 500 },
   }));
 
